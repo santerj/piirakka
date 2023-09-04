@@ -1,0 +1,11 @@
+http://svr1.msmn.co:8136
+http://andromeda.shoutca.st:8031
+http://mp3channels.webradio.rockantenne.de/heavy-metal
+https://play.streamafrica.net/JapanCityPop
+https://hubble.shoutca.st:2199/tunein/synthwave.pls
+http://54.38.43.201:8009/stream-128kmp3-BossaNovaBrazil
+http://streams.radiobob.de/deathmetal/mp3-192/streams.radiobob.de/
+https://live.hunter.fm/lofi_high
+https://somafm.com/indiepop64.pls
+https://icecast.walmradio.com:8443/jazz
+https://giorgia.radiobellissima.it/radio/8210/radio.mp3

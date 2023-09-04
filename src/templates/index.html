@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>piirakka</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥧</text></svg>">
+    <!-- Tailwind -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Phosphor -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-gray-200 font-sans text-center">
+
+<div class="container mx-auto mt-10">
+    <h1 class="text-3xl font-semibold text-gray-800">Piirakka</h1>
+
+    <div class="mt-6">
+        <button id="playButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full">
+            <i class="ph ph-play"></i>
+        </button>
+        <button id="stopButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full">
+            <i class="ph ph-pause"></i>
+        </button>
+        <button id="nextButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full">
+            <i class="ph ph-shuffle"></i>
+        </button>
+    </div>
+
+    <p id="currentStation" class="mt-8 text-gray-600"></p>
+</div>
+
+<script>
+    const playButton = document.getElementById('playButton');
+    const stopButton = document.getElementById('stopButton');
+    const nextButton = document.getElementById('nextButton');
+    const currentStationHeader = document.getElementById('currentStation');
+
+    playButton.addEventListener('click', playRadio);
+    stopButton.addEventListener('click', stopRadio);
+    nextButton.addEventListener('click', nextStation);
+
+    function playRadio() {
+        console.log('Radio is playing.');
+        sendRequest('play');
+    }
+
+    function stopRadio() {
+        console.log('Radio is stopped.');
+        sendRequest('stop');
+    }
+
+    function nextStation() {
+        console.log('Switching to the next station.');
+        sendRequest('next');
+    }
+
+    function sendRequest(action) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', `/api/radio?action=${action}`, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    console.log(`Request succeeded: ${action}`);
+                    updateCurrentStation();
+                } else {
+                    console.log(`Request failed: ${action}`);
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function updateCurrentStation() {
+        const stationXhr = new XMLHttpRequest();
+        stationXhr.open('GET', '/api/station', true);
+        stationXhr.onreadystatechange = function () {
+            if (stationXhr.readyState === XMLHttpRequest.DONE) {
+                if (stationXhr.status === 200) {
+                    const stationName = stationXhr.responseText;
+                    currentStationHeader.textContent = `Nyt soi: ${stationName}`;
+                } else {
+                    console.log('Failed to fetch station information.');
+                }
+            }
+        };
+        stationXhr.send();
+    }
+</script>
+
+</body>
+</html>
+

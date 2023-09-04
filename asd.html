@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>piirakka</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥧</text></svg>">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        h2 {
+            color: #666;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 12px 24px; /* Increased padding for larger buttons */
+            margin: 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 32px; /* Increased font size for buttons */
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Piirakka</h1>
+    
+    <button id="playButton">▶️</button>
+    <button id="stopButton">⏸️</button>
+    <button id="nextButton">🔀</button>
+
+    <p id="currentStation"> </p>
+
+    <script>
+        const playButton = document.getElementById('playButton');
+        const stopButton = document.getElementById('stopButton');
+        const nextButton = document.getElementById('nextButton');
+        const currentStationHeader = document.getElementById('currentStation');
+
+        playButton.addEventListener('click', playRadio);
+        stopButton.addEventListener('click', stopRadio);
+        nextButton.addEventListener('click', nextStation);
+
+        function playRadio() {
+            console.log('Radio is playing.');
+            sendRequest('play');
+        }
+
+        function stopRadio() {
+            console.log('Radio is stopped.');
+            sendRequest('stop');
+        }
+
+        function nextStation() {
+            console.log('Switching to the next station.');
+            sendRequest('next');
+        }
+
+        function sendRequest(action) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', `/api/radio?action=${action}`, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(`Request succeeded: ${action}`);
+                        updateCurrentStation();
+                    } else {
+                        console.log(`Request failed: ${action}`);
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function updateCurrentStation() {
+            const stationXhr = new XMLHttpRequest();
+            stationXhr.open('GET', '/api/station', true);
+            stationXhr.onreadystatechange = function () {
+                if (stationXhr.readyState === XMLHttpRequest.DONE) {
+                    if (stationXhr.status === 200) {
+                        const stationName = stationXhr.responseText;
+                        currentStationHeader.textContent = `Nyt soi: ${stationName}`;
+                    } else {
+                        console.log('Failed to fetch station information.');
+                    }
+                }
+            };
+            stationXhr.send();
+        }
+    </script>
+</body>
+</html>
+
