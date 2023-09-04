@@ -8,13 +8,14 @@ from flask import Flask, render_template, request
 class Player:
     def __init__(self):
         self._mpv = mpv.MPV()
-        self._playing = False
         self._stations = self._getStations()
         self._currentStation = random.choice(self._stations)
 
+        self.playing = False
+
     def getStation(self):
         return self._currentStation
-    
+
     def setStation(self, station):
         self._currentStation = station
 
@@ -28,11 +29,11 @@ class Player:
 
     def play(self):
         self._mpv.play(self._currentStation)
-        self._playing = True
+        self.playing = True
 
     def stop(self):
         self._mpv.stop()
-        self._playing = False
+        self.playing = False
 
     @staticmethod
     def _getStations():
@@ -69,7 +70,11 @@ def radioControl():
             return "", 500
         
 @app.route('/api/status')
-
+def status():
+    if player.playing:
+        return "playing"
+    else:
+        return "paused"
 
 @app.route('/api/station')
 def station():

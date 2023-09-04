@@ -14,14 +14,11 @@
     <h1 class="text-5xl font-semibold text-gray-800">Piirakka</h1>
 
     <div class="mt-6">
-        <button id="playButton" class="hover:bg-blue-300 py-3 px-6 rounded-full">
-            <i class="ph ph-play text-2xl"></i>
+        <button id="playPauseButton" class="hover:bg-green-300 py-4 px-8 rounded-full" data-playing="">
+            <i class="ph ph-play-pause text-3xl"></i>
         </button>
-        <button id="stopButton" class="hover:bg-red-300 py-3 px-6 rounded-full">
-            <i class="ph ph-pause text-2xl"></i>
-        </button>
-        <button id="nextButton" class="hover:bg-green-300 py-3 px-6 rounded-full">
-            <i class="ph ph-shuffle text-2xl"></i>
+        <button id="nextButton" class=" hover:bg-blue-300 py-4 px-8 rounded-full">
+            <i class="ph ph-shuffle text-3xl"></i>
         </button>
     </div>
 
@@ -29,38 +26,33 @@
 </div>
 
 <script>
-    const playButton = document.getElementById('playButton');
-    const stopButton = document.getElementById('stopButton');
+    const playPauseButton = document.getElementById('playPauseButton');
     const nextButton = document.getElementById('nextButton');
     const currentStationHeader = document.getElementById('currentStation');
 
-    playButton.addEventListener('click', playRadio);
-    stopButton.addEventListener('click', stopRadio);
+    playPauseButton.addEventListener('click', togglePlayPause);
     nextButton.addEventListener('click', nextStation);
 
-    function playRadio() {
-        console.log('Radio is playing.');
-        sendRequest('play');
-    }
+    // Initial check and set the button state
+    checkAndUpdateState();
 
-    function stopRadio() {
-        console.log('Radio is stopped.');
-        sendRequest('stop');
+    function togglePlayPause() {
+        putStatus(playPauseButton.dataset.playing === "true" ? 'stop' : 'play');
     }
 
     function nextStation() {
         console.log('Switching to the next station.');
-        sendRequest('next');
+        putStatus('next');
     }
 
-    function sendRequest(action) {
+    function putStatus(action) {
         const xhr = new XMLHttpRequest();
         xhr.open('PUT', `/api/radio?action=${action}`, true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
                     console.log(`Request succeeded: ${action}`);
-                    updateCurrentStation();
+                    checkAndUpdateState(); // Update the button state after the request
                 } else {
                     console.log(`Request failed: ${action}`);
                 }
@@ -69,21 +61,32 @@
         xhr.send();
     }
 
-    function updateCurrentStation() {
-        const stationXhr = new XMLHttpRequest();
-        stationXhr.open('GET', '/api/station', true);
-        stationXhr.onreadystatechange = function () {
-            if (stationXhr.readyState === XMLHttpRequest.DONE) {
-                if (stationXhr.status === 200) {
-                    const stationName = stationXhr.responseText;
-                    currentStationHeader.textContent = `Nyt soi: ${stationName}`;
+    function checkAndUpdateState() {
+        const statusXhr = new XMLHttpRequest();
+        statusXhr.open('GET', '/api/status', true);
+        statusXhr.onreadystatechange = function () {
+            if (statusXhr.readyState === XMLHttpRequest.DONE) {
+                if (statusXhr.status === 200) {
+                    const status = statusXhr.responseText;
+
+                    // set play/pause button background color depending on player state
+                    if (status === 'playing') {
+                        playPauseButton.dataset.playing = true;
+                        playPauseButton.classList.replace('hover:bg-green-300', 'hover:bg-red-300');
+                    } else {
+                        playPauseButton.dataset.playing = false;
+                        playPauseButton.classList.replace('hover:bg-red-300', 'hover:bg-green-300');
+                    }
                 } else {
-                    console.log('Failed to fetch station information.');
+                    console.log('Failed to fetch status information.');
                 }
             }
         };
-        stationXhr.send();
+        statusXhr.send();
     }
+
+    // Periodically check and update the button state
+    setInterval(checkAndUpdateState, 5000); // Every 5 seconds
 </script>
 
 </body>
