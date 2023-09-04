@@ -14,10 +14,10 @@
     <h1 class="text-5xl font-semibold text-gray-800">Piirakka</h1>
 
     <div class="mt-6">
-        <button id="playPauseButton" class="hover:bg-green-300 py-4 px-8 rounded-full" data-playing="">
-            <i class="ph ph-play-pause text-3xl"></i>
+        <button id="playPauseButton" class="hover:bg-green-300 py-3 px-10 rounded-full" data-playing="">
+            <i id="playPauseIcon" class="ph ph-hourglass text-3xl animate-pulse"></i>
         </button>
-        <button id="nextButton" class=" hover:bg-blue-300 py-4 px-8 rounded-full">
+        <button id="nextButton" class=" hover:bg-blue-300 py-3 px-10 rounded-full">
             <i class="ph ph-shuffle text-3xl"></i>
         </button>
     </div>
@@ -27,6 +27,7 @@
 
 <script>
     const playPauseButton = document.getElementById('playPauseButton');
+    const playPauseIcon = document.getElementById('playPauseIcon');
     const nextButton = document.getElementById('nextButton');
     const currentStationHeader = document.getElementById('currentStation');
 
@@ -67,14 +68,20 @@
         statusXhr.onreadystatechange = function () {
             if (statusXhr.readyState === XMLHttpRequest.DONE) {
                 if (statusXhr.status === 200) {
+                    playPauseIcon.classList.toggle('ph-hourglass');
+                    playPauseIcon.classList.toggle('animate-pulse');
                     const status = statusXhr.responseText;
 
-                    // set play/pause button background color depending on player state
+                    // set play/pause button icon and background color depending on player state
                     if (status === 'playing') {
                         playPauseButton.dataset.playing = true;
+                        playPauseIcon.classList.remove('ph-play');
+                        playPauseIcon.classList.add('ph-pause');
                         playPauseButton.classList.replace('hover:bg-green-300', 'hover:bg-red-300');
                     } else {
                         playPauseButton.dataset.playing = false;
+                        playPauseIcon.classList.remove('ph-pause');
+                        playPauseIcon.classList.add('ph-play');
                         playPauseButton.classList.replace('hover:bg-red-300', 'hover:bg-green-300');
                     }
                 } else {
