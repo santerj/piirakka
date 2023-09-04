@@ -24,7 +24,10 @@
     </div>
 
     <div class="mt-6">
-        <p id="currentStation" class="mt-8 text-gray-600">Nyt soi:</p>
+        <p id="currentInfo" class="mt-4 text-gray-600">
+            <span id="trackName" class="font-bold"></span><br>
+            <span id="stationName" class="text-sm"></span>
+        </p>
     </div>
 </div>
 
@@ -38,8 +41,9 @@
     nextButton.addEventListener('click', nextStation);
 
     // Initial check and set the button state
-    checkAndUpdateState();
-    fetchCurrentStation();
+    setPlayButtonState();
+    fetchTrackInfo();
+    fetchStationInfo();
 
     function togglePlayPause() {
         putStatus(playPauseButton.dataset.playing === "true" ? 'stop' : 'play');
@@ -48,7 +52,7 @@
     function nextStation() {
         console.log('Switching to the next station.');
         putStatus('next');
-        fetchCurrentStation();
+        fetchStationInfo();
     }
 
     function putStatus(action) {
@@ -58,7 +62,7 @@
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
                     console.log(`Request succeeded: ${action}`);
-                    checkAndUpdateState(); // Update the button state after the request
+                    setPlayButtonState(); // Update the button state after the request
                 } else {
                     console.log(`Request failed: ${action}`);
                 }
@@ -67,23 +71,41 @@
         xhr.send();
     }
 
-    function fetchCurrentStation() {
-        const currentStationXhr = new XMLHttpRequest();
-        currentStationXhr.open('GET', '/api/currentStation', true);
-        currentStationXhr.onreadystatechange = function () {
-            if (currentStationXhr.readyState === XMLHttpRequest.DONE) {
-                if (currentStationXhr.status === 200) {
-                    const data = JSON.parse(currentStationXhr.responseText);
-                    currentStationHeader.textContent = "Nyt soi: " + data.name;
+    function fetchTrackInfo() {
+        const currentInfoXhr = new XMLHttpRequest();
+        currentInfoXhr.open('GET', '/api/currentSong', true); // Replace with the actual endpoint
+        currentInfoXhr.onreadystatechange = function () {
+            if (currentInfoXhr.readyState === XMLHttpRequest.DONE) {
+                if (currentInfoXhr.status === 200) {
+                    const infoData = currentInfoXhr.responseText;
+                    const trackElement = document.getElementById('trackName');
+                    trackElement.textContent = `${infoData}`;
                 } else {
-                    console.log('Failed to fetch current station information.');
+                    console.log('Failed to fetch current info.');
                 }
             }
         };
-        currentStationXhr.send();
+        currentInfoXhr.send();
     }
 
-    function checkAndUpdateState() {
+    function fetchStationInfo() {
+        const currentInfoXhr = new XMLHttpRequest();
+        currentInfoXhr.open('GET', '/api/currentStation', true); // Replace with the actual endpoint
+        currentInfoXhr.onreadystatechange = function () {
+            if (currentInfoXhr.readyState === XMLHttpRequest.DONE) {
+                if (currentInfoXhr.status === 200) {
+                    const infoData = JSON.parse(currentInfoXhr.responseText);
+                    const trackElement = document.getElementById('stationName');
+                    trackElement.textContent = `${infoData.name}`;
+                } else {
+                    console.log('Failed to fetch current info.');
+                }
+            }
+        };
+        currentInfoXhr.send();
+    }
+
+    function setPlayButtonState() {
         const statusXhr = new XMLHttpRequest();
         statusXhr.open('GET', '/api/status', true);
         statusXhr.onreadystatechange = function () {
@@ -113,8 +135,9 @@
     }
 
     // Periodically check and update the button state
-    setInterval(checkAndUpdateState, 5000);
-    setInterval(fetchCurrentStation, 10000);
+    setInterval(setPlayButtonState, 5000);
+    setInterval(fetchTrackInfo, 5000);
+    setInterval(fetchStationInfo, 5000);
 </script>
 
 </body>

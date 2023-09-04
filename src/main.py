@@ -41,6 +41,8 @@ def currentStation():
 
 @app.route('/api/currentSong')
 def currentSong():
+    # TODO: add scheduled task to Player – every 20s
+    # this is a slow request
     station = player.getStation()['url']
     title = titleGrabber(station)
     return title
