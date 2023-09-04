@@ -27,6 +27,14 @@ def radioControl():
         case "next":
             player.changeStation()
             return "", 200
+        case "toggle":
+            # TODO: same format as /api/status after action
+            if player._playing:
+                player.stop()
+                return "", 200
+            else:
+                player.play()
+                return "", 200
         case _:
             return "", 500
         

@@ -49,6 +49,8 @@ def titleGrabber(url: str) -> str:
     meta_end = meta_start + meta_length
     metadata = x[meta_start:meta_end].decode()
 
+    # TODO: pattern breaks if song title contains '
+    # should terminate at ; instead
     pattern = r"StreamTitle='(.*?)'"
     match = re.search(pattern, metadata)
     if match:
