@@ -8,6 +8,7 @@
     <!-- Phosphor -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
+
 <body class="bg-gray-200 font-sans text-center">
 
 <div class="container mx-auto mt-10">
@@ -15,7 +16,7 @@
 
     <div class="mt-6">
         <button id="playPauseButton" class="hover:bg-green-300 py-3 px-10 rounded-full" data-playing="">
-            <i id="playPauseIcon" class="ph ph-hourglass text-3xl animate-pulse"></i>
+            <i id="playPauseIcon" class="ph ph-hourglass text-3xl"></i>
         </button>
         <button id="nextButton" class=" hover:bg-blue-300 py-3 px-10 rounded-full">
             <i class="ph ph-shuffle text-3xl"></i>
@@ -69,7 +70,6 @@
             if (statusXhr.readyState === XMLHttpRequest.DONE) {
                 if (statusXhr.status === 200) {
                     playPauseIcon.classList.toggle('ph-hourglass');
-                    playPauseIcon.classList.toggle('animate-pulse');
                     const status = statusXhr.responseText;
 
                     // set play/pause button icon and background color depending on player state
