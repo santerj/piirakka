@@ -1,7 +1,7 @@
 import json
 import random
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 import mpv
 
@@ -21,7 +21,7 @@ class Player:
         self._playing = False
 
     def getStation(self):
-        return self._currentStation
+        return asdict(self._currentStation)
 
     def setStation(self, station):
         self._currentStation = station
@@ -50,8 +50,7 @@ class Player:
         
     def _stationLoader(self):
         with open("stations.json", "r") as f:
-            j = json.load(f)
-            for station in j:
+            for station in json.load(f):
                 self._stations.append(
                     Station(name=station['name'],
                             url=station['url']

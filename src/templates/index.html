@@ -23,7 +23,9 @@
         </button>
     </div>
 
-    <p id="currentStation" class="mt-8 text-gray-600"></p>
+    <div class="mt-6">
+        <p id="currentStation" class="mt-8 text-gray-600">Nyt soi:</p>
+    </div>
 </div>
 
 <script>
@@ -37,6 +39,7 @@
 
     // Initial check and set the button state
     checkAndUpdateState();
+    fetchCurrentStation();
 
     function togglePlayPause() {
         putStatus(playPauseButton.dataset.playing === "true" ? 'stop' : 'play');
@@ -45,6 +48,7 @@
     function nextStation() {
         console.log('Switching to the next station.');
         putStatus('next');
+        fetchCurrentStation();
     }
 
     function putStatus(action) {
@@ -61,6 +65,22 @@
             }
         };
         xhr.send();
+    }
+
+    function fetchCurrentStation() {
+        const currentStationXhr = new XMLHttpRequest();
+        currentStationXhr.open('GET', '/api/currentStation', true);
+        currentStationXhr.onreadystatechange = function () {
+            if (currentStationXhr.readyState === XMLHttpRequest.DONE) {
+                if (currentStationXhr.status === 200) {
+                    const data = JSON.parse(currentStationXhr.responseText);
+                    currentStationHeader.textContent = "Nyt soi: " + data.name;
+                } else {
+                    console.log('Failed to fetch current station information.');
+                }
+            }
+        };
+        currentStationXhr.send();
     }
 
     function checkAndUpdateState() {
@@ -93,7 +113,8 @@
     }
 
     // Periodically check and update the button state
-    setInterval(checkAndUpdateState, 5000); // Every 5 seconds
+    setInterval(checkAndUpdateState, 5000);
+    setInterval(fetchCurrentStation, 10000);
 </script>
 
 </body>

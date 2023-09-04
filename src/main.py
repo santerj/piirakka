@@ -3,6 +3,7 @@ import random
 from flask import Flask, render_template, request
 
 from utils.player import Player
+from utils.title_grabber import titleGrabber
 
 
 app = Flask(__name__)
@@ -34,10 +35,15 @@ def status():
     # TODO: json response
     return player.status(), 200
 
-@app.route('/api/station')
-def station():
-    # TODO: rework
+@app.route('/api/currentStation')
+def currentStation():
     return player.getStation(), 200
+
+@app.route('/api/currentSong')
+def currentSong():
+    station = player.getStation()['url']
+    title = titleGrabber(station)
+    return title
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000)
