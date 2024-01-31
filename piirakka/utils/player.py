@@ -4,6 +4,7 @@ import json
 import time
 
 SOCKET = '/tmp/piirakka.sock'
+VOLUME_MAX = 130
 
 class Player:
     def __init__(self) -> None:
@@ -17,7 +18,14 @@ class Player:
         self.proc.terminate()
 
     def _init_mpv(self):
-        cmd = ['mpv', '--idle', '--input-ipc-server=' + self.socket]
+        cmd = [
+            'mpv',
+                '--idle',
+                '--input-ipc-server=' + self.socket,
+                '--volume-max=' + str(VOLUME_MAX),  # TODO: source from config file
+                '--cache=yes', 
+                '--cache-secs=' + str(10)
+        ]
         proc = subprocess.Popen(cmd)
         time.sleep(2)  # wait for mpv to start
         return proc
@@ -52,39 +60,33 @@ class Player:
                 "replace"
             ]
         }
-        print(cmd)
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
+        self.status = 'playing' # purkka
 
     def play(self) -> bool:
-        if self.status == 'paused':
-            cmd = {
-                "command": [
-                    "set_property",
-                    "pause", False
-                ]
-            }
-            cmd = self._dumps(cmd)
-            resp = self._ipc_command(cmd)
-            self.status = 'playing'
-            return True
-        else:
-            return False
+        cmd = {
+            "command": [
+                "set_property",
+                "pause", False
+            ]
+        }
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        self.status = 'playing'
+        return True if resp else False
 
     def pause(self) -> bool:
-        if self.status == 'playing':
-            cmd = {
-                "command": [
-                    "set_property",
-                    "pause", True
-                ]
-            }
-            cmd = self._dumps(cmd)
-            resp = self._ipc_command(cmd)
-            self.status = 'paused'
-            return True
-        else:
-            return False
+        cmd = {
+            "command": [
+                "set_property",
+                "pause", True
+            ]
+        }
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        self.status = 'paused'
+        return True if resp else False
 
     def toggle(self) -> bool:
         if self.status == 'playing':
@@ -95,7 +97,7 @@ class Player:
             return False
 
     def set_volume(self, vol: int) -> bool:
-        if not 0 <= vol <= 100:
+        if not 0 <= vol <= VOLUME_MAX:
             return False
         cmd = {
             "command": [
@@ -106,7 +108,7 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        return False if resp is None else True
+        return True if resp else False
 
     def icy_title(self) -> str | None:
         # other interesting fields
