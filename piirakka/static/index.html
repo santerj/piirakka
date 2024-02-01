@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <title>piirakka</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥧</text></svg>">
   <style>
     body {
       background-color: #f0f0f0;
@@ -193,7 +193,6 @@
 
     function toggleDropdown() {
       const isDropdownVisible = (stationDropdown.style.display === 'block');
-
       stationDropdown.style.display = (isDropdownVisible) ? 'none' : 'block';
       stationsTitle.style.display = (isDropdownVisible) ? 'none' : 'block';
     }
@@ -201,7 +200,6 @@
     function nowPlaying() {
       axios.get('/api/radio/now')
         .then(response => {
-          console.log(response.data);
 
           const nowPlayingInfoHTML = `
             <div>
@@ -221,6 +219,7 @@
 
             displayRecentlyPlayed();
           }
+          presetChannel();
         })
         .catch(error => {
           console.error('Error getting playback data:', error);
@@ -240,6 +239,17 @@
         recentlyPlayedHTML += `<p>${track.icy_title}</p>`;
       });
       recentlyPlayedElement.innerHTML = recentlyPlayedHTML;
+    }
+
+    function presetChannel() {
+      axios.post('/api/radio/station_id', { hash: globalHash }, {'Content-type': 'application/json'})
+        .then(response => {
+          const id = response.data;
+          stationDropdown[id].selected = "selected";
+        })
+        .catch(error => {
+          console.error('Error fetching stations:', error);
+        });
     }
 
     fetchStations();

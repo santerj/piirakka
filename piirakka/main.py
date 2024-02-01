@@ -1,14 +1,18 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify
 
 from utils.player import Player
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 player = Player()
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return app.send_static_file('index.html')
+
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
 
 @app.route('/api/radio/play', methods=['POST'])
 def play():
@@ -43,7 +47,7 @@ def stations():
     payload['hash'] = player.hash
     return jsonify(payload)
 
-@app.route('/api/radio/station_id', methods=['GET'])
+@app.route('/api/radio/station_id', methods=['POST'])
 def station_id():
     try:
         data = request.json
@@ -105,4 +109,5 @@ def set_volume():
         return 'error', 500
 
 if __name__ == "__main__":
+    #app.run()
     app.run(host='0.0.0.0', port=8000)
