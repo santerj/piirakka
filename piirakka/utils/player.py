@@ -18,13 +18,15 @@ class Station:
 class Player:
     def __init__(self) -> None:
         self.socket = SOCKET
+        self.stations = []
+        self.hash = ""
+        self.playing = True
         self.proc = self._init_mpv()    # mpv process
         self._init_db()
-        self.hash = ""
         self.update_stations()
-        # possible statuses:
-        # paused, playing, waiting
-        self.status = "paused"
+        self.current_station = self.stations[0]
+        self._set_station(self.current_station.url)
+        self.pause()
 
     def __del__(self) -> None:
         self.proc.terminate()
@@ -36,7 +38,7 @@ class Player:
                 '--input-ipc-server=' + self.socket,
                 '--volume-max=' + str(VOLUME_MAX),  # TODO: source from config file
                 '--cache=yes', 
-                '--cache-secs=' + str(10)
+                '--cache-secs=' + str(15)
         ]
         proc = subprocess.Popen(cmd)
         time.sleep(2)  # wait for mpv to start
@@ -60,7 +62,7 @@ class Player:
         except Exception as e:
             print(f"Error: {e}")
             return None
-        
+
     def _init_db(self):
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
@@ -83,13 +85,14 @@ class Player:
             stations.append(Station(url=url, description=description, source=source))
         conn.close()
         self.stations = stations
-        self.hash = hash(str(self.stations))
+        self.hash = str(hash(str(self.stations)))
 
     def get_stations(self) -> list[Station]:
         return self.stations
 
     def play_station_with_id(self, id: int):
         self._set_station(url=self.stations[id].url)
+        self.current_station = self.stations[id]
 
     def _set_station(self, url: str):
         cmd = {
@@ -101,7 +104,7 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        self.status = 'playing' # purkka
+        self.playing = True
 
     def play(self) -> bool:
         cmd = {
@@ -112,7 +115,7 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        self.status = 'playing'
+        self.playing = True
         return True if resp else False
 
     def pause(self) -> bool:
@@ -124,16 +127,14 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        self.status = 'paused'
+        self.playing = False
         return True if resp else False
 
     def toggle(self) -> bool:
-        if self.status == 'playing':
+        if self.playing:
             return self.pause()
-        elif self.status == 'paused':
-            return self.play()
         else:
-            return False
+            return self.play()
 
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
@@ -149,7 +150,7 @@ class Player:
         resp = self._ipc_command(cmd)
         return True if resp else False
 
-    def icy_title(self) -> str | None:
+    def now_playing(self) -> dict | None:
         # other interesting fields
         # genre: resp["data"]["icy-genre"]
         # desc: resp["data"]["icy-name"]
@@ -163,6 +164,16 @@ class Player:
         resp = self._ipc_command(cmd)
         resp = json.loads(resp)
         try:
-            return resp["data"]["icy-title"]
+            icy_title = resp["data"]["icy-title"] if resp["data"]["icy-title"] else None
+            icy_genre = resp["data"]["icy-genre"] if resp["data"]["icy-genre"] else None
+            icy_name = resp["data"]["icy-name"] if resp["data"]["icy-name"] else None
+            payload = {
+                'status': 'playing' if self.playing else 'paused',
+                'icy_title': icy_title,
+                'icy_genre': icy_genre,
+                'icy_name': icy_name
+            }
+            return payload
+
         except KeyError:
             return None

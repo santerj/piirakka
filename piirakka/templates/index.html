@@ -1,143 +1,210 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>piirakka</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥧</text></svg>">
-    <!-- Tailwind -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Phosphor -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio Player</title>
+  <style>
+    body {
+      background-color: #f0f0f0; /* Muted light gray */
+      color: #333; /* Dark gray text */
+      font-family: 'VT323', monospace; /* Pixelated monospace font */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #playPauseButton {
+      background-color: #6a6a6a; /* Muted dark gray */
+      color: #f0f0f0; /* Muted light gray text */
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #playPauseButton.playing {
+      background-color: #389583; /* Muted teal green */
+    }
+
+    #playPauseButton.paused {
+      background-color: #b25a5a; /* Muted coral red */
+    }
+
+    #stationDropdown {
+      margin-top: 20px;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    #nowPlayingInfo {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 22px;
+    }
+
+    #recentlyPlayed {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    h3 {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+<body>
 
-<body class="bg-gray-200 font-sans text-center">
+<!-- title -->
+<h1>piirakka</h1>
 
-<div class="container mx-auto mt-10">
-    <h1 class="text-5xl font-semibold text-gray-800">Piirakka</h1>
+<!-- Play/Pause Button -->
+<button id="playPauseButton" onclick="togglePlayback()">Play</button>
 
-    <div class="mt-6">
-        <button id="playPauseButton" class="hover:bg-green-300 py-3 px-10 rounded-full" data-playing="">
-            <i id="playPauseIcon" class="ph ph-hourglass text-3xl"></i>
-        </button>
-        <button id="nextButton" class=" hover:bg-blue-300 py-3 px-10 rounded-full">
-            <i class="ph ph-shuffle text-3xl"></i>
-        </button>
-    </div>
+<!-- Radio Station Selection Dropdown -->
+<select id="stationDropdown" onchange="changeStation()">
+  <!-- Options will be dynamically populated using JavaScript -->
+</select>
 
-    <div class="mt-6">
-        <p id="currentInfo" class="mt-4 text-gray-600">
-            <span id="trackName" class="font-bold"></span><br>
-            <span id="stationName" class="text-sm"></span>
-        </p>
-    </div>
-</div>
+<!-- Display Now Playing Information -->
+<h3>Now listening to:</h3>
+<div id="nowPlayingInfo"></div>
+
+<!-- Display Recently Played Tracks -->
+<div id="recentlyPlayed"></div>
 
 <script>
+  const apiUrl = 'http://localhost:8000';  // Assuming your Flask app is running on port 8000
+  let globalHash;  // Global variable to store the hash
+  let lastPlayedTrack = null;  // Variable to store the last played track
+  let recentlyPlayed = [];  // Array to store recently played tracks
+
+  // Play/Pause Button
+  const playPauseButton = document.getElementById('playPauseButton');
+
+  // Radio Station Selection Dropdown
+  const stationDropdown = document.getElementById('stationDropdown');
+
+  // Display Now Playing Information Element
+  const nowPlayingInfoElement = document.getElementById('nowPlayingInfo');
+
+  // Display Recently Played Tracks Element
+  const recentlyPlayedElement = document.getElementById('recentlyPlayed');
+
+  // Function to fetch radio stations and populate the dropdown
+  function fetchStations() {
+    axios.get(apiUrl + '/api/radio/stations')
+      .then(response => {
+        const data = response.data;
+        globalHash = data.hash;  // Store the hash globally
+
+        const stations = Object.values(data).slice(0, -1); // Exclude the 'hash' property
+
+        // Populate the dropdown with radio stations
+        stations.forEach((station, index) => {
+          const option = document.createElement('option');
+          option.value = index;
+          option.text = station.description;
+          stationDropdown.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching stations:', error);
+      });
+  }
+
+  // Function to handle play/pause toggle
+  function togglePlayback() {
+    axios.post(apiUrl + '/api/radio/toggle')
+      .then(response => {
+        console.log('Toggle response:', response.data);
+      })
+      .catch(error => {
+        console.error('Error toggling playback:', error);
+      });
+  }
+
+  // Function to handle station change
+  function changeStation() {
+    const selectedStationIndex = stationDropdown.value;
+    
+    axios.put(apiUrl + `/api/radio/station/${selectedStationIndex}`, { hash: globalHash })
+      .then(response => {
+        console.log('Station change response:', response.data);
+      })
+      .catch(error => {
+        console.error('Error changing station:', error);
+      });
+  }
+
+   // Function to get now playing track info
+  function nowPlaying() {
+    axios.get(apiUrl + '/api/radio/now')
+      .then(response => {
+        console.log(response.data);
+
+        const nowPlayingInfoHTML = `
+          <div>
+            <span title="Genre: ${response.data.icy_genre}">${response.data.icy_name}</span>
+          </div>
+        `;
+
+        // Display Now Playing Information in the HTML element
+        nowPlayingInfoElement.innerHTML = nowPlayingInfoHTML;
+
+        // Update the play/pause button based on the player status
+        updatePlayPauseButton(response.data.status);
+
+        // Check if the current track is different from the last played track
+        if (!lastPlayedTrack || lastPlayedTrack.icy_title !== response.data.icy_title) {
+          // Add the current track to the recently played array
+          recentlyPlayed.unshift(response.data);
+          // Keep only the last 10 recently played tracks
+          recentlyPlayed = recentlyPlayed.slice(0, 10);
+
+          // Update the last played track
+          lastPlayedTrack = response.data;
+
+          // Display Recently Played Tracks in the HTML element
+          displayRecentlyPlayed();
+        }
+      })
+      .catch(error => {
+        console.error('Error getting playback data:', error);
+      });
+  }
+
+  // Function to update the play/pause button based on the player status
+  function updatePlayPauseButton(status) {
     const playPauseButton = document.getElementById('playPauseButton');
-    const playPauseIcon = document.getElementById('playPauseIcon');
-    const nextButton = document.getElementById('nextButton');
-    const currentStationHeader = document.getElementById('currentStation');
+    playPauseButton.classList.remove('playing', 'paused');  // Remove existing classes
+    playPauseButton.classList.add(status);  // Add the new status class
 
-    playPauseButton.addEventListener('click', togglePlayPause);
-    nextButton.addEventListener('click', nextStation);
+    // Update the text on the button
+    playPauseButton.innerText = (status === 'playing') ? 'Pause' : 'Play';
+  }
 
-    // Initial check and set the button state
-    setPlayButtonState();
-    fetchTrackInfo();
-    fetchStationInfo();
+  // Function to display recently played tracks
+  function displayRecentlyPlayed() {
+    let recentlyPlayedHTML = '<h3>Recently Played Tracks:</h3>';
+    recentlyPlayed.forEach(track => {
+      recentlyPlayedHTML += `<p>${track.icy_title}</p>`;
+    });
+    recentlyPlayedElement.innerHTML = recentlyPlayedHTML;
+  }
 
-    function togglePlayPause() {
-        putStatus(playPauseButton.dataset.playing === "true" ? 'stop' : 'play');
-    }
+  // Initial fetch of stations when the page loads
+  fetchStations();
 
-    function nextStation() {
-        console.log('Switching to the next station.');
-        putStatus('next');
-        fetchStationInfo();
-    }
-
-    function putStatus(action) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('PUT', `/api/radio?action=${action}`, true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    console.log(`Request succeeded: ${action}`);
-                    setPlayButtonState(); // Update the button state after the request
-                } else {
-                    console.log(`Request failed: ${action}`);
-                }
-            }
-        };
-        xhr.send();
-    }
-
-    function fetchTrackInfo() {
-        const currentInfoXhr = new XMLHttpRequest();
-        currentInfoXhr.open('GET', '/api/currentSong', true); // Replace with the actual endpoint
-        currentInfoXhr.onreadystatechange = function () {
-            if (currentInfoXhr.readyState === XMLHttpRequest.DONE) {
-                if (currentInfoXhr.status === 200) {
-                    const infoData = currentInfoXhr.responseText;
-                    const trackElement = document.getElementById('trackName');
-                    trackElement.textContent = `${infoData}`;
-                } else {
-                    console.log('Failed to fetch current info.');
-                }
-            }
-        };
-        currentInfoXhr.send();
-    }
-
-    function fetchStationInfo() {
-        const currentInfoXhr = new XMLHttpRequest();
-        currentInfoXhr.open('GET', '/api/currentStation', true); // Replace with the actual endpoint
-        currentInfoXhr.onreadystatechange = function () {
-            if (currentInfoXhr.readyState === XMLHttpRequest.DONE) {
-                if (currentInfoXhr.status === 200) {
-                    const infoData = JSON.parse(currentInfoXhr.responseText);
-                    const trackElement = document.getElementById('stationName');
-                    trackElement.textContent = `${infoData.name}`;
-                } else {
-                    console.log('Failed to fetch current info.');
-                }
-            }
-        };
-        currentInfoXhr.send();
-    }
-
-    function setPlayButtonState() {
-        const statusXhr = new XMLHttpRequest();
-        statusXhr.open('GET', '/api/status', true);
-        statusXhr.onreadystatechange = function () {
-            if (statusXhr.readyState === XMLHttpRequest.DONE) {
-                if (statusXhr.status === 200) {
-                    playPauseIcon.classList.toggle('ph-hourglass');
-                    const status = statusXhr.responseText;
-
-                    // set play/pause button icon and background color depending on player state
-                    if (status === 'playing') {
-                        playPauseButton.dataset.playing = true;
-                        playPauseIcon.classList.remove('ph-play');
-                        playPauseIcon.classList.add('ph-pause');
-                        playPauseButton.classList.replace('hover:bg-green-300', 'hover:bg-red-300');
-                    } else {
-                        playPauseButton.dataset.playing = false;
-                        playPauseIcon.classList.remove('ph-pause');
-                        playPauseIcon.classList.add('ph-play');
-                        playPauseButton.classList.replace('hover:bg-red-300', 'hover:bg-green-300');
-                    }
-                } else {
-                    console.log('Failed to fetch status information.');
-                }
-            }
-        };
-        statusXhr.send();
-    }
-
-    // Periodically check and update the button state
-    setInterval(setPlayButtonState, 5000);
-    setInterval(fetchTrackInfo, 5000);
-    setInterval(fetchStationInfo, 5000);
+  // Fetch now playing information and update every 5 seconds
+  setInterval(nowPlaying, 5000);
 </script>
 
 </body>

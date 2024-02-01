@@ -7,7 +7,6 @@ from utils.player import Player
 
 app = Flask(__name__)
 player = Player()
-player._set_station(random.choice(player.stations).url)
 
 @app.route('/')
 def index():
@@ -46,15 +45,29 @@ def stations():
     payload['hash'] = player.hash
     return jsonify(payload)
 
+@app.route('/api/radio/station_id', methods=['GET'])
+def station_id():
+    try:
+        data = request.json
+        hash_ = data['hash']
+    except KeyError:
+        return 'error', 400
+    
+    if hash_ != player.hash:
+        return 'error', 428
+
+    id = player.stations.index(player.current_station)
+    return jsonify(id)
+
 @app.route('/api/radio/station/<int:id>', methods=['PUT'])
 def set_station(id: int):
     try:
         data = request.json
-        hash = data['hash']
+        hash_ = data['hash']
     except KeyError:
         return 'error', 400
 
-    if hash != player.hash:
+    if hash_ != player.hash:
         return 'error', 428
 
     player.play_station_with_id(id)
@@ -74,6 +87,10 @@ def create_station():
     #    return 'error', 400
     #
     #return
+
+@app.route('/api/radio/now', methods=['GET'])
+def now():
+    return jsonify(player.now_playing())
 
 @app.route('/api/volume', methods=['PUT'])
 def set_volume():
