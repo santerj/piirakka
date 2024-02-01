@@ -21,8 +21,8 @@
       background-color: #6a6a6a; /* Muted dark gray */
       color: #f0f0f0; /* Muted light gray text */
       border: none;
-      padding: 10px 20px;
-      font-size: 16px;
+      padding: 20px 40px;
+      font-size: 24px;
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
@@ -36,29 +36,38 @@
     }
 
     #stationDropdown {
-      margin-top: 20px;
-      padding: 8px;
-      font-size: 14px;
+      margin-top: 30px;
+      padding: 12px;
+      font-size: 11px;
     }
 
     #nowPlayingInfo {
-      margin-top: 20px;
+      margin-top: 30px;
       text-align: center;
-      font-size: 22px;
+      font-size: 32px;
     }
 
     #recentlyPlayed {
-      margin-top: 20px;
+      margin-top: 30px;
       text-align: center;
-      font-size: 14px;
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 80px;
+      margin-top: 50px;
+      margin-bottom: 50px;
     }
 
     h3 {
-      font-size: 14px;
-      margin-bottom: 5px;
+      font-size: 18px;
+      margin-top: 5px;
+      margin-bottom: 10px;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link href='https://fonts.googleapis.com/css?family=VT323' rel='stylesheet'>
 </head>
 <body>
 
@@ -66,7 +75,9 @@
 <h1>piirakka</h1>
 
 <!-- Play/Pause Button -->
-<button id="playPauseButton" onclick="togglePlayback()">Play</button>
+<button id="playPauseButton" onclick="togglePlayback()">
+    <i id="playPauseIndicator" class="ph ph-play"></i>
+</button>
 
 <!-- Radio Station Selection Dropdown -->
 <select id="stationDropdown" onchange="changeStation()">
@@ -125,6 +136,7 @@
     axios.post(apiUrl + '/api/radio/toggle')
       .then(response => {
         console.log('Toggle response:', response.data);
+        nowPlaying();
       })
       .catch(error => {
         console.error('Error toggling playback:', error);
@@ -183,12 +195,13 @@
 
   // Function to update the play/pause button based on the player status
   function updatePlayPauseButton(status) {
-    const playPauseButton = document.getElementById('playPauseButton');
-    playPauseButton.classList.remove('playing', 'paused');  // Remove existing classes
+    // TODO: rename Button -> Indicator
+    const playPauseButton = document.getElementById('playPauseIndicator');
+    playPauseButton.classList.remove('ph-pause', 'ph-play');  // Remove existing classes
     playPauseButton.classList.add(status);  // Add the new status class
 
-    // Update the text on the button
-    playPauseButton.innerText = (status === 'playing') ? 'Pause' : 'Play';
+    // update icon
+    playPauseButton.classList.add((status === 'playing') ? 'ph-pause' : 'ph-play');
   }
 
   // Function to display recently played tracks
@@ -202,9 +215,10 @@
 
   // Initial fetch of stations when the page loads
   fetchStations();
+  nowPlaying();
 
-  // Fetch now playing information and update every 5 seconds
-  setInterval(nowPlaying, 5000);
+  // Fetch now playing information and update every n seconds
+  setInterval(nowPlaying, 2500);
 </script>
 
 </body>
