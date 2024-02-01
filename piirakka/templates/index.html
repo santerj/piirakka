@@ -12,61 +12,57 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start; /* Changed from 'center' to 'flex-start' */
       height: 100vh;
       margin: 0;
     }
 
-    #playPauseButton {
-      background-color: #6a6a6a; /* Muted dark gray */
-      color: #f0f0f0; /* Muted light gray text */
-      border: none;
-      padding: 20px 40px;
-      font-size: 24px;
+    #playPauseText {
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      font-size: 30px;
+      text-decoration: underline;
+      transition: color 0.3s ease;
     }
 
-    #playPauseButton.playing {
-      background-color: #389583; /* Muted teal green */
+    #playPauseText.playing {
+      color: #389583; /* Muted teal green */
     }
 
-    #playPauseButton.paused {
-      background-color: #b25a5a; /* Muted coral red */
+    #playPauseText.paused {
+      color: #b25a5a; /* Muted coral red */
     }
 
     #stationDropdown {
-      margin-top: 30px;
-      padding: 12px;
-      font-size: 11px;
+      margin-top: 20px;
+      padding: 8px;
+      font-size: 10px;
     }
 
     #nowPlayingInfo {
-      margin-top: 30px;
+      margin-top: 20px;
       text-align: center;
       font-size: 32px;
     }
 
     #recentlyPlayed {
-      margin-top: 30px;
+      margin-top: 20px;
       text-align: center;
       font-size: 18px;
     }
 
     h1 {
       font-size: 80px;
-      margin-top: 50px;
-      margin-bottom: 50px;
+      margin-top: 14px;
+      margin-bottom: 36px;
     }
 
     h3 {
       font-size: 18px;
-      margin-top: 5px;
+      margin-top: 10px;
       margin-bottom: 10px;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link href='https://fonts.googleapis.com/css?family=VT323' rel='stylesheet'>
 </head>
 <body>
@@ -74,10 +70,8 @@
 <!-- title -->
 <h1>piirakka</h1>
 
-<!-- Play/Pause Button -->
-<button id="playPauseButton" onclick="togglePlayback()">
-    <i id="playPauseIndicator" class="ph ph-play"></i>
-</button>
+<!-- Play/Pause Text -->
+<div id="playPauseText" onclick="togglePlayback()">Play</div>
 
 <!-- Radio Station Selection Dropdown -->
 <select id="stationDropdown" onchange="changeStation()">
@@ -97,8 +91,8 @@
   let lastPlayedTrack = null;  // Variable to store the last played track
   let recentlyPlayed = [];  // Array to store recently played tracks
 
-  // Play/Pause Button
-  const playPauseButton = document.getElementById('playPauseButton');
+  // Play/Pause Text
+  const playPauseText = document.getElementById('playPauseText');
 
   // Radio Station Selection Dropdown
   const stationDropdown = document.getElementById('stationDropdown');
@@ -171,8 +165,8 @@
         // Display Now Playing Information in the HTML element
         nowPlayingInfoElement.innerHTML = nowPlayingInfoHTML;
 
-        // Update the play/pause button based on the player status
-        updatePlayPauseButton(response.data.status);
+        // Update the play/pause text based on the player status
+        updatePlayPauseText(response.data.status);
 
         // Check if the current track is different from the last played track
         if (!lastPlayedTrack || lastPlayedTrack.icy_title !== response.data.icy_title) {
@@ -193,15 +187,14 @@
       });
   }
 
-  // Function to update the play/pause button based on the player status
-  function updatePlayPauseButton(status) {
-    // TODO: rename Button -> Indicator
-    const playPauseButton = document.getElementById('playPauseIndicator');
-    playPauseButton.classList.remove('ph-pause', 'ph-play');  // Remove existing classes
-    playPauseButton.classList.add(status);  // Add the new status class
+  // Function to update the play/pause text based on the player status
+  function updatePlayPauseText(status) {
+    const playPauseText = document.getElementById('playPauseText');
+    playPauseText.classList.remove('playing', 'paused');  // Remove existing classes
+    playPauseText.classList.add(status);  // Add the new status class
 
-    // update icon
-    playPauseButton.classList.add((status === 'playing') ? 'ph-pause' : 'ph-play');
+    // Update the text content
+    playPauseText.innerText = (status === 'playing') ? 'Pause' : 'Play';
   }
 
   // Function to display recently played tracks
