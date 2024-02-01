@@ -1,13 +1,13 @@
 import random
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 from utils.player import Player
 
 
 app = Flask(__name__)
 player = Player()
-player.set_station("https://api.somafm.com/indiepop.pls")
+player._set_station(random.choice(player.stations).url)
 
 @app.route('/')
 def index():
@@ -33,6 +33,47 @@ def toggle():
         return 'success', 200
     else:
         return 'error', 500
+    
+@app.route('/api/radio/stations', methods=['GET'])
+def stations():
+    payload = {}
+    stations = player.get_stations()
+    for i, station in enumerate(stations):
+        payload[str(i)] = {
+            'url': station.url,
+            'description': station.description
+        }
+    payload['hash'] = player.hash
+    return jsonify(payload)
+
+@app.route('/api/radio/station/<int:id>', methods=['PUT'])
+def set_station(id: int):
+    try:
+        data = request.json
+        hash = data['hash']
+    except KeyError:
+        return 'error', 400
+
+    if hash != player.hash:
+        return 'error', 428
+
+    player.play_station_with_id(id)
+    return 'success', 200
+
+@app.route('/api/radio/station', methods=['POST'])
+def create_station():
+    # TODO: this
+    pass
+    #try:
+    #    data = request.json
+    #    url = data['url']
+    #    desc = data['description']
+    #    # TODO: sanitize input
+    #    # TODO: prepare to be INSERTed!
+    #except KeyError:
+    #    return 'error', 400
+    #
+    #return
 
 @app.route('/api/volume', methods=['PUT'])
 def set_volume():
