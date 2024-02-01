@@ -1,5 +1,3 @@
-import random
-
 from flask import Flask, render_template, request, jsonify
 
 from utils.player import Player
@@ -54,7 +52,7 @@ def station_id():
         return 'error', 400
     
     if hash_ != player.hash:
-        return 'error', 428
+        return 'error', 412
 
     id = player.stations.index(player.current_station)
     return jsonify(id)
@@ -68,7 +66,7 @@ def set_station(id: int):
         return 'error', 400
 
     if hash_ != player.hash:
-        return 'error', 428
+        return 'error', 412
 
     player.play_station_with_id(id)
     return 'success', 200

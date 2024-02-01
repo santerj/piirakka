@@ -85,8 +85,13 @@
 <!-- Display Recently Played Tracks -->
 <div id="recentlyPlayed"></div>
 
+<dialog id="errorDialog">
+  <p id="errorMessage"></p>
+  <button id="reloadButton">Reload</button>
+  <button id="cancelButton">Cancel</button>
+</dialog>
+
 <script>
-  const apiUrl = 'http://localhost:8000';  // Assuming your Flask app is running on port 8000
   let globalHash;  // Global variable to store the hash
   let lastPlayedTrack = null;  // Variable to store the last played track
   let recentlyPlayed = [];  // Array to store recently played tracks
@@ -103,9 +108,18 @@
   // Display Recently Played Tracks Element
   const recentlyPlayedElement = document.getElementById('recentlyPlayed');
 
+  // Event listener for dialog buttons
+  document.getElementById('reloadButton').addEventListener('click', () => {
+    window.location.reload();
+  });
+
+  document.getElementById('cancelButton').addEventListener('click', () => {
+    errorDialog.close();
+  });
+
   // Function to fetch radio stations and populate the dropdown
   function fetchStations() {
-    axios.get(apiUrl + '/api/radio/stations')
+    axios.get('/api/radio/stations')
       .then(response => {
         const data = response.data;
         globalHash = data.hash;  // Store the hash globally
@@ -127,7 +141,7 @@
 
   // Function to handle play/pause toggle
   function togglePlayback() {
-    axios.post(apiUrl + '/api/radio/toggle')
+    axios.post('/api/radio/toggle')
       .then(response => {
         console.log('Toggle response:', response.data);
         nowPlaying();
@@ -141,18 +155,23 @@
   function changeStation() {
     const selectedStationIndex = stationDropdown.value;
     
-    axios.put(apiUrl + `/api/radio/station/${selectedStationIndex}`, { hash: globalHash })
+    axios.put(`/api/radio/station/${selectedStationIndex}`, { hash: globalHash })
       .then(response => {
         console.log('Station change response:', response.data);
       })
       .catch(error => {
         console.error('Error changing station:', error);
+        if (error.response.status === 412) {
+          const errorMessage = document.getElementById('errorMessage');
+          errorMessage.textContent = 'Stations have been updated! Reload page?';
+          errorDialog.showModal();
+        }
       });
   }
 
    // Function to get now playing track info
   function nowPlaying() {
-    axios.get(apiUrl + '/api/radio/now')
+    axios.get('/api/radio/now')
       .then(response => {
         console.log(response.data);
 
