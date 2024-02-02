@@ -26,7 +26,7 @@ class Player:
         self.update_stations()
         self.current_station = self.stations[0]
         self._set_station(self.current_station.url)
-        self.play() # start playback upon startup
+        self.set_volume(2)
 
     def __del__(self) -> None:
         self.proc.terminate()

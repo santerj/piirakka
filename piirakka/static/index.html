@@ -124,7 +124,7 @@
   </dialog>
 
   <script>
-    let globalHash;
+    let reloadToken;
     let lastPlayedTrack = null;
     let recentlyPlayed = [];
 
@@ -142,15 +142,25 @@
     document.getElementById('cancelButton').addEventListener('click', () => {
       errorDialog.close();
     });
+    
+    function fetchReloadToken() {
+      axios.get('/api/token')
+        .then(response => {
+          console.log(response.data);
+          const token = response.data.token;
+          reloadToken = token;
+        })
+        .catch(error => {
+          console.error('Error fetching token:', error);
+        });
+    }
 
     function fetchStations() {
       axios.get('/api/radio/stations')
         .then(response => {
           const data = response.data;
-          globalHash = data.hash;
-
-          const stations = Object.values(data).slice(0, -1);
-
+          //const stations = Object.values(data).slice(0, -1);
+          const stations = Object.values(data)
           stations.forEach((station, index) => {
             const option = document.createElement('option');
             option.value = index;
@@ -177,7 +187,7 @@
     function changeStation() {
       const selectedStationIndex = stationDropdown.value;
 
-      axios.put(`/api/radio/station/${selectedStationIndex}`, { hash: globalHash })
+      axios.put(`/api/radio/station/${selectedStationIndex}`, { }, { headers: {'Reload-Token': reloadToken} })
         .then(response => {
           console.log('Station change response:', response.data);
         })
@@ -242,7 +252,7 @@
     }
 
     function presetChannel() {
-      axios.post('/api/radio/station_id', { hash: globalHash }, {'Content-type': 'application/json'})
+      axios.get('/api/radio/station_id', { headers: {'Reload-Token': reloadToken} })
         .then(response => {
           const id = response.data;
           stationDropdown[id].selected = "selected";
@@ -252,6 +262,7 @@
         });
     }
 
+    fetchReloadToken();
     fetchStations();
     nowPlaying();
 
