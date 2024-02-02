@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify
+from functools import wraps
+
+from flask import Flask, request, jsonify, render_template
 
 from utils.player import Player
 
@@ -13,6 +15,27 @@ def index():
 @app.route('/favicon.ico')
 def favicon():
     return app.send_static_file('favicon.ico')
+
+@app.route('/index2.html')
+def index2():
+    return render_template('index.html')
+
+def require_token(func):
+    @wraps(func)
+    # middleware to check for Reload-Token validity
+    def wrapper(*args, **kwargs):
+        header_value = request.headers.get('Reload-Token')
+        if header_value != player.hash:
+            return jsonify({'error': 'stale Reload-Token'}), 412
+        else:
+            # Call the original route function if the header is correct
+            return func(*args, **kwargs)
+
+    return wrapper
+
+@app.route('/api/token', methods=['GET'])
+def get_token():
+    return jsonify({'token': str(player.hash)})
 
 @app.route('/api/radio/play', methods=['POST'])
 def play():
@@ -44,34 +67,17 @@ def stations():
             'url': station.url,
             'description': station.description
         }
-    payload['hash'] = player.hash
     return jsonify(payload)
 
-@app.route('/api/radio/station_id', methods=['POST'])
+@app.route('/api/radio/station_id', methods=['GET'])
+@require_token
 def station_id():
-    try:
-        data = request.json
-        hash_ = data['hash']
-    except KeyError:
-        return 'error', 400
-    
-    if hash_ != player.hash:
-        return 'error', 412
-
     id = player.stations.index(player.current_station)
     return jsonify(id)
 
 @app.route('/api/radio/station/<int:id>', methods=['PUT'])
+@require_token
 def set_station(id: int):
-    try:
-        data = request.json
-        hash_ = data['hash']
-    except KeyError:
-        return 'error', 400
-
-    if hash_ != player.hash:
-        return 'error', 412
-
     player.play_station_with_id(id)
     return 'success', 200
 
