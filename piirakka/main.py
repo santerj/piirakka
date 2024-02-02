@@ -10,17 +10,13 @@ from utils.player import Player
 player = Player()
 app = Flask(__name__, static_folder='static')
 
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
-
 @app.route('/favicon.ico')
 def favicon():
     return app.send_static_file('favicon.ico')
 
-@app.route('/index.html')
+@app.route('/')
 # temporarily here until templating is finished
-def index2():
+def index():
     return render_template('index.html', reload_token=player.hash, stations=player.stations)
 
 def require_token(func):
