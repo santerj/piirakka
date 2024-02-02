@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <title>piirakka</title>
+  <style>
+    body {
+      background-color: #f0f0f0;
+      color: #333;
+      font-family: 'VT323', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      position: relative; /* Added to provide a reference for absolute positioning */
+    }
+
+    #playPauseText {
+      cursor: pointer;
+      font-size: 30px;
+      text-decoration: underline;
+      transition: color 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    #playPauseText.playing {
+      color: #389583;
+    }
+
+    #playPauseText.paused {
+      color: #b25a5a;
+    }
+
+    #hamburgerMenu {
+      cursor: pointer;
+      font-size: 30px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+    }
+
+    #stationsTitle {
+      font-size: 24px;
+      margin-top: 10px; /* Adjust as needed */
+      display: none; /* Initially hidden */
+      position: absolute;
+      top: 50px; /* Adjust as needed */
+      left: 10px; /* Adjust as needed */
+    }
+
+    #stationDropdown {
+      position: absolute;
+      top: 90px; /* Adjust as needed */
+      left: 10px;
+      padding: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    #nowPlayingInfo {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 32px;
+    }
+
+    #recentlyPlayed {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 80px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+
+    h3 {
+      font-size: 18px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=VT323' rel='stylesheet'>
+</head>
+
+<body>
+
+  <!-- Hamburger Menu -->
+  <div id="hamburgerMenu" onclick="toggleDropdown()">☰</div>
+
+  <!-- Title for Stations -->
+  <div id="stationsTitle">stations</div>
+
+  <!-- title -->
+  <h1>piirakka</h1>
+
+  <!-- Play/Pause Text -->
+  <div id="playPauseText" onclick="togglePlayback()">Play</div>
+
+  <!-- Radio Station Selection Dropdown -->
+  <select id="stationDropdown" onchange="changeStation()">
+    <!-- Options will be dynamically populated using JavaScript -->
+  </select>
+
+  <!-- Display Now Playing Information -->
+  <h3>now listening to:</h3>
+  <div id="nowPlayingInfo"></div>
+
+  <!-- Display Recently Played Tracks -->
+  <div id="recentlyPlayed"></div>
+
+  <dialog id="errorDialog">
+    <p id="errorMessage"></p>
+    <button id="reloadButton">Reload</button>
+    <button id="cancelButton">Cancel</button>
+  </dialog>
+
+  <script>
+    let globalHash;
+    let lastPlayedTrack = null;
+    let recentlyPlayed = [];
+
+    const playPauseText = document.getElementById('playPauseText');
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const stationsTitle = document.getElementById('stationsTitle');
+    const stationDropdown = document.getElementById('stationDropdown');
+    const nowPlayingInfoElement = document.getElementById('nowPlayingInfo');
+    const recentlyPlayedElement = document.getElementById('recentlyPlayed');
+
+    document.getElementById('reloadButton').addEventListener('click', () => {
+      window.location.reload();
+    });
+
+    document.getElementById('cancelButton').addEventListener('click', () => {
+      errorDialog.close();
+    });
+
+    function fetchStations() {
+      axios.get('/api/radio/stations')
+        .then(response => {
+          const data = response.data;
+          globalHash = data.hash;
+
+          const stations = Object.values(data).slice(0, -1);
+
+          stations.forEach((station, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.text = station.description;
+            stationDropdown.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching stations:', error);
+        });
+    }
+
+    function togglePlayback() {
+      axios.post('/api/radio/toggle')
+        .then(response => {
+          console.log('Toggle response:', response.data);
+          nowPlaying();
+        })
+        .catch(error => {
+          console.error('Error toggling playback:', error);
+        });
+    }
+
+    function changeStation() {
+      const selectedStationIndex = stationDropdown.value;
+
+      axios.put(`/api/radio/station/${selectedStationIndex}`, { hash: globalHash })
+        .then(response => {
+          console.log('Station change response:', response.data);
+        })
+        .catch(error => {
+          console.error('Error changing station:', error);
+          if (error.response.status === 412) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = 'Stations have been updated! Reload page?';
+            errorDialog.showModal();
+          }
+        });
+    }
+
+    function toggleDropdown() {
+      const isDropdownVisible = (stationDropdown.style.display === 'block');
+      stationDropdown.style.display = (isDropdownVisible) ? 'none' : 'block';
+      stationsTitle.style.display = (isDropdownVisible) ? 'none' : 'block';
+    }
+
+    function nowPlaying() {
+      axios.get('/api/radio/now')
+        .then(response => {
+
+          const nowPlayingInfoHTML = `
+            <div>
+              <span title="Genre: ${response.data.icy_genre}">${response.data.icy_name}</span>
+            </div>
+          `;
+
+          nowPlayingInfoElement.innerHTML = nowPlayingInfoHTML;
+
+          updatePlayPauseText(response.data.status);
+
+          if (!lastPlayedTrack || lastPlayedTrack.icy_title !== response.data.icy_title) {
+            recentlyPlayed.unshift(response.data);
+            recentlyPlayed = recentlyPlayed.slice(0, 10);
+
+            lastPlayedTrack = response.data;
+
+            displayRecentlyPlayed();
+          }
+          presetChannel();
+        })
+        .catch(error => {
+          console.error('Error getting playback data:', error);
+        });
+    }
+
+    function updatePlayPauseText(status) {
+      playPauseText.classList.remove('playing', 'paused');
+      playPauseText.classList.add(status);
+
+      playPauseText.innerText = (status === 'playing') ? 'pause' : 'play';
+    }
+
+    function displayRecentlyPlayed() {
+      let recentlyPlayedHTML = '<h3>recently played:</h3>';
+      recentlyPlayed.forEach(track => {
+        recentlyPlayedHTML += `<p>${track.icy_title}</p>`;
+      });
+      recentlyPlayedElement.innerHTML = recentlyPlayedHTML;
+    }
+
+    function presetChannel() {
+      axios.post('/api/radio/station_id', { hash: globalHash }, {'Content-type': 'application/json'})
+        .then(response => {
+          const id = response.data;
+          stationDropdown[id].selected = "selected";
+        })
+        .catch(error => {
+          console.error('Error fetching stations:', error);
+        });
+    }
+
+    fetchStations();
+    nowPlaying();
+
+    setInterval(nowPlaying, 2500);
+  </script>
+
+</body>
+
+</html>
