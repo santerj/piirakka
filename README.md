@@ -1,4 +1,5 @@
-# aple-pie
+# piirakka
 
-https://www.youtube.com/shorts/t9GhgDXVu3I
+README not found!
 
+    gunicorn -w 1 -b 0.0.0.0:8000 main:app
