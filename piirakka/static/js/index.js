@@ -29,24 +29,6 @@ function fetchReloadToken() {
     });
 }
 
-function fetchStations() {
-  axios.get('/api/radio/stations')
-    .then(response => {
-      const data = response.data;
-      //const stations = Object.values(data).slice(0, -1);
-      const stations = Object.values(data)
-      stations.forEach((station, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.text = station.description;
-        stationDropdown.appendChild(option);
-      });
-    })
-    .catch(error => {
-      console.error('Error fetching stations:', error);
-    });
-}
-
 function togglePlayback() {
   axios.post('/api/radio/toggle')
     .then(response => {
