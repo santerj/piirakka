@@ -6,4 +6,5 @@
 
 README not found!
 
-    gunicorn -w 1 -b 0.0.0.0:8000 main:app
+    gunicorn -w 1 -b 0.0.0.0:8000 main:app   # production
+    flask --app main.py --debug run -p 8000  # debug
