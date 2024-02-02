@@ -1,7 +1,10 @@
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<link href='https://fonts.googleapis.com/css?family=VT323' rel='stylesheet'>
+<!DOCTYPE html>
+<html lang="en">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<head>
+    <title>piirakka</title>
+    {% include "base/head.html" %}
+</head>
 
 <body>
 
@@ -40,4 +43,7 @@
 
 <body>
 
-<script src="{{url_for('static', filename='js/index.js')}}"></script>
+    <script>const reloadToken = "{{ reload_token }}"; console.log(reloadToken); </script>
+    <script src="{{url_for('static', filename='js/index.js')}}"></script>
+
+</html>

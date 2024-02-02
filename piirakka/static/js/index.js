@@ -1,4 +1,3 @@
-let reloadToken;
 let lastPlayedTrack = null;
 let recentlyPlayed = [];
 
@@ -16,18 +15,6 @@ document.getElementById('reloadButton').addEventListener('click', () => {
 document.getElementById('cancelButton').addEventListener('click', () => {
   errorDialog.close();
 });
-
-function fetchReloadToken() {
-  axios.get('/api/token')
-    .then(response => {
-      console.log(response.data);
-      const token = response.data.token;
-      reloadToken = token;
-    })
-    .catch(error => {
-      console.error('Error fetching token:', error);
-    });
-}
 
 function togglePlayback() {
   axios.post('/api/radio/toggle')
@@ -118,8 +105,6 @@ function presetChannel() {
     });
 }
 
-fetchReloadToken();
-fetchStations();
 nowPlaying();
 
 setInterval(nowPlaying, 2500);

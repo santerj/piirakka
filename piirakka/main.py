@@ -1,3 +1,5 @@
+import time
+
 from functools import wraps
 
 from flask import Flask, request, jsonify, render_template
@@ -5,8 +7,8 @@ from flask import Flask, request, jsonify, render_template
 from utils.player import Player
 
 
-app = Flask(__name__, static_folder='static')
 player = Player()
+app = Flask(__name__, static_folder='static')
 
 @app.route('/')
 def index():
@@ -19,13 +21,14 @@ def favicon():
 @app.route('/index.html')
 # temporarily here until templating is finished
 def index2():
-    return render_template('index.html', stations=player.stations)
+    return render_template('index.html', reload_token=player.hash, stations=player.stations)
 
 def require_token(func):
     @wraps(func)
     # middleware to check for Reload-Token validity
     def wrapper(*args, **kwargs):
         header_value = request.headers.get('Reload-Token')
+        #print('got header', header_value, 'actual value', player.hash)
         if header_value != player.hash:
             return jsonify({'error': 'stale Reload-Token'}), 412
         else:
