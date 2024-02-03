@@ -23,13 +23,21 @@
     z-index: 2;
 }
 
+#sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0; /* Extend to the bottom of the viewport */
+    background-color: #f0f0f0;
+    padding: 10px;
+    display: none;
+    width: 200px;
+}
+  
 #stationsTitle {
-    font-size: 24px;
-    margin-top: 10px; /* Adjust as needed */
-    display: none; /* Initially hidden */
-    position: absolute;
-    top: 50px; /* Adjust as needed */
-    left: 10px; /* Adjust as needed */
+    font-size: 20px;
+    margin-bottom: 5px;
+    margin-top: 40px;
 }
 
 #stationDropdown {
@@ -38,9 +46,9 @@
     left: 10px;
     padding: 8px;
     font-size: 14px;
-    display: none;
+    max-width: 200px;
 }
-
+  
 #nowPlayingInfo {
     margin-top: 20px;
     text-align: center;
@@ -63,4 +71,11 @@ h3 {
     font-size: 18px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 }

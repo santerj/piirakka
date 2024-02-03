@@ -3,8 +3,7 @@ let recentlyPlayed = [];
 
 const playPauseText = document.getElementById('playPauseText');
 const hamburgerMenu = document.getElementById('hamburgerMenu');
-const stationsTitle = document.getElementById('stationsTitle');
-const stationDropdown = document.getElementById('stationDropdown');
+const sidebar = document.getElementById('sidebar');
 const nowPlayingInfoElement = document.getElementById('nowPlayingInfo');
 const recentlyPlayedElement = document.getElementById('recentlyPlayed');
 
@@ -15,6 +14,11 @@ document.getElementById('reloadButton').addEventListener('click', () => {
 document.getElementById('cancelButton').addEventListener('click', () => {
   errorDialog.close();
 });
+
+function toggleSidebar() {
+  const sidebarVisibility = (sidebar.style.display === 'block');
+  sidebar.style.display = (sidebarVisibility) ? 'none' : 'block';
+}
 
 function togglePlayback() {
   axios.post('/api/radio/toggle')
@@ -42,12 +46,6 @@ function changeStation() {
         errorDialog.showModal();
       }
     });
-}
-
-function toggleDropdown() {
-  const isDropdownVisible = (stationDropdown.style.display === 'block');
-  stationDropdown.style.display = (isDropdownVisible) ? 'none' : 'block';
-  stationsTitle.style.display = (isDropdownVisible) ? 'none' : 'block';
 }
 
 function nowPlaying() {

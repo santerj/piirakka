@@ -9,38 +9,43 @@
 
 <body>
 
-    <!-- Hamburger Menu -->
-    <div id="hamburgerMenu" onclick="toggleDropdown()">☰</div>
-  
-    <!-- Title for Stations -->
-    <div id="stationsTitle">stations</div>
-  
-    <!-- title -->
-    <h1>piirakka</h1>
-  
-    <!-- Play/Pause Text -->
-    <div id="playPauseText" onclick="togglePlayback()">Play</div>
-  
-    <!-- Radio Station Selection Dropdown -->
-    <select id="stationDropdown" onchange="changeStation()">
-      {% for station in stations %}
-        
-        <option value="{{ loop.index0 }}">{{ station.description }}</option>
-      {% endfor %}
-    </select>
-  
-    <!-- Display Now Playing Information -->
-    <h3>now listening to:</h3>
-    <div id="nowPlayingInfo"></div>
-  
-    <!-- Display Recently Played Tracks -->
-    <div id="recentlyPlayed"></div>
-  
-    <dialog id="errorDialog">
-      <p id="errorMessage"></p>
-      <button id="reloadButton">Reload</button>
-      <button id="cancelButton">Cancel</button>
-    </dialog>
+    <header>
+        <!-- Hamburger Menu -->
+        <div id="hamburgerMenu" onclick="toggleSidebar()">☰</div>
+        <nav id="sidebar">
+            <!-- Title for Stations -->
+            <div id="stationsTitle">select station:</div>
+            <!-- Radio Station Selection Dropdown -->
+            <select id="stationDropdown" onchange="changeStation()">
+                {% for station in stations %}
+                <option value="{{ loop.index0 }}">{{ station.description }}</option>
+                {% endfor %}
+            </select>
+        </nav>
+    </header>
+
+
+    <main>
+        <!-- title -->
+        <h1>piirakka</h1>
+    
+        <!-- Play/Pause Text -->
+        <div id="playPauseText" onclick="togglePlayback()">Play</div>
+    
+        <!-- Display Now Playing Information -->
+        <h3>now listening to:</h3>
+        <div id="nowPlayingInfo"></div>
+    
+        <!-- Display Recently Played Tracks -->
+        <div id="recentlyPlayed"></div>
+    
+        <dialog id="errorDialog">
+        <p id="errorMessage"></p>
+        <button id="reloadButton">Reload</button>
+        <button id="cancelButton">Cancel</button>
+        </dialog>
+
+    </main>
 
 <body>
 
