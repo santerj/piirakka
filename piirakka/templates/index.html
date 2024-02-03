@@ -11,15 +11,17 @@
 
     <header>
         <!-- Hamburger Menu -->
-        <div id="hamburgerMenu" onclick="toggleDropdown()">☰</div>
-        <!-- Title for Stations -->
-        <div id="stationsTitle">select station:</div>
-        <!-- Radio Station Selection Dropdown -->
-        <select id="stationDropdown" onchange="changeStation()">
-            {% for station in stations %}
-            <option value="{{ loop.index0 }}">{{ station.description }}</option>
-            {% endfor %}
-        </select>
+        <div id="hamburgerMenu" onclick="toggleSidebar()">☰</div>
+        <nav id="sidebar">
+            <!-- Title for Stations -->
+            <div id="stationsTitle">select station:</div>
+            <!-- Radio Station Selection Dropdown -->
+            <select id="stationDropdown" onchange="changeStation()">
+                {% for station in stations %}
+                <option value="{{ loop.index0 }}">{{ station.description }}</option>
+                {% endfor %}
+            </select>
+        </nav>
     </header>
 
 
