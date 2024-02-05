@@ -4,29 +4,37 @@
 <head>
     <title>stations | piirakka</title>
     {% include "base/head.html" %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stations.css') }}">
 </head>
 
 <body>
 
+    <header>
+        <a href="/">← back to index</a>
+    </header>
+
     <main>
         <!-- Form for creating a new station -->
         <form id="createStationForm" onsubmit="createStation(event)">
-            <label for="newStationUrl">URL:</label>
+            <label for="newStationUrl">url:</label>
             <input type="text" id="newStationUrl" name="url" required>
 
-            <label for="newStationName">Name:</label>
+            <label for="newStationName">name:</label>
             <input type="text" id="newStationName" name="name" required>
 
-            <button type="submit">Create Station</button>
+            <div class="button-container">
+                <button type="submit">apply</button>
+            </div>
         </form>
+
+        <h2>stations</h2>
 
         <!-- Table for displaying stations -->
         <table>
             <thead>
                 <tr>
-                    <th>URL</th>
-                    <th>Name</th>
+                    <th>url</th>
+                    <th>name</th>
                     <th></th> <!-- Empty column for buttons -->
                 </tr>
             </thead>
