@@ -1,17 +1,21 @@
 #playPauseText {
     cursor: pointer;
-    font-size: 30px;
-    text-decoration: underline;
+    font-size: 34px;
+    text-decoration: none;
     transition: color 0.3s ease;
     margin-bottom: 20px;
 }
 
 #playPauseText.playing {
-    color: #389583;
+    color: green;
 }
 
 #playPauseText.paused {
-    color: #b25a5a;
+    color: red;
+}
+
+#playPauseText:hover {
+    text-decoration: underline;
 }
 
 #hamburgerMenu {
@@ -28,12 +32,12 @@
     left: 0;
     top: 0;
     bottom: 0; /* Extend to the bottom of the viewport */
-    background-color: #f0f0f0;
+    background-color: #f6f6f6;
     padding: 10px;
     display: none;
     width: 200px;
 }
-  
+
 #stationsTitle {
     font-size: 20px;
     margin-bottom: 5px;
@@ -47,6 +51,21 @@
     padding: 8px;
     font-size: 14px;
     max-width: 200px;
+    min-width: 200px;
+}
+
+#stationsLink {
+    font-size: 20px;
+    margin-top: 70px;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
   
 #nowPlayingInfo {

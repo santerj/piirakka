@@ -148,6 +148,17 @@ class Player:
             print("error", msg)
             return False, msg
 
+    def delete_station(self, index):
+        # TODO: handle error if index out of range
+        # TODO: reset current station if deleted stations is currently playing
+        target = self.stations[index]
+        conn = sqlite3.connect(self.database)
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM stations WHERE url='{target.url}' AND description='{target.description}'")
+        conn.commit()
+        conn.close()
+        self.update_stations()
+
     def update_stations(self) -> None:
         if self.current_station:
             current_station_index = self.stations.index(self.current_station)
