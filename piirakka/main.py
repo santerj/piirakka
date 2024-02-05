@@ -102,8 +102,8 @@ def set_or_delete_station(id: int):
         player.play_station_with_id(id)
         return 'success', 200
     elif request.method == 'DELETE':
-        # TODO: implement
-        #player.delete_station(id)
+        # remove selected station from db
+        player.delete_station(id)
         return 'accepted', 202
 
 @app.route('/api/radio/station', methods=['POST'])
