@@ -1,7 +1,6 @@
 # piirakka
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/b0ad68d6679a99187c92/maintainability)](https://codeclimate.com/github/santerj/piirakka/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/b0ad68d6679a99187c92/test_coverage)](https://codeclimate.com/github/santerj/piirakka/test_coverage)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/846ea04459dc4aaf8a20ee15d9667fca)](https://app.codacy.com/gh/santerj/piirakka/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 
 README not found!
