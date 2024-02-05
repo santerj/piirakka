@@ -6,6 +6,7 @@ import time
 import requests
 import validators
 import html
+import os
 
 VOLUME_MAX = 130
 
@@ -63,9 +64,9 @@ class Station:
         conn.close()
 
 class Player:
-    def __init__(self, mpv, socket, database) -> None:
-        self.use_mpv = mpv
-        self.socket = socket
+    def __init__(self, use_mpv, socket_name, database) -> None:
+        self.use_mpv = use_mpv
+        self.socket = socket_name
         self.database = database
         
         self.stations = []
@@ -73,8 +74,14 @@ class Player:
         self.playing = True
         self._init_db()
 
-        if self.use_mpv:
+        if self.use_mpv is True:
             self.proc = self._init_mpv()    # mpv process
+        #else:
+        #    # ensure socket
+        #    if not os.path.exists(self.socket):
+        #        # Create a Unix socket
+        #        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+        #            s.bind(self.socket)
 
         self.current_station = None
         self.update_stations()
@@ -254,7 +261,10 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        resp = json.loads(resp)
+        try:
+            resp = json.loads(resp)
+        except TypeError:
+            return None
         try:
             icy_title = resp["data"]["icy-title"] if resp["data"]["icy-title"] else None
             icy_genre = resp["data"]["icy-genre"] if resp["data"]["icy-genre"] else None

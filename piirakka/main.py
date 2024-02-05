@@ -11,8 +11,8 @@ SPAWN_MPV = getenv("MPV", True)
 SOCKET = getenv("SOCKET", "/tmp/piirakka.sock")
 DATABASE = getenv("DATABASE", "./piirakka.db")
 
-def create_app(mpv, socket, database):
-    player = Player(mpv, socket, database)
+def create_app(use_mpv, socket_name, database):
+    player = Player(use_mpv, socket_name, database)
     app = Flask(__name__, static_folder='static')
     app.config['player'] = player
     return app

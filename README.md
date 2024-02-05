@@ -7,3 +7,4 @@ README not found!
 
     gunicorn -w 1 -b 0.0.0.0:8000 main:app   # production
     flask --app main.py --debug run -p 8000  # debug
+    docker run -d -it -p 8000:8000 -v /tmp/sockets/:/tmp/sockets/ piirakka:latest --socket /tmp/sockets/piirakka.sock  #rrrrr
