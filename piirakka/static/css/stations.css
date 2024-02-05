@@ -1,3 +1,17 @@
+body {
+    background-color: #f0f0f0;
+    color: #333;
+    font-family: 'VT323', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    margin: 0;
+    position: relative;
+    font-size: 16px;
+}
+
 main {
     max-width: 800px;
     margin: 20px auto;
@@ -7,12 +21,13 @@ header {
     max-width: 800px;
     width: 100%;
     margin: 20px auto;
-    text-align: left; /* Align the content to the left */
+    text-align: left;
 }
 
 a {
     color: black;
     text-decoration: none;
+    font-size: 16px;
 }
 
 a:hover {
@@ -26,6 +41,7 @@ form {
 form label {
     display: block;
     margin-bottom: 5px;
+    font-size: 18px;
 }
 
 form input {
@@ -33,6 +49,7 @@ form input {
     padding: 8px;
     margin-bottom: 10px;
     box-sizing: border-box;
+    font-size: 18px;
 }
 
 form button {
@@ -42,7 +59,7 @@ form button {
     color: black;
     cursor: pointer;
     text-decoration: underline;
-    font-size: 18px;
+    font-size: 20px;
     font-family: 'VT323', monospace;
     text-decoration: none;
 }
@@ -54,7 +71,6 @@ form button:hover {
 .button-container {
     text-align: right;
 }
-
 
 table {
     width: 100%;
@@ -70,6 +86,7 @@ th, td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    font-size: 18px;
 }
 
 .delete-link {
