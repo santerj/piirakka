@@ -1,17 +1,66 @@
-from dataclasses import dataclass
 import subprocess
 import socket
 import sqlite3
 import json
 import time
+import requests
+import validators
+import html
 
 VOLUME_MAX = 130
 
-@dataclass
+
 class Station:
-    url: str
-    description: str
-    source: str
+    def __init__(self, url: str, description: str, source: str) -> None:
+        self.url = url
+        self.description = description
+        self.source = source
+
+    def check(self) -> tuple[bool, str]:
+        allowed_content_types = (
+            'application/pls+xml',
+            'audio/mpeg',
+            'audio/x-scpls',
+            'audio/aac',
+            'audio/flac',
+            'audio/ogg',
+            'audio/vnd.wav',
+            'audio/x-wav',
+            'audio/x-ms-wax',
+            'audio/x-pn-realaudio',
+            'audio/x-pn-realaudio-plugin',
+            'audio/x-realaudio',
+            'audio/x-aac',
+            'audio/x-ogg',
+            'audio/webm',
+        )
+        try:
+            # gate 1 - validate url
+            validators.url(self.url)
+        except validators.ValidationError:
+            return False, "invalid url"
+
+        try:
+            # gates 2 + 3 - respond within timeout + have correct header
+            r = requests.head(self.url, timeout=1)
+            content_type = r.headers.get('content-type')
+            if content_type not in allowed_content_types:
+                return False, f"content-type {content_type} not allowed"
+        except requests.exceptions.Timeout:
+            return False, "connection timed out"
+        
+        if html.escape(self.url) != self.url or self.url.replace("'", "''") != self.url:
+            # gate 4 - check if sanitization affects description
+            return False, "invalid description"
+
+        return True, "success"
+
+    def create(self, db: str):
+        conn = sqlite3.connect(db)
+        cursor = conn.cursor()
+        cursor.execute(f"INSERT INTO stations VALUES ('{self.url}', '{self.description}', 'custom')")
+        conn.commit()
+        conn.close()
 
 class Player:
     def __init__(self, mpv, socket, database) -> None:
@@ -27,10 +76,12 @@ class Player:
         if self.use_mpv:
             self.proc = self._init_mpv()    # mpv process
 
-        # TODO: fix starting on empty db
+        self.current_station = None
         self.update_stations()
-        self.current_station = self.stations[0] if len(self.stations) > 0 else None
-        self._set_station(self.current_station.url)
+        if len(self.stations) > 0:
+            # set initial station if db is populated
+            self.current_station = self.stations[0]
+            self._set_station(self.current_station.url)
         self.set_volume(50)
 
     def __del__(self) -> None:
@@ -47,7 +98,7 @@ class Player:
                 '--cache-secs=' + str(15)
         ]
         proc = subprocess.Popen(cmd)
-        time.sleep(2)  # wait for mpv to start
+        time.sleep(4)  # wait for mpv to start
         return proc
 
     def _ipc_command(self, cmd: str) -> str | None:
@@ -73,12 +124,33 @@ class Player:
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS stations (url VARCHAR(255), description VARCHAR(255), source VARCHAR(10))")
+        conn.commit()
         conn.close()
 
     def _dumps(self, cmd: dict) -> str:
         return json.dumps(cmd) + '\n'
-    
+
+    def add_station(self, url: str, description: str) -> tuple[bool, str]:
+        for s in self.stations:
+            if s.url == url:
+                return False, "url already added"
+            elif s.description == description:
+                return False, "name already added"
+
+        station = Station(url=url, description=description, source='custom')
+        result, msg = station.check()
+        
+        if result:
+            station.create(db=self.database)
+            self.update_stations()
+            return True, "success"
+        else:
+            print("error", msg)
+            return False, msg
+
     def update_stations(self) -> None:
+        if self.current_station:
+            current_station_index = self.stations.index(self.current_station)
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM stations")
@@ -91,6 +163,9 @@ class Player:
             stations.append(Station(url=url, description=description, source=source))
         conn.close()
         self.stations = stations
+        if self.current_station:
+            # keep currently playing station info
+            self.current_station = self.stations[current_station_index]
         self.hash = str(hash(str(self.stations)))
 
     def get_stations(self) -> list[Station]:

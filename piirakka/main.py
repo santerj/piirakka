@@ -48,6 +48,10 @@ def favicon():
 def index():
     return render_template('index.html', reload_token=player.hash, stations=player.stations)
 
+@app.route('/stations')
+def stations():
+    return render_template('stations.html', reload_token=player.hash, stations=player.stations)
+
 @app.route('/api/token', methods=['GET'])
 def get_token():
     return jsonify({'token': str(player.hash)})
@@ -74,7 +78,7 @@ def toggle():
         return 'error', 500
     
 @app.route('/api/radio/stations', methods=['GET'])
-def stations():
+def get_stations():
     payload = {}
     stations = player.get_stations()
     for i, station in enumerate(stations):
@@ -90,26 +94,32 @@ def station_id():
     id = player.stations.index(player.current_station)
     return jsonify(id)
 
-@app.route('/api/radio/station/<int:id>', methods=['PUT'])
+@app.route('/api/radio/station/<int:id>', methods=['PUT', 'DELETE'])
 @require_token
-def set_station(id: int):
-    player.play_station_with_id(id)
-    return 'success', 200
+def set_or_delete_station(id: int):
+    if request.method == 'PUT':
+        # playback selected station
+        player.play_station_with_id(id)
+        return 'success', 200
+    elif request.method == 'DELETE':
+        # TODO: implement
+        #player.delete_station(id)
+        return 'accepted', 202
 
 @app.route('/api/radio/station', methods=['POST'])
 def create_station():
-    # TODO: this
-    pass
-    #try:
-    #    data = request.json
-    #    url = data['url']
-    #    desc = data['description']
-    #    # TODO: sanitize input
-    #    # TODO: prepare to be INSERTed!
-    #except KeyError:
-    #    return 'error', 400
-    #
-    #return
+    try:
+        data = request.json
+        url = data['url']
+        desc = data['description']
+        result, msg = player.add_station(url=url, description=desc)
+        if result:
+            return msg, 201
+        else:
+            return msg, 400
+    except KeyError:
+        return 'error', 400
+
 
 @app.route('/api/radio/now', methods=['GET'])
 def now():
