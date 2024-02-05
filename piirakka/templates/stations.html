@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>stations | piirakka</title>
+    {% include "base/head.html" %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+
+<body>
+
+    <main>
+        <!-- Form for creating a new station -->
+        <form id="createStationForm" onsubmit="createStation(event)">
+            <label for="newStationUrl">URL:</label>
+            <input type="text" id="newStationUrl" name="url" required>
+
+            <label for="newStationName">Name:</label>
+            <input type="text" id="newStationName" name="name" required>
+
+            <button type="submit">Create Station</button>
+        </form>
+
+        <ul>
+            {% for station in stations %}
+                <li data-index="{{ loop.index0 }}">
+                    <span class="station-url">{{ station.url }}</span>
+                    <span class="station-name">{{ station.description }}</span>
+                    <span class="edit-link" onclick="editStation({{ loop.index0 }})">edit</span>
+                    <span class="delete-link" onclick="deleteStation({{ loop.index0 }})">delete</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/stations.js') }}"></script>
+
+</body>
+
+</html>
