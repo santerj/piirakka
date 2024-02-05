@@ -21,20 +21,33 @@
             <button type="submit">Create Station</button>
         </form>
 
-        <ul>
-            {% for station in stations %}
-                <li data-index="{{ loop.index0 }}">
-                    <span class="station-url">{{ station.url }}</span>
-                    <span class="station-name">{{ station.description }}</span>
-                    <span class="edit-link" onclick="editStation({{ loop.index0 }})">edit</span>
-                    <span class="delete-link" onclick="deleteStation({{ loop.index0 }})">delete</span>
-                </li>
-            {% endfor %}
-        </ul>
+        <!-- Table for displaying stations -->
+        <table>
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Name</th>
+                    <th></th> <!-- Empty column for buttons -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Each station item with edit and delete links -->
+                {% for station in stations %}
+                    <tr data-index="{{ loop.index0 }}">
+                        <td>{{ station.url }}</td>
+                        <td>{{ station.description }}</td>
+                        <td>
+                            <span class="delete-link" onclick="deleteStation({{ loop.index0 }})">delete</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </main>
 
-    <script src="{{ url_for('static', filename='js/stations.js') }}"></script>
-
 </body>
+
+    <script>const reloadToken = "{{ reload_token }}";</script>
+    <script src="{{ url_for('static', filename='js/stations.js') }}"></script>
 
 </html>

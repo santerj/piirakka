@@ -1,3 +1,5 @@
+console.log(reloadToken);
+
 function createStation(event) {
     event.preventDefault();
 
@@ -14,6 +16,7 @@ function createStation(event) {
     .then(response => {
         // Handle success, if needed
         console.log(response.data);
+        location.reload();
     })
     .catch(error => {
         // Handle error, if needed
@@ -21,18 +24,13 @@ function createStation(event) {
     });
 }
 
-function editStation(index) {
-    // Perform edit action based on the station index
-    console.log(`Editing station ${index}`);
-}
-
 function deleteStation(index) {
-    axios.post('/api/radio/station')
+    axios.delete(`/api/radio/station/${index}`, { headers: {'Reload-Token': reloadToken} })
       .then(response => {
-        console.log('Toggle response:', response.data);
-        nowPlaying();
+        console.log('Delete response:', response.data);
+        location.reload();
     })
       .catch(error => {
-        console.error('Error toggling playback:', error);
+        console.error('Error deleting station:', error);
     });
 }
