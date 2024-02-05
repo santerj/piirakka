@@ -1,23 +1,28 @@
-import time
-
 from functools import wraps
+from os import getenv
 
 from flask import Flask, request, jsonify, render_template
 
 from utils.player import Player
 
+# init player
 
-player = Player()
-app = Flask(__name__, static_folder='static')
+SPAWN_MPV = getenv("MPV", True)
+SOCKET = getenv("SOCKET", "/tmp/piirakka.sock")
+DATABASE = getenv("DATABASE", "./piirakka.db")
 
-@app.route('/favicon.ico')
-def favicon():
-    return app.send_static_file('favicon.ico')
+def create_app(mpv, socket, database):
+    player = Player(mpv, socket, database)
+    app = Flask(__name__, static_folder='static')
+    app.config['player'] = player
+    return app
 
-@app.route('/')
-# temporarily here until templating is finished
-def index():
-    return render_template('index.html', reload_token=player.hash, stations=player.stations)
+app = create_app(SPAWN_MPV, SOCKET, DATABASE)
+player = app.config['player']
+
+if __name__ == "__main__":
+    # run flask
+    app.run()
 
 def require_token(func):
     @wraps(func)
@@ -32,6 +37,16 @@ def require_token(func):
             return func(*args, **kwargs)
 
     return wrapper
+
+# routes:
+
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
+
+@app.route('/')
+def index():
+    return render_template('index.html', reload_token=player.hash, stations=player.stations)
 
 @app.route('/api/token', methods=['GET'])
 def get_token():
@@ -113,7 +128,3 @@ def set_volume():
         return 'success', 200
     else:
         return 'error', 500
-
-if __name__ == "__main__":
-    app.run()
-    #app.run(host='0.0.0.0', port=8000)     # werkzeug

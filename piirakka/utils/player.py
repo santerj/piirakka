@@ -5,9 +5,7 @@ import sqlite3
 import json
 import time
 
-SOCKET = '/tmp/piirakka.sock'
 VOLUME_MAX = 130
-DATABASE = 'piirakka.db'
 
 @dataclass
 class Station:
@@ -16,20 +14,28 @@ class Station:
     source: str
 
 class Player:
-    def __init__(self) -> None:
-        self.socket = SOCKET
+    def __init__(self, mpv, socket, database) -> None:
+        self.use_mpv = mpv
+        self.socket = socket
+        self.database = database
+        
         self.stations = []
         self.hash = ""
         self.playing = True
-        self.proc = self._init_mpv()    # mpv process
         self._init_db()
+
+        if self.use_mpv:
+            self.proc = self._init_mpv()    # mpv process
+
+        # TODO: fix starting on empty db
         self.update_stations()
-        self.current_station = self.stations[0]
+        self.current_station = self.stations[0] if len(self.stations) > 0 else None
         self._set_station(self.current_station.url)
-        self.set_volume(2)
+        self.set_volume(50)
 
     def __del__(self) -> None:
-        self.proc.terminate()
+        if self.use_mpv and hasattr(self, "proc"):
+            self.proc.terminate()
 
     def _init_mpv(self):
         cmd = [
@@ -64,7 +70,7 @@ class Player:
             return None
 
     def _init_db(self):
-        conn = sqlite3.connect(DATABASE)
+        conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS stations (url VARCHAR(255), description VARCHAR(255), source VARCHAR(10))")
         conn.close()
@@ -73,7 +79,7 @@ class Player:
         return json.dumps(cmd) + '\n'
     
     def update_stations(self) -> None:
-        conn = sqlite3.connect(DATABASE)
+        conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM stations")
         rows = cursor.fetchall()

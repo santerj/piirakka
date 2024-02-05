@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+import subprocess
+
+import click
+
+@click.command()
+@click.option('-d', '--database', type=str, default="./piirakka.db", help='Specify database file (default: ./piirakka.db)')
+@click.option('-n', '--no-mpv', is_flag=True, default=False, help='Start piirakka as web server only, without mpv')
+@click.option('-p', '--port', default="8000", type=str, help='Specify port for the webserver (default: 8000)')
+@click.option('-s', '--socket', default="/tmp/piirakka.sock", type=str, help='Specify UNIX socket for mpv (default: /tmp/piirakka.sock)')
+def main(database, no_mpv, port, socket):
+    """
+    Start piirakka.
+    """
+    cmd = [
+        "gunicorn",
+        "main:app",
+        "-w", "1",
+        "-b", f"0.0.0.0:{port}",
+        "--env", f"DATABASE={database}",
+        "--env", f"MPV={not no_mpv}",
+        "--env", f"SOCKET={socket}"
+    ]
+    subprocess.run(cmd)
+
+if __name__ == '__main__':
+    main()
