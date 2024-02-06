@@ -1,4 +1,10 @@
-console.log(reloadToken);
+document.getElementById('reloadButton').addEventListener('click', () => {
+    window.location.reload();
+  });
+  
+  document.getElementById('cancelButton').addEventListener('click', () => {
+    errorDialog.close();
+  });
 
 function createStation(event) {
     event.preventDefault();
@@ -32,5 +38,10 @@ function deleteStation(index) {
     })
       .catch(error => {
         console.error('Error deleting station:', error);
+        if (error.response.status === 412) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = 'Stations have been updated! Reload page?';
+            errorDialog.showModal();
+          }
     });
 }
