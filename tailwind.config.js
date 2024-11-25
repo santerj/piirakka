@@ -1,5 +1,5 @@
 module.exports = {
-  purge: ['./piirakka/templates/**/*.{html,js}'],
+  purge: ["./piirakka/templates/**/*.{html,js}"],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {},
