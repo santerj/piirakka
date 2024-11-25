@@ -1,6 +1,8 @@
 # piirakka
 
-# development
+## acknowledgements
+
+## development
 
 ### initialize dev environment
 
@@ -21,4 +23,14 @@
 ### build tailwind
 
     $ npm run build:css 
+
+### edit icons
+
+    1. open https://remixicon.com/
+    2. click on file icon, import collection
+    3. select the .remixicon file in project root
+    4. make whatever changes to icon collection
+    5. download in svg format
+    6. unzip file, move contents to piirakka/static/icons
+    7. 👍
 
