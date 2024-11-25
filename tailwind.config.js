@@ -1,12 +1,15 @@
 module.exports = {
   purge: ["./piirakka/templates/**/*.{html,js}"],
-  darkMode: false, // or 'media' or 'class'
+  darkMode: 'media',
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        nunito: ['"Nunito Sans"', 'sans-serif'],
+      },
+    },
   },
   variants: {
     extend: {},
   },
   plugins: [require('daisyui')],
 }
-
