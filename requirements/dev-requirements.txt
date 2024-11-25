@@ -11,6 +11,7 @@ annotated-types==0.7.0
 anyio==4.6.2.post1
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+    #   sse-starlette
     #   starlette
 argcomplete==3.5.1
     # via nox
@@ -82,10 +83,13 @@ sniffio==1.3.1
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   anyio
+sse-starlette==2.1.3
+    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 starlette==0.41.3
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   fastapi
+    #   sse-starlette
 typing-extensions==4.12.2
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
@@ -97,7 +101,9 @@ urllib3==2.2.3
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   requests
 uvicorn==0.32.1
-    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+    # via
+    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+    #   sse-starlette
 virtualenv==20.27.1
     # via nox
 wheel==0.45.1
