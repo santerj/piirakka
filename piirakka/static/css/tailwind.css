@@ -1,0 +1,8 @@
+/* Use TailwindCSS with DaisyUI */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* DaisyUI components */
+@import "daisyui";
+
