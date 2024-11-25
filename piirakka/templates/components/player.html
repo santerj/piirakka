@@ -1,0 +1,106 @@
+<section class="w-full max-w-md p-4 border border-gray-300 rounded-3xl mb-8 bg-white shadow-sm">
+    <h2 class="font-nunito font-bold mb-2" id="nowPlaying">now playing: <span id="currentStation"></span></h2>
+    <div class="flex items-center space-x-4">
+      <!-- Play/Pause Button -->
+      <button 
+        id="playPauseButton" 
+        class="btn bg-transparent hover:bg-transparent border-none shadow-md hover:shadow-inner" 
+        onclick="handlePlayPause()">
+        <img id="playIcon" src="static/icons/play-circle-line.svg" alt="Play" class="h-6 w-6">
+        <img id="pauseIcon" src="static/icons/pause-circle-line.svg" alt="Pause" class="h-6 w-6 hidden">
+      </button>
+  
+      <!-- Shuffle Button -->
+      <button 
+        id="shuffleButton" 
+        class="btn bg-transparent hover:bg-transparent border-none shadow-md hover:shadow-inner" 
+        onclick="handleShuffle()">
+        <img src="static/icons/shuffle-line.svg" alt="Shuffle" class="h-6 w-6">
+      </button>
+  
+      <!-- Volume Button -->
+      <button 
+        id="volumeButton" 
+        class="btn bg-transparent hover:bg-transparent border-none shadow-md hover:shadow-inner" 
+        onclick="handleVolumeToggle()">
+        <img id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Volume Up" class="h-6 w-6">
+        <img id="volumeMuteIcon" src="static/icons/volume-mute-line.svg" alt="Mute" class="h-6 w-6 hidden">
+      </button>
+  
+      <!-- Volume Control -->
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-volume-up text-gray-700"></i>
+        <input 
+          type="range" 
+          min="0" 
+          max="100" 
+          step="1"
+          class="range range-primary h-1 bg-gray-700 border border-gray-500 rounded-full shadow-md" 
+          id="volumeControl" 
+          onchange="handleVolumeChange(this.value)">
+      </div>
+    </div>
+  </section>
+  
+  <script>
+    // JavaScript to handle play/pause button
+    function handlePlayPause() {
+      const playIcon = document.getElementById('playIcon');
+      const pauseIcon = document.getElementById('pauseIcon');
+  
+      if (playIcon.classList.contains('hidden')) {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+      } else {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+      }
+  
+      fetch('/play-pause', {
+        method: 'POST'
+      });
+    }
+  
+    // JavaScript to handle shuffle button
+    function handleShuffle() {
+      fetch('/shuffle', {
+        method: 'POST'
+      });
+    }
+  
+    // JavaScript to handle volume toggle button
+    function handleVolumeToggle() {
+      const volumeControl = document.getElementById('volumeControl');
+      const volumeUpIcon = document.getElementById('volumeUpIcon');
+      const volumeMuteIcon = document.getElementById('volumeMuteIcon');
+  
+      if (volumeUpIcon.classList.contains('hidden')) {
+        volumeUpIcon.classList.remove('hidden');
+        volumeMuteIcon.classList.add('hidden');
+        volumeControl.value = 50;  // Reset to some default volume when unmuted
+      } else {
+        volumeUpIcon.classList.add('hidden');
+        volumeMuteIcon.classList.remove('hidden');
+        volumeControl.value = 0;  // Mute
+      }
+  
+      handleVolumeChange(volumeControl.value);  // Update volume on toggle
+    }
+  
+    // JavaScript to handle volume change
+    function handleVolumeChange(value) {
+      fetch('/set-volume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ volume: value })
+      });
+    }
+
+    // set currently playing station
+    function setCurrentStation(value) {
+        document.getElementById('currentStation').textContent = value;
+    }
+  </script>
+  

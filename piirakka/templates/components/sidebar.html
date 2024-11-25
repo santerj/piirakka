@@ -1,0 +1,12 @@
+<nav class="w-24 h-screen fixed top-0 left-0 flex flex-col justify-center items-center p-4 border-r border-gray-300 bg-gray-100">
+    <ul class="menu p-0">
+        {% for item in sidebar_items %}
+        <li class="mb-4 text-center">
+            <a href="{{ item.url }}" class="flex flex-col items-center space-y-2 p-3 rounded-lg">
+                <img src="{{ item.icon }}" alt="{{ item.name }} Icon" class="w-8 h-6">
+                <span class="font-nunito font-regular">{{ item.name }}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>

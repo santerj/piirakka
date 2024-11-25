@@ -1,61 +1,44 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
-    <div class="container mx-auto p-4">
-        <h2 class="text-2xl font-bold mb-4">Welcome to my FastAPI App</h2>
-        
-        <!-- Navbar -->
-        <div class="navbar bg-base-300 mb-4">
-            <div class="flex-1">
-                <a class="btn btn-ghost normal-case text-xl">piirakka</a>
-            </div>
-            <div class="flex-none">
-                <button class="btn btn-primary">Home</button>
-                <button class="btn btn-secondary">Stations</button>
-            </div>
-        </div>
-        
-        <!-- Now Playing Card -->
-        <div class="card w-full bg-base-100 shadow-xl mb-4">
-            <div class="card-body">
-                <h2 class="card-title">Now Playing</h2>
-                <p id="current-station">Station Name</p>
-                <p id="current-track">Track Title</p>
-            </div>
-        </div>
+<head>
+    <title>piirakka</title>
+    {% include 'components/head.html' %}
+</head>
 
-        <!-- Last Played Tracks List -->
-        <div class="card w-full bg-base-100 shadow-xl mb-4">
-            <div class="card-body">
-                <h2 class="card-title">Last Played Tracks</h2>
-                <ul class="list-disc list-inside">
-                    <li>Track 1</li>
-                    <li>Track 2</li>
-                    <li>Track 3</li>
+<body class="relative min-h-screen flex flex-col bg-gray-50">
+    <!-- sidebar -->
+    {% include 'components/sidebar.html' %}
+
+    <!-- main -->
+    <main class="ml-32 mr-8 mt-8 p-4 flex-1 flex flex-col bg-gray-50">
+
+        <!-- player component -->
+        {% include 'components/player.html' %}
+
+        </section>
+
+        <!-- Recently Played and Station List Wrapper -->
+        <div class="flex-1 flex flex-row gap-8">
+            <!-- Recently Played Section -->
+            <section class="flex-1 p-4 border border-gray-300 rounded-3xl mb-8 bg-white shadow-sm">
+                <h2 class="font-nunito font-bold mb-2">recently played</h2>
+                <ul>
+                    <li>track1</li>
+                    <li>track2</li>
+                    <li>track3</li>
+                    <li>track4</li>
                 </ul>
-            </div>
-        </div>
+                <!-- Recently played content here -->
+            </section>
 
-        <!-- Station Selection -->
-        <div class="form-control mb-4">
-            <label class="label">
-                <span class="label-text">Select Station</span>
-            </label>
-            <select id="station-list" class="select select-bordered w-full max-w-xs">
-                <option value="station1">Station 1</option>
-                <option value="station2">Station 2</option>
-                <option value="station3">Station 3</option>
-            </select>
-            <button id="random-station" class="btn btn-primary mt-4">Random Station</button>
+            <!-- Station List Section -->
+            <aside class="w-2/5 p-4 border border-gray-300 rounded-3xl overflow-y-auto mb-8 bg-white shadow-sm">
+                <h2 class="font-nunito font-bold mb-2">stations</h2>
+                <!-- Station list content here -->
+            </aside>
         </div>
+    </main>
+</body>
 
-        <!-- Volume Control -->
-        <div class="form-control mb-4">
-            <label class="label">
-                <span class="label-text">Volume Control</span>
-            </label>
-            <input type="range" id="volume" class="range range-primary" min="0" max="100" value="50">
-        </div>
-    </div>
-{% endblock %}
-
+</html>
