@@ -16,9 +16,13 @@
     $ pip-compile -o requirements/requirements.txt requirements/requirements.in
     $ pip-compile -o requirements/dev-requirements.txt requirements/dev-requirements.in
 
-### run app in development mode
+### run fastapi in development mode
 
     $ uvicorn piirakka.main:app --reload
+
+### run tailwind in watch mode
+
+    $ npx tailwindcss -i piirakka/static/css/tailwind.css -o piirakka/static/css/output.css --watch
 
 ### build tailwind
 
