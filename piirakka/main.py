@@ -1,4 +1,5 @@
 import asyncio
+import anyio
 import os
 import sys
 
@@ -13,7 +14,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sse_starlette.sse import EventSourceResponse
 from starlette.requests import Request
-
 
 def create_app(mpv, socket, database, callback):
     player = Player(mpv, socket, database, callback)
@@ -34,8 +34,7 @@ async def notify_all(message: str):
         await queue.put(message)
 
 def player_callback(message):
-    # let Player() notify SSE subscribers upon state change
-    asyncio.create_task(notify_all(message))
+    anyio.from_thread.run(notify_all, message)
 
 async def event_generator(request: Request, queue: asyncio.Queue):
     while True:
@@ -48,12 +47,8 @@ async def event_generator(request: Request, queue: asyncio.Queue):
         }
 
 async def periodic_task():
-    # TODO: use this function to ping mpv for currently playing track.
-    # TODO: if track has changed, generate new PlayerContext and send to SSE clients
     while True:
-        # Your logic here
         print("Running periodic task")
-        await notify_all("Hello!")
         await asyncio.sleep(5)  # Wait for 5 seconds before running again
 
 app = create_app(SPAWN_MPV, SOCKET, DATABASE, player_callback)  # fastapi app initialized here
@@ -70,7 +65,6 @@ async def shutdown_event():
     for queue in subscribers:
         queue.put_nowait(None)
     subscribers.clear()
-
 
 @app.get("/")
 async def index(request: Request):
@@ -91,21 +85,30 @@ async def stations_page(request: Request):
                 }
     )
 
-@app.get("/api/subscribe")
+@app.get("/api/events")
 async def events(request: Request):
-    # subscribe to SSE here
     queue = asyncio.Queue()
     subscribers.append(queue)
-
-    async def cleanup():
-        subscribers.remove(queue)
-
-    request.state.cleanup = cleanup
     return EventSourceResponse(event_generator(request, queue))
 
 @app.get("/api/radio/playerState")
 async def get_player_state():
-    return player.to_player_state().dict(by_alias=True)
+    return JSONResponse(content=player.to_player_state().dict(by_alias=True))
+
+@app.post("/api/radio/play")
+async def play(background_tasks: BackgroundTasks):
+    background_tasks.add_task(player.play)
+    return {"message": "play task initiated"}
+
+@app.post("/api/radio/pause")
+async def pause(background_tasks: BackgroundTasks):
+    background_tasks.add_task(player.pause)
+    return {"message": "pause task initiated"}
+
+@app.post("/api/radio/toggle")
+async def toggle(background_tasks: BackgroundTasks):
+    background_tasks.add_task(player.toggle)
+    return {"message": "toggle task initiated"}
 
 @app.post("/api/radio/station")
 async def set_station(station: str, background_tasks: BackgroundTasks):
@@ -113,6 +116,5 @@ async def set_station(station: str, background_tasks: BackgroundTasks):
     return {"message": "Station change initiated"}
 
 if __name__ == "__main__":
-    # Run FastAPI with Uvicorn
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)

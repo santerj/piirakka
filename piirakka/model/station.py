@@ -7,10 +7,9 @@ from pydantic import BaseModel
 
 
 class Station(BaseModel):
-    def __init__(self, url: str, description: str, source: str) -> None:
-        self.url = url
-        self.description = description
-        self.source = source
+    url: str
+    description: str
+    source: str
 
     def check(self) -> tuple[bool, str]:
         # TODO: double check these

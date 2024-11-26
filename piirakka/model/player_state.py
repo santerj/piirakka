@@ -10,7 +10,7 @@ class PlayerState(BaseModel):
     volume: int
     stations: list[Station]  # maybe use real Station object
     current_station: Station
-    current_station_index: int  # index in stations
+    current_station_index: int | None  # index in stations
 
     class Config:
         alias_generator = to_camel

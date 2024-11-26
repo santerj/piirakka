@@ -176,6 +176,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
+        self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
         return True if resp else False
 
     def pause(self) -> bool:
@@ -188,6 +189,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = False
+        self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
         return True if resp else False
 
     def toggle(self) -> bool:
