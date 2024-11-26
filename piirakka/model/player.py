@@ -3,94 +3,39 @@ import socket
 import sqlite3
 import json
 import time
-import requests
-import validators
-import html
+
+from model.player_state import PlayerState
+from model.station import Station
 
 VOLUME_MAX = 130
 
 
-class Station:
-    def __init__(self, url: str, description: str, source: str) -> None:
-        self.url = url
-        self.description = description
-        self.source = source
-
-    def check(self) -> tuple[bool, str]:
-        # TODO: double check these
-        allowed_content_types = (
-            'application/pls+xml',
-            'audio/mpeg',
-            'audio/x-scpls',
-            'audio/aac',
-            'audio/flac',
-            'audio/ogg',
-            'audio/vnd.wav',
-            'audio/x-wav',
-            'audio/x-ms-wax',
-            'audio/x-pn-realaudio',
-            'audio/x-pn-realaudio-plugin',
-            'audio/x-realaudio',
-            'audio/x-aac',
-            'audio/x-ogg',
-            'audio/webm',
-        )
-        # TODO: have to rethink the validator gates.
-        # TODO: many servers have a working stream endpoint, but times out upon HEAD
-        # TODO: also keep in mind server-side request forgery vuln
-        try:
-            # gate 1 - validate url
-            validators.url(self.url)
-        except validators.ValidationError:
-            return False, "invalid url"
-
-        try:
-            # gates 2 + 3 - respond within timeout + have correct header
-            r = requests.head(self.url, timeout=1)
-            content_type = r.headers.get('content-type')
-            if content_type not in allowed_content_types:
-                return False, f"content-type {content_type} not allowed"
-        except requests.exceptions.Timeout:
-            return False, "connection timed out"
-        
-        if html.escape(self.url) != self.url or self.url.replace("'", "''") != self.url:
-            # gate 4 - check if sanitization affects description
-            return False, "invalid description"
-
-        return True, "success"
-
-    def create(self, db: str):
-        # adds a new station to database
-        conn = sqlite3.connect(db)
-        cursor = conn.cursor()
-        cursor.execute(f"INSERT INTO stations VALUES ('{self.url}', '{self.description}', 'custom')")
-        conn.commit()
-        conn.close()
-
 class Player:
-    # TODO: generate a PlayerContext from all dynamic data (volume, stations, now playing, etc...)
-    # TODO: PlayerContext will hydrate browser app via SSE
     def __init__(self, mpv, socket, database, callback) -> None:
         self.use_mpv = mpv
         self.socket = socket
         self.database = database
         self.callback = callback
 
-        self.stations = []
-        self.hash = ""
+        self.stations: list[Station] = []
         self.playing = True
+        self.volume = 50
         self._init_db()
 
         if self.use_mpv:
             self.proc = self._init_mpv()    # mpv process
 
-        self.current_station = None
+        self.current_station: Station = None
+        self.current_station_index: int = None  # index inside self.stations
+
         self.update_stations()
         if len(self.stations) > 0:
             # set initial station if db is populated
-            self.current_station = self.stations[0]
-            self._set_station(self.current_station.url)
-        self.set_volume(50)
+            default_index = 0
+            self.current_station = self.stations[default_index]
+            self.current_station_index = default_index
+            self.play_station_with_id(default_index)
+        self.set_volume(self.volume)
 
     def __del__(self) -> None:
         if self.use_mpv and hasattr(self, "proc"):
@@ -137,6 +82,15 @@ class Player:
 
     def _dumps(self, cmd: dict) -> str:
         return json.dumps(cmd) + '\n'
+    
+    def to_player_state(self) -> PlayerState:
+        return PlayerState(
+            playing=self.playing,
+            volume=self.volume,
+            stations=self.stations,
+            current_station=self.current_station,
+            current_station_index=self.current_station_index
+        )
 
     def add_station(self, url: str, description: str) -> tuple[bool, str]:
         for s in self.stations:
@@ -157,19 +111,26 @@ class Player:
             return False, msg
 
     def delete_station(self, index):
-        # TODO: handle error if index out of range
-        # TODO: reset current station if deleted stations is currently playing
-        target = self.stations[index]
+        try:
+            target = self.stations[index]
+        except IndexError:
+            return False
+
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute(f"DELETE FROM stations WHERE url='{target.url}' AND description='{target.description}'")
         conn.commit()
         conn.close()
+
+        if index == self.current_station_index:
+            self.current_station = self.stations[0]  # reset channel if current one was deleted
         self.update_stations()
+
+        return True
 
     def update_stations(self) -> None:
         if self.current_station:
-            current_station_index = self.stations.index(self.current_station)
+            self.current_station_index = self.stations.index(self.current_station)
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM stations")
@@ -179,13 +140,12 @@ class Player:
             url = row[0]
             description = row[1]
             source = row[2]
-            stations.append(Station(url=url, description=description, source=source))
+            stations.append(Station(url=url, description=description, source=source))  # goes to end of array
         conn.close()
         self.stations = stations
         if self.current_station:
             # keep currently playing station info
-            self.current_station = self.stations[current_station_index]
-        self.hash = str(hash(str(self.stations)))  # TODO: deprecate, generate a PlayerContext instead
+            self.current_station = self.stations[self.current_station_index]
 
     def get_stations(self) -> list[Station]:
         return self.stations
@@ -248,7 +208,11 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        return True if resp else False
+        if resp:
+            self.volume = vol
+            return True
+        else:
+            return False
 
     def now_playing(self) -> dict | None:
         # TODO: don't assume stream is Icecast

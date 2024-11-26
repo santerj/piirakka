@@ -28,11 +28,12 @@ DATABASE = os.getenv("DATABASE", "./piirakka.db")
 subscribers = []
 
 async def notify_all(message: str):
-    # send message to subscribers
+    # send message to SSE subscribers
     for queue in subscribers:
         await queue.put(message)
 
 def player_callback(message):
+    # let Player() notify SSE subscribers upon state change
     asyncio.create_task(notify_all(message))
 
 async def event_generator(request: Request, queue: asyncio.Queue):
@@ -54,7 +55,7 @@ async def periodic_task():
         await notify_all("Hello!")
         await asyncio.sleep(5)  # Wait for 5 seconds before running again
 
-app = create_app(SPAWN_MPV, SOCKET, DATABASE, player_callback)
+app = create_app(SPAWN_MPV, SOCKET, DATABASE, player_callback)  # fastapi app initialized here
 player = app.state.player
 templates = Jinja2Templates(directory="piirakka/templates")
 app.mount("/static", StaticFiles(directory="piirakka/static"), name="static")
@@ -71,6 +72,7 @@ async def shutdown_event():
 
 @app.get("/events")
 async def events(request: Request):
+    # subscribe to SSE here
     queue = asyncio.Queue()
     subscribers.append(queue)
 

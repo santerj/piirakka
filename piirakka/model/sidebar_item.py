@@ -1,5 +1,7 @@
 from dataclasses import dataclass, asdict
 
+# App sidebar items. This data is not dynamic (not queried from API), so pydantic is not needed.
+
 @dataclass
 class SidebarItem:
     name: str
