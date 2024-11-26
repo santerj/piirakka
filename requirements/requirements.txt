@@ -56,3 +56,5 @@ uvicorn==0.32.1
     # via
     #   -r requirements/requirements.in
     #   sse-starlette
+validators==0.34.0
+    # via -r requirements/requirements.in

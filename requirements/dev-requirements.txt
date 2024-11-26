@@ -104,6 +104,8 @@ uvicorn==0.32.1
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   sse-starlette
+validators==0.34.0
+    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 virtualenv==20.27.1
     # via nox
 wheel==0.45.1

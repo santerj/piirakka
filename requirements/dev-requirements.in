@@ -1,4 +1,5 @@
 -r requirements.txt
+isort
 nox
 pip-tools
-
+ruff
