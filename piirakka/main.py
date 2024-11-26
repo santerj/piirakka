@@ -9,10 +9,9 @@ from model.sidebar_item import sidebar_items
 from model.player import Player
 
 from fastapi import FastAPI, BackgroundTasks, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sse_starlette.sse import EventSourceResponse
 from starlette.requests import Request
 
 def create_app(mpv, socket, database, callback):
@@ -37,14 +36,14 @@ def player_callback(message):
     anyio.from_thread.run(notify_all, message)
 
 async def event_generator(request: Request, queue: asyncio.Queue):
-    while True:
-        if await request.is_disconnected():
-            break
-        message = await queue.get()
-        yield {
-            "event": "update",
-            "data": message,
-        }
+    try:
+        while True:
+            if await request.is_disconnected():
+                break
+            message = await queue.get()
+            yield f"data: {message}\n\n"
+    except asyncio.CancelledError:
+        pass
 
 async def periodic_task():
     while True:
@@ -89,7 +88,7 @@ async def stations_page(request: Request):
 async def events(request: Request):
     queue = asyncio.Queue()
     subscribers.append(queue)
-    return EventSourceResponse(event_generator(request, queue))
+    return StreamingResponse(event_generator(request, queue), media_type="text/event-stream")
 
 @app.get("/api/radio/playerState")
 async def get_player_state():
