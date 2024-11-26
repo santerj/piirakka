@@ -33,16 +33,6 @@ async def notify_all(message: str):
 def player_callback(message):
     anyio.from_thread.run(notify_all, message)
 
-async def event_generator(request: Request, queue: asyncio.Queue):
-    try:
-        while True:
-            if await request.is_disconnected():
-                break
-            message = await queue.get()
-            yield f"data: {message}\n\n"
-    except asyncio.CancelledError:
-        pass
-
 async def periodic_task():
     while True:
         print("Running periodic task")
@@ -86,6 +76,25 @@ async def stations_page(request: Request):
 async def events(request: Request):
     queue = asyncio.Queue()
     app.state.subscribers.append(queue)
+    async def event_generator(request: Request, queue: asyncio.Queue):
+        try:
+            while True:
+                disconnected = await request.is_disconnected()
+                if disconnected:
+                    print(f"Disconnecting client {request.client}")
+                    break
+                message = await queue.get()
+                #if message == MAGIC_FLUSH_SSE_CONNECTIONS:
+                    
+                    # a magic message sent with 'await notify_all()' can be used to
+                    # tear down all SSE connections. this can be useful due to a deadlock
+                    # between event generator lifecycle and uvicorn's shutdown procedure.
+                    
+                #     break
+                yield f"data: {message}\n\n"
+        except asyncio.CancelledError as e:
+            # cleanup tasks here
+            raise e
     return StreamingResponse(event_generator(request, queue), media_type="text/event-stream")
 
 @app.get("/api/radio/playerState")
