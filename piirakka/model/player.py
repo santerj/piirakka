@@ -17,6 +17,7 @@ class Station:
         self.source = source
 
     def check(self) -> tuple[bool, str]:
+        # TODO: double check these
         allowed_content_types = (
             'application/pls+xml',
             'audio/mpeg',
@@ -34,6 +35,9 @@ class Station:
             'audio/x-ogg',
             'audio/webm',
         )
+        # TODO: have to rethink the validator gates.
+        # TODO: many servers have a working stream endpoint, but times out upon HEAD
+        # TODO: also keep in mind server-side request forgery vuln
         try:
             # gate 1 - validate url
             validators.url(self.url)
@@ -56,6 +60,7 @@ class Station:
         return True, "success"
 
     def create(self, db: str):
+        # adds a new station to database
         conn = sqlite3.connect(db)
         cursor = conn.cursor()
         cursor.execute(f"INSERT INTO stations VALUES ('{self.url}', '{self.description}', 'custom')")
@@ -63,11 +68,14 @@ class Station:
         conn.close()
 
 class Player:
-    def __init__(self, mpv, socket, database) -> None:
+    # TODO: generate a PlayerContext from all dynamic data (volume, stations, now playing, etc...)
+    # TODO: PlayerContext will hydrate browser app via SSE
+    def __init__(self, mpv, socket, database, callback) -> None:
         self.use_mpv = mpv
         self.socket = socket
         self.database = database
-        
+        self.callback = callback
+
         self.stations = []
         self.hash = ""
         self.playing = True
@@ -177,7 +185,7 @@ class Player:
         if self.current_station:
             # keep currently playing station info
             self.current_station = self.stations[current_station_index]
-        self.hash = str(hash(str(self.stations)))
+        self.hash = str(hash(str(self.stations)))  # TODO: deprecate, generate a PlayerContext instead
 
     def get_stations(self) -> list[Station]:
         return self.stations
@@ -243,6 +251,8 @@ class Player:
         return True if resp else False
 
     def now_playing(self) -> dict | None:
+        # TODO: don't assume stream is Icecast
+        # TODO: check if equivalent fields exist for shoutcast, hls, dash
         # other interesting fields
         # genre: resp["data"]["icy-genre"]
         # desc: resp["data"]["icy-name"]
