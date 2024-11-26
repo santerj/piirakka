@@ -8,6 +8,7 @@ from model.sidebar_item import sidebar_items
 from model.player import Player
 
 from fastapi import FastAPI, BackgroundTasks, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sse_starlette.sse import EventSourceResponse
@@ -70,17 +71,6 @@ async def shutdown_event():
         queue.put_nowait(None)
     subscribers.clear()
 
-@app.get("/events")
-async def events(request: Request):
-    # subscribe to SSE here
-    queue = asyncio.Queue()
-    subscribers.append(queue)
-
-    async def cleanup():
-        subscribers.remove(queue)
-
-    request.state.cleanup = cleanup
-    return EventSourceResponse(event_generator(request, queue))
 
 @app.get("/")
 async def index(request: Request):
@@ -101,10 +91,21 @@ async def stations_page(request: Request):
                 }
     )
 
-@app.post("/api/radio/volume")
-async def set_volume(volume: int, background_tasks: BackgroundTasks):
-    background_tasks.add_task(player.set_volume, volume)
-    return {"message": "Volume change initiated"}
+@app.get("/api/subscribe")
+async def events(request: Request):
+    # subscribe to SSE here
+    queue = asyncio.Queue()
+    subscribers.append(queue)
+
+    async def cleanup():
+        subscribers.remove(queue)
+
+    request.state.cleanup = cleanup
+    return EventSourceResponse(event_generator(request, queue))
+
+@app.get("/api/radio/playerState")
+async def get_player_state():
+    return player.to_player_state().dict(by_alias=True)
 
 @app.post("/api/radio/station")
 async def set_station(station: str, background_tasks: BackgroundTasks):
