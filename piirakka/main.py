@@ -18,18 +18,16 @@ def create_app(mpv, socket, database, callback):
     player = Player(mpv, socket, database, callback)
     app = FastAPI()
     app.state.player = player
+    app.state.subscribers = []
     return app
 
 SPAWN_MPV = os.getenv("MPV", True)
 SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
 DATABASE = os.getenv("DATABASE", "./piirakka.db")
 
-# server-sent event subscribers
-subscribers = []
-
 async def notify_all(message: str):
     # send message to SSE subscribers
-    for queue in subscribers:
+    for queue in app.state.subscribers:
         await queue.put(message)
 
 def player_callback(message):
@@ -61,9 +59,9 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    for queue in subscribers:
+    for queue in app.state.subscribers:
         queue.put_nowait(None)
-    subscribers.clear()
+    app.state.subscribers.clear()
 
 @app.get("/")
 async def index(request: Request):
@@ -87,7 +85,7 @@ async def stations_page(request: Request):
 @app.get("/api/events")
 async def events(request: Request):
     queue = asyncio.Queue()
-    subscribers.append(queue)
+    app.state.subscribers.append(queue)
     return StreamingResponse(event_generator(request, queue), media_type="text/event-stream")
 
 @app.get("/api/radio/playerState")
