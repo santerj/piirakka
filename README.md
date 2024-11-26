@@ -7,7 +7,7 @@
 ### initialize dev environment
 
     $ python -m venv venv
-    $ venv/bin/python -m pip install -r dev-requirements.txt
+    $ venv/bin/python -m pip install -r requirements/dev-requirements.txt
     $ source venv/bin/activate
     $ npm install
 
