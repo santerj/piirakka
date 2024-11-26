@@ -14,16 +14,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 
+SPAWN_MPV = os.getenv("MPV", True)
+SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
+DATABASE = os.getenv("DATABASE", "./piirakka.db")
+
 def create_app(mpv, socket, database, callback):
     player = Player(mpv, socket, database, callback)
     app = FastAPI()
     app.state.player = player
     app.state.subscribers = []
     return app
-
-SPAWN_MPV = os.getenv("MPV", True)
-SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
-DATABASE = os.getenv("DATABASE", "./piirakka.db")
 
 async def notify_all(message: str):
     # send message to SSE subscribers
@@ -89,12 +89,13 @@ async def events(request: Request):
                     # a magic message sent with 'await notify_all()' can be used to
                     # tear down all SSE connections. this can be useful due to a deadlock
                     # between event generator lifecycle and uvicorn's shutdown procedure.
+                    # https://github.com/fastapi/fastapi/discussions/11237
                     
                 #     break
                 yield f"data: {message}\n\n"
         except asyncio.CancelledError as e:
             # cleanup tasks here
-            raise e
+            del app.state.player # destroy Player()
     return StreamingResponse(event_generator(request, queue), media_type="text/event-stream")
 
 @app.get("/api/radio/playerState")

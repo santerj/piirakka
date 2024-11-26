@@ -18,7 +18,9 @@
 
 ### run fastapi in development mode
 
-    $ uvicorn piirakka.main:app --reload
+    $ uvicorn piirakka.main:app --timeout-graceful-shutdown 5 --workers 1
+
+Note that shutdown with ctrl+C here will be very messy if there are existing SSE connections.
 
 ### run tailwind in watch mode
 
