@@ -38,3 +38,6 @@
     6. unzip file, move contents to piirakka/static/icons
     7. 👍
 
+### subscribe to server-sent events
+
+    $ curl -N http://localhost:8000/events
