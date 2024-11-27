@@ -117,7 +117,7 @@ async def toggle(background_tasks: BackgroundTasks):
     background_tasks.add_task(player.toggle)
     return {"message": "toggle task initiated"}
 
-@app.post("/api/radio/station")
+@app.put("/api/radio/station")
 async def set_station(station: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(player.set_station, station)
     return {"message": "Station change initiated"}

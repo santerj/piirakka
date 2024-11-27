@@ -1,4 +1,4 @@
-from station import Station
+from model.station import Station
 
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel

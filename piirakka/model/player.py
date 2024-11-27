@@ -7,6 +7,7 @@ import time
 from model.player_state import PlayerState
 from model.station import Station
 
+VOLUME_INIT = 50
 VOLUME_MAX = 130
 
 
@@ -19,7 +20,6 @@ class Player:
 
         self.stations: list[Station] = []
         self.playing = True
-        self.volume = 50
         self._init_db()
 
         if self.use_mpv:
@@ -35,7 +35,6 @@ class Player:
             self.current_station = self.stations[default_index]
             self.current_station_index = default_index
             self.play_station_with_id(default_index)
-        self.set_volume(self.volume)
 
     def __del__(self) -> None:
         if self.use_mpv and hasattr(self, "proc"):
@@ -46,6 +45,7 @@ class Player:
             'mpv',
                 '--idle',
                 '--input-ipc-server=' + self.socket,
+                '--volume' + str(VOLUME_INIT),
                 '--volume-max=' + str(VOLUME_MAX),  # TODO: source from config file
                 '--cache=yes', 
                 '--cache-secs=' + str(15),
@@ -55,7 +55,7 @@ class Player:
         time.sleep(4)  # wait for mpv to start
         return proc
 
-    def _ipc_command(self, cmd: str) -> str | None:
+    def _ipc_command(self, cmd: str) -> dict:
         try:
             # Create a Unix domain socket
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
@@ -68,11 +68,18 @@ class Player:
                 # Receive the response
                 response = sock.recv(4096).decode()
                 sock.close()
-                return response
+                return json.loads(response)
 
         except Exception as e:
             print(f"Error: {e}")
             return None
+    
+    @staticmethod
+    def _ipc_success(resp: dict) -> bool:
+        return resp['error'] == 'success'
+    
+    def _dumps(self, cmd: dict) -> str:
+        return json.dumps(cmd) + '\n'
 
     def _init_db(self):
         conn = sqlite3.connect(self.database)
@@ -80,9 +87,6 @@ class Player:
         cursor.execute("CREATE TABLE IF NOT EXISTS stations (url VARCHAR(255), description VARCHAR(255), source VARCHAR(10))")
         conn.commit()
         conn.close()
-
-    def _dumps(self, cmd: dict) -> str:
-        return json.dumps(cmd) + '\n'
     
     def to_player_state(self) -> PlayerState:
         return PlayerState(
@@ -92,6 +96,32 @@ class Player:
             current_station=self.current_station,
             current_station_index=self.current_station_index
         )
+    
+    def get_volume(self) -> int:
+        cmd = {
+            "command": [
+                "get_property",
+                "volume"
+            ]
+        }
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            return round(resp['data'])
+
+    def set_volume(self, vol: int) -> bool:
+        if not 0 <= vol <= VOLUME_MAX:
+            return False
+        cmd = {
+            "command": [
+                "set_property",
+                "volume",
+                str(vol)
+            ]
+        }
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        return self._ipc_success(resp)
 
     def add_station(self, url: str, description: str) -> tuple[bool, str]:
         for s in self.stations:
@@ -198,24 +228,6 @@ class Player:
             return self.pause()
         else:
             return self.play()
-
-    def set_volume(self, vol: int) -> bool:
-        if not 0 <= vol <= VOLUME_MAX:
-            return False
-        cmd = {
-            "command": [
-                "set_property",
-                "volume",
-                vol
-            ]
-        }
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
-        if resp:
-            self.volume = vol
-            return True
-        else:
-            return False
 
     def now_playing(self) -> dict | None:
         # TODO: don't assume stream is Icecast
