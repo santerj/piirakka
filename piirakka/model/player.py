@@ -48,7 +48,8 @@ class Player:
                 '--input-ipc-server=' + self.socket,
                 '--volume-max=' + str(VOLUME_MAX),  # TODO: source from config file
                 '--cache=yes', 
-                '--cache-secs=' + str(15)
+                '--cache-secs=' + str(15),
+                '--really-quiet'
         ]
         proc = subprocess.Popen(cmd)
         time.sleep(4)  # wait for mpv to start

@@ -12,7 +12,6 @@ from fastapi import FastAPI, BackgroundTasks, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.requests import Request
 
 SPAWN_MPV = os.getenv("MPV", True)
 SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
@@ -96,6 +95,7 @@ async def events(request: Request):
         except asyncio.CancelledError as e:
             # cleanup tasks here
             del app.state.player # destroy Player()
+            raise e
     return StreamingResponse(event_generator(request, queue), media_type="text/event-stream")
 
 @app.get("/api/radio/playerState")
