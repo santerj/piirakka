@@ -1,6 +1,6 @@
-<section class="w-full max-w-md p-4 border border-gray-300 rounded-3xl mb-8 bg-white shadow-sm">
-    <h2 class="font-nunito font-bold mb-2" id="nowPlaying">now playing: <span id="currentStation"></span></h2>
+<section class="navbar-center w-full p-4 border border-gray-300 rounded-3xl bg-white shadow-sm">
     <div class="flex items-center space-x-4">
+      <h2 class="font-nunito mb-2" id="nowPlaying">now playing: <span id="currentStation"></span></h2>
       <!-- Play/Pause Button -->
       <button 
         id="playPauseButton" 
@@ -28,14 +28,14 @@
       </button>
   
       <!-- Volume Control -->
-      <div class="flex items-center space-x-2">
+      <div class="navbar-end space-x-2 w-48 justify-end">
         <i class="fa fa-volume-up text-gray-700"></i>
         <input 
           type="range" 
-          min="0" 
-          max="100" 
+          min="0"
+          max="100"
           step="1"
-          class="range range-primary h-1 bg-gray-700 border border-gray-500 rounded-full shadow-md" 
+          class="range range-xs"
           id="volumeControl" 
           onchange="handleVolumeChange(this.value)">
       </div>
