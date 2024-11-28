@@ -1,8 +1,10 @@
+alembic
 fastapi
 jinja2
 requests
 setproctitle
 #sse-starlette
+sqlalchemy
 starlette
 uvicorn
 validators
