@@ -57,7 +57,10 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html",
                 {
                     "request": request,
-                    "sidebar_items": sidebar_items
+                    "sidebar_items": sidebar_items,
+                    # placeholders
+                    "stations": [i for i in range(30)],
+                    "recent_tracks": [f"Artist name – Track name which is long (Remastered 2009) {i}" for i in range(50)]
                 }
     )
 
@@ -66,7 +69,6 @@ async def stations_page(request: Request):
     return templates.TemplateResponse("legacy_stations.html",
                 {
                     "request": request,
-                    "reload_token": player.hash,
                     "stations": player.stations
                 }
     )
@@ -117,9 +119,13 @@ async def toggle(background_tasks: BackgroundTasks):
     background_tasks.add_task(player.toggle)
     return {"message": "toggle task initiated"}
 
-@app.put("/api/radio/station")
-async def set_station(station: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(player.set_station, station)
+@app.post("/api/radio/station")
+async def create_station(body: dict):
+    pass
+
+@app.put("/api/radio/station/{station_id}")
+async def set_station(station_id: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(player.set_station, station_id)
     return {"message": "Station change initiated"}
 
 if __name__ == "__main__":
