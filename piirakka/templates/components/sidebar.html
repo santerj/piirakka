@@ -8,6 +8,30 @@
             </a>
         </li>
         {% endfor %}
+        <div class="divider font-nunito px-2">stations</div>
+        {% for item in stations %}
+        <li class="">
+            <p data-stationId="{{ item }}"> station {{ item }} </p>
+        </li>
+        {% endfor %}
     </ul>
-    <div class="divider font-nunito px-2">stations</div>
 </nav>
+
+<script>
+    document.querySelectorAll('li p[data-stationId]').forEach(item => {
+        item.addEventListener('click', function() {
+            const stationId = this.getAttribute('data-stationId');
+
+            fetch(`/station/${stationId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stationId: stationId })
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>

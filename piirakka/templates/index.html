@@ -6,13 +6,10 @@
     {% include 'components/head.html' %}
 </head>
 
-<body class="relative min-h-screen bg-gradient-to-tr from-gray-100 to-rose-200">
-    <!-- Sidebar wrapper -->
-    <div class="absolute right-0 top-0 h-full w-64 border-l border-gray-300 bg-gray-100 overflow-hidden">
-        <!-- sidebar -->
-        <aside class="h-full">
-            {% include 'components/sidebar.html' %}
-        </aside>
+<body class="min-h-screen bg-gradient-to-tr from-gray-100 to-rose-200">
+    <!-- sidebar -->
+    <div class="absolute right-0 top-0 h-full w-64 border-l border-gray-300 bg-gray-100 overflow-x-hidden overflow-y-scroll">
+        {% include 'components/sidebar.html' %}
     </div>
 
     <!-- player controls -->
@@ -22,6 +19,8 @@
 
     <main class="flex-1 mr-64">
         <!-- Your main content here -->
+        <p> aaaaaa </p>
+        <p> bbbbbb </p>
     </main>
 </body>
 </html>
