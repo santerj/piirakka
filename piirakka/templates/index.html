@@ -8,7 +8,8 @@
 
 <body class="min-h-screen bg-gradient-to-tr from-gray-100 to-rose-200">
     <!-- sidebar -->
-    <div class="absolute right-0 top-0 h-full w-64 border-l border-gray-300 bg-gray-100 overflow-x-hidden overflow-y-scroll">
+    <div class="absolute right-0 top-0 w-64 border border-gray-400 rounded-l-xl h-full
+                bg-gradient-to-tl from-gray-200 to-rose-200 overflow-x-hidden overflow-y-scroll shadow-lg">
         {% include 'components/sidebar.html' %}
     </div>
 
@@ -17,8 +18,8 @@
         {% include 'components/player.html' %}
     </div>
 
-    <main class="mr-64 px-5 py-5 grid grid-cols-2 gap-4 overflow-y-auto h-[calc(100vh-4.5rem)]">
-        <div class="overscroll-auto border border-gray-400 rounded-xl p-2 shadow-lg overflow-y-auto h-full">
+    <main class="mr-64 px-5 py-5 grid grid-cols-3 gap-4 overflow-y-auto h-[calc(100vh-4.5rem)]">
+        <div class="col-span-2 overscroll-auto border border-gray-400 rounded-xl p-2 shadow-lg overflow-y-auto h-full">
             {% include 'components/recent_tracks.html' %}
         </div>
     </main>
