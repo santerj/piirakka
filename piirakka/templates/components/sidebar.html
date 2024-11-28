@@ -18,11 +18,12 @@
 </nav>
 
 <script>
+    // make all stations clickable - upon click, send PUT request to select the station
     document.querySelectorAll('li p[data-stationId]').forEach(item => {
         item.addEventListener('click', function() {
             const stationId = this.getAttribute('data-stationId');
 
-            fetch(`/station/${stationId}`, {
+            fetch(`/api/radio/station/${stationId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
