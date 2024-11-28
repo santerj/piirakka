@@ -1,6 +1,9 @@
+
 <div class="overflow-y relative">
-    <h1 class="sticky top-0 text-xl pb-1 ml-2">recent tracks</h1>
-    <table class="table table-xs inherit h-full overflow-hidden">
+    <div class="sticky top-0 w-120 h-8 bg-rose-300 blur-2xl -mx-4"></div>
+    <h1 class="top-0 text-xl pb-3 ml-2 -mt-6 font-nunito font-semibold text-black">Recent tracks</h1>
+    <div class="divider -my-2"></div>
+    <table class="table table-xs inherit h-full overflow-x-clip">
       <!-- head -->
       <thead>
       </thead>
@@ -8,8 +11,8 @@
         {% for track in recent_tracks %}
         <!-- TODO: add human readable timestamp (2 minutes ago, etc...) -->
         <tr>
-            <th class="overflow-hidden text-ellipsis">{{ track }}</th>
-            <th class="font-nunito font-light">station name</th>
+            <th title="{{ track }}" class="overflow-hidden truncate max-w-64">{{ track }}</th>
+            <th title="station name" class="font-nunito font-light truncate max-w-24">station name</th>
             <th>
                 <div class="tooltip tooltip-left" data-tip="search in Spotify">
                 <a href="spotify://search/{{ track }}"><img src="static/icons/spotify-line.svg" alt="{{ spotify }} Icon" class="w-5 h-5"></a>
