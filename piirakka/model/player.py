@@ -82,6 +82,7 @@ class Player:
         return json.dumps(cmd) + '\n'
 
     def _init_db(self):
+        return
         conn = sqlite3.connect(self.database)
         cursor = conn.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS stations (url VARCHAR(255), description VARCHAR(255), source VARCHAR(10))")
@@ -123,43 +124,8 @@ class Player:
         resp = self._ipc_command(cmd)
         return self._ipc_success(resp)
 
-    def add_station(self, url: str, description: str) -> tuple[bool, str]:
-        for s in self.stations:
-            if s.url == url:
-                return False, "url already added"
-            elif s.description == description:
-                return False, "name already added"
-
-        station = Station(url=url, description=description, source='custom')
-        result, msg = station.check()
-        
-        if result:
-            station.create(db=self.database)
-            self.update_stations()
-            return True, "success"
-        else:
-            print("error", msg)
-            return False, msg
-
-    def delete_station(self, index):
-        try:
-            target = self.stations[index]
-        except IndexError:
-            return False
-
-        conn = sqlite3.connect(self.database)
-        cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM stations WHERE url='{target.url}' AND description='{target.description}'")
-        conn.commit()
-        conn.close()
-
-        if index == self.current_station_index:
-            self.current_station = self.stations[0]  # reset channel if current one was deleted
-        self.update_stations()
-
-        return True
-
     def update_stations(self) -> None:
+        # TODO: rewrite
         if self.current_station:
             self.current_station_index = self.stations.index(self.current_station)
         conn = sqlite3.connect(self.database)
