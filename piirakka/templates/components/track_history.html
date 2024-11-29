@@ -7,18 +7,10 @@
       <!-- head -->
       <thead>
       </thead>
-      <tbody>
+      <tbody id="trackHistory">
         {% for track in recent_tracks %}
         <!-- TODO: add human readable timestamp (2 minutes ago, etc...) -->
-        <tr>
-            <th title="{{ track }}" class="overflow-hidden truncate max-w-64">{{ track }}</th>
-            <th title="station name" class="font-nunito font-light truncate max-w-24">station name</th>
-            <th>
-                <div class="tooltip tooltip-left" data-tip="search in Spotify">
-                <a href="spotify://search/{{ track }}"><img src="static/icons/spotify-line.svg" alt="{{ spotify }} Icon" class="w-5 h-5"></a>
-                </div>
-            </th>
-        </tr>
+          {% include 'components/recent_track.html' %}
         {% endfor %}
       </tbody>
     </table>
