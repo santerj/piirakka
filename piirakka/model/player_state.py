@@ -1,4 +1,4 @@
-from model.station import Station, StationPydantic
+from piirakka.model.station import Station, StationPydantic
 
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel

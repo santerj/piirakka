@@ -4,8 +4,8 @@ import sqlite3
 import json
 import time
 
-from model.player_state import PlayerState
-from model.station import Station
+from piirakka.model.player_state import PlayerState
+from piirakka.model.station import Station
 
 VOLUME_INIT = 50
 VOLUME_MAX = 130
