@@ -6,11 +6,11 @@
     {% include 'components/head.html' %}
 </head>
 
-<body class="min-h-screen bg-gradient-to-tr from-gray-100 to-rose-200 grid grid-cols-12 gap-4">
+<body class="min-h-screen grid grid-cols-12 gap-4 bg-gradient-to-tr from-gray-100 to-rose-200">
     <!-- sidebar -->
-    <div class="col-span-3 rounded-l-xl h-full w-64 overflow-x-hidden overflow-y-scroll
+    <div class="col-span-3 h-full w-64 overflow-x-hidden overflow-y-scroll
                 right-0 top-0 absolute
-                border border-gray-400 shadow-lg
+                border border-gray-400 shadow-lg rounded-l-xl
                 bg-gradient-to-br from-gray-300 to-rose-200">
         {% include 'components/sidebar.html' %}
     </div>
@@ -22,7 +22,6 @@
 
     <!-- main content -->
     <main class="col-span-9 px-5 py-5 overflow-y-auto h-[calc(100vh-4.5rem)] grid grid-cols-12 gap-4">
-
         <!-- track history -->
         <div class="col-span-8 overscroll-auto border border-gray-400 rounded-xl p-2 shadow-lg overflow-y-auto h-full">
             {% include 'components/track_history.html' %}
