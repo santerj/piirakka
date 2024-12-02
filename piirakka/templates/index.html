@@ -23,9 +23,43 @@
     <!-- main content -->
     <main class="col-span-9 px-5 py-5 overflow-y-auto h-[calc(100vh-4.5rem)] grid grid-cols-12 gap-4">
         <!-- track history -->
-        <div class="col-span-8 overscroll-auto border border-gray-400 rounded-xl p-2 shadow-lg overflow-y-auto h-full">
+        <div id="TrackHistory" class="col-span-8 overscroll-auto border border-gray-400 rounded-xl p-2 shadow-lg overflow-y-auto h-full">
             {% include 'components/track_history.html' %}
         </div>
     </main>
 </body>
 </html>
+
+<script>
+    // open websocket
+    const socket = new WebSocket('ws://localhost:8000/api/websocket');
+
+    // Listen for connection open event
+    socket.addEventListener('open', function(event) {
+        console.log('WebSocket is connected.');
+    });
+
+    // Listen for messages from the server
+    socket.addEventListener('message', function(event) {
+        // Parse the incoming message
+        const message = JSON.parse(event.data);
+
+        // check event type
+        if (message.event === 'track_changed') {
+            // set track history
+            const trackHistoryElement = document.getElementById('TrackHistory');
+            trackHistoryElement.innerHTML = message.html;
+        }
+    });
+
+    // Listen for connection close event
+    socket.addEventListener('close', function(event) {
+        console.log('WebSocket is closed now.');
+    });
+
+    // Listen for errors
+    socket.addEventListener('error', function(event) {
+        console.error('WebSocket error:', event);
+    });
+
+  </script>

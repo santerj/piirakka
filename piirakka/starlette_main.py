@@ -6,14 +6,14 @@ import json
 
 from jinja2 import Environment, FileSystemLoader
 
+#from setproctitle import setproctitle
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-
 
 from starlette.applications import Starlette
 from starlette.background import BackgroundTask
 from starlette.endpoints import WebSocketEndpoint
-from starlette.responses import PlainTextResponse, JSONResponse
+from starlette.responses import JSONResponse
 from starlette.routing import Route, Mount, WebSocketRoute
 from starlette.applications import Starlette
 from starlette.templating import Jinja2Templates
@@ -26,6 +26,9 @@ from piirakka.model.player import Player
 from piirakka.model.station import Station
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
+
+
+#setproctitle("piirakka")
 
 
 templates = Jinja2Templates(directory="piirakka/templates")
@@ -126,13 +129,15 @@ async def observe_current_track(interval: int = 5):
 ###--- endpoints
 
 async def index(request):
+    print(context.player.get_status())
     return templates.TemplateResponse("index.html",
         {
             "request": request,
             "sidebar_items": sidebar_items,
-            # placeholders
             "stations": context.player.stations,
-            "recent_tracks": context.track_history
+            "recent_tracks": context.track_history,
+            "volume": context.player.get_volume(),
+            "playing": context.player.get_status()
         }
     )
 
@@ -149,11 +154,27 @@ async def set_station(request):
     task = BackgroundTask(context.player.play_station_with_id, station_id)
     return JSONResponse({"message": "station change initiated"}, background=task)
 
+async def toggle_playback(request):
+    task = BackgroundTask(context.player.toggle)
+    return JSONResponse({"message": "toggle initiated"}, background=task)
+
+async def set_volume(request):
+    data = await request.json()
+    volume = int(data.get('volume'))
+    task = BackgroundTask(context.player.set_volume, volume)
+    return JSONResponse({"message": "volume change initiated"}, background=task)
+
+async def shuffle_station(request):
+    # TODO:
+    pass
+
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
-        Route('/api/radio/station/{station_id}', set_station, methods=['PUT']),
+        Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
         WebSocketRoute("/api/websocket", WebSocketConnection),
         Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
     ]

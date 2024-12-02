@@ -95,6 +95,20 @@ class Player:
             current_station=self.current_station,
             current_station_index=self.current_station_index
         )
+    
+    def get_status(self) -> bool:
+        # true: playing
+        # false: paused
+        cmd = {
+            "command": [
+                "get_property",
+                "pause"
+            ]
+        }
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            return not resp['data']
 
     def get_volume(self) -> int:
         cmd = {
@@ -121,6 +135,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         return self._ipc_success(resp)
+        # TODO: send new value via callback
 
     def update_stations(self) -> None:
         if s := self.current_station:
@@ -155,6 +170,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
+        # TODO: send new value via callback
 
     def play(self) -> bool:
         cmd = {
@@ -166,8 +182,9 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
+        #self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
         return True if resp else False
+        # TODO: send new value via callback
 
     def pause(self) -> bool:
         cmd = {
@@ -179,8 +196,9 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = False
-        self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
+        #self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
         return True if resp else False
+        # TODO: send new value via callback
 
     def toggle(self) -> bool:
         if self.playing:

@@ -10,9 +10,10 @@
         <button 
             id="playPauseButton" 
             class="btn bg-white hover:bg-white border shadow-md hover:shadow-inner" 
-            onclick="handlePlayPause()">
-            <img id="playIcon" src="static/icons/play-circle-line.svg" alt="Play" class="h-6 w-6">
-            <img id="pauseIcon" src="static/icons/pause-circle-line.svg" alt="Pause" class="h-6 w-6 hidden">
+            onclick="handleToggle()">
+            <!-- TODO: icon state only set on initial render, needs to reflect websocket events -->
+            <img id="playIcon" src="static/icons/play-circle-line.svg" alt="Play" class="h-6 w-6 {% if playing %}hidden{% endif %}">
+            <img id="pauseIcon" src="static/icons/pause-circle-line.svg" alt="Pause" class="h-6 w-6 {% if not playing %}hidden{% endif %}">
         </button>
 
         <!-- Shuffle Button -->
@@ -25,6 +26,7 @@
 
         <!-- Volume Button -->
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
+        <!-- TODO: needs to reflect websocket events -->
         <button 
             id="volumeButton" 
             class="btn bg-white hover:bg-white border shadow-md hover:shadow-inner" 
@@ -38,7 +40,8 @@
         <!-- Volume Control -->
         <i class="fa fa-volume-up"></i>
         <input 
-            type="range" 
+            type="range"
+            value="{{ volume }}" 
             min="0"
             max="100"
             step="1"
@@ -51,7 +54,7 @@
 
 <script>
   // JavaScript to handle play/pause button
-  function handlePlayPause() {
+  function handleToggle() {
       const playIcon = document.getElementById('playIcon');
       const pauseIcon = document.getElementById('pauseIcon');
 
@@ -63,8 +66,8 @@
           pauseIcon.classList.remove('hidden');
       }
 
-      fetch('/play-pause', {
-          method: 'POST'
+      fetch('/api/radio/toggle', {
+          method: 'PUT'
       });
   }
 
@@ -96,8 +99,8 @@
 
   // JavaScript to handle volume change
   function handleVolumeChange(value) {
-      fetch('/set-volume', {
-          method: 'POST',
+      fetch('/api/radio/volume', {
+          method: 'PUT',
           headers: {
               'Content-Type': 'application/json'
           },

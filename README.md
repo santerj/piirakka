@@ -42,6 +42,6 @@ Note that shutdown with ctrl+C here will be very messy if there are existing SSE
     6. unzip file, move contents to piirakka/static/icons
     7. 👍
 
-### subscribe to server-sent events
+### subscribe to websockets in shell (needs websocat)
 
-    $ curl -N http://localhost:8000/events
+    $ websocat ws://localhost:8000/api/websocket
