@@ -129,7 +129,6 @@ async def observe_current_track(interval: int = 5):
 ###--- endpoints
 
 async def index(request):
-    print(context.player.get_status())
     return templates.TemplateResponse("index.html",
         {
             "request": request,
@@ -137,7 +136,11 @@ async def index(request):
             "stations": context.player.stations,
             "recent_tracks": context.track_history,
             "volume": context.player.get_volume(),
-            "playing": context.player.get_status()
+            "playing": context.player.get_status(),
+            "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
+            "station_name": context.player.current_station.name,
+            "bitrate": f"{context.player.get_bitrate() / 1000} kbps",
+            "codec": context.player.get_codec()
         }
     )
 

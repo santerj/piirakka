@@ -137,7 +137,32 @@ class Player:
         return self._ipc_success(resp)
         # TODO: send new value via callback
 
+    def get_bitrate(self) -> int:
+        cmd = {
+            "command": [
+                "get_property",
+                "audio-bitrate"
+            ]
+        }
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            return int(resp['data'])
+        
+    def get_codec(self) -> str:
+        cmd = {
+            "command": [
+                "get_property",
+                "audio-codec-name"
+            ]
+        }
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            return resp['data']
+
     def update_stations(self) -> None:
+        # TODO: let controller handle DB select, pass via argument here
         if s := self.current_station:
             current_station_id = s.station_id
 
