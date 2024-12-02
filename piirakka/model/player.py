@@ -34,8 +34,6 @@ class Player:
         self.current_station: StationPydantic = None
         self.volume = self.get_volume()
 
-        print(self.socket)
-
         self.update_stations()
         if len(self.stations) > 0:
             # set initial station if db is populated
@@ -206,7 +204,7 @@ class Player:
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
             try:
-                return resp["icy-title"]
+                return resp["data"]["icy-title"]
             except KeyError:
                 pass
         return None

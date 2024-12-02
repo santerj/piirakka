@@ -9,9 +9,9 @@
         </li>
         {% endfor %}
         <div class="divider font-nunito px-2">stations</div>
-        {% for item in stations %}
+        {% for station in stations %}
         <li class="">
-            <p data-stationId="{{ item }}"> station {{ item }} </p>
+            <p data-stationId="{{ station.station_id }}">{{ station.name }}</p>
         </li>
         {% endfor %}
     </ul>

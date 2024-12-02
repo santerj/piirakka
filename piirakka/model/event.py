@@ -1,7 +1,8 @@
 from enum import Enum
 from pydantic import BaseModel
 
-from station import Station
+from piirakka.model.station import StationPydantic
+
 
 # instead of updating ui always with entire PlayerState, we can
 # send smaller event dtos that only contain the changed value.
@@ -14,12 +15,12 @@ class StationSetEvent(BaseModel):
 class StationsChangeEvent(BaseModel):
     # stations updated in db
     event: str = "stations_changed"
-    stations: list[Station]
+    stations: list[StationPydantic]
 
 class TrackChangeEvent(BaseModel):
     # track changed
     event: str = "track_changed"
-    title: str
+    html: str
 
 class VolumeSetEvent(BaseModel):
     # someone changed volume

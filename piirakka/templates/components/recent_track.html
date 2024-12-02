@@ -1,10 +1,10 @@
 <tr>
-    <th class="font-nunito font-light" id="timeStamp">19:36</th>
-    <th title="{{ track }}" class="overflow-hidden truncate max-w-64">{{ track }}</th>
-    <th title="station name" class="font-nunito font-light truncate max-w-24">station name</th>
+    <th class="font-nunito font-light" id="timeStamp">{{ track.timestamp }}</th>
+    <th title="{{ track.title }}" class="overflow-hidden truncate max-w-64">{{ track.title }}</th>
+    <th title="{{ track.station }}" class="font-nunito font-light truncate max-w-24">{{ track.station }}</th>
     <th>
         <div class="tooltip tooltip-left" data-tip="search in Spotify">
-        <a href="spotify://search/{{ track }}"><img src="static/icons/spotify-line.svg" alt="{{ spotify }} Icon" class="w-5 h-5"></a>
+        <a href="spotify://search/{{ track.title }}"><img src="static/icons/spotify-line.svg" alt="Spotify icon" class="w-5 h-5"></a>
         </div>
     </th>
 </tr>

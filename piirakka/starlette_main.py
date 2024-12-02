@@ -1,13 +1,19 @@
 import os
 
+from datetime import datetime
 from http import HTTPMethod
+import json
+
+from jinja2 import Environment, FileSystemLoader
 
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 
+
 from starlette.applications import Starlette
+from starlette.background import BackgroundTask
 from starlette.endpoints import WebSocketEndpoint
-from starlette.responses import PlainTextResponse
+from starlette.responses import PlainTextResponse, JSONResponse
 from starlette.routing import Route, Mount, WebSocketRoute
 from starlette.applications import Starlette
 from starlette.templating import Jinja2Templates
@@ -15,12 +21,19 @@ from starlette.staticfiles import StaticFiles
 import uvicorn
 import asyncio
 
+import piirakka.model.event as events
 from piirakka.model.player import Player
 from piirakka.model.station import Station
+from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
 
 
 templates = Jinja2Templates(directory="piirakka/templates")
+
+# TODO: hacking to get jinja rendering working,
+# doesn't necessarily have to be done twice
+file_loader = FileSystemLoader("piirakka/templates")
+env = Environment(loader=file_loader)
 
 if False:  # cheap seeding
     engine = create_engine("sqlite:///piirakka.db", echo=True)
@@ -49,14 +62,16 @@ class Context:
 
     def __init__(self):
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
-        self.track_history = []
+        self.track_history: list[RecentTrack] = []
         self.subscribers = []
 
-    def push_track(self, track):
-        if len(self.track_history) > self.TRACK_HISTORY_LENGTH:
+    async def push_track(self, track):
+        if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
             self.track_history.pop()
-        self.track_history.insert(track)
-        # TODO: broadcast via websocket
+        self.track_history.insert(0, track)
+        template = env.get_template('components/track_history.html')
+        html = template.render(recent_tracks=self.track_history)
+        await broadcast_message(json.dumps(events.TrackChangeEvent(html=html).model_dump()))  # TODO: functionize
 
 context = Context()
 
@@ -85,10 +100,28 @@ def task(callback):
     # placeholder
     callback("task")
 
-async def background_task():
+async def observe_current_track(interval: int = 5):
     while True:
-        await asyncio.sleep(5)
-        task(context.player_callback)
+        await asyncio.sleep(interval)
+        current_track_title = context.player.current_track()
+        if current_track_title == None:
+            # did not get Icy-Title
+            continue
+        else:
+            current_track = RecentTrack(
+                        title=current_track_title,
+                        station=context.player.current_station.name,
+                        timestamp=datetime.now().strftime('%H:%M')
+                    )
+
+        if len(context.track_history) == 0:
+            await context.push_track(current_track)
+        elif context.track_history[0].title == current_track_title:
+            # track hasn't changed
+            continue
+        else:
+            await context.push_track(current_track)
+
 
 ###--- endpoints
 
@@ -98,8 +131,8 @@ async def index(request):
             "request": request,
             "sidebar_items": sidebar_items,
             # placeholders
-            "stations": [i for i in range(30)],
-            "recent_tracks": [f"Artist name – Track name which is long (Remastered 2009) {i}" for i in range(50)]
+            "stations": context.player.stations,
+            "recent_tracks": context.track_history
         }
     )
 
@@ -111,11 +144,16 @@ async def stations_page(request):
                 }
     )
 
+async def set_station(request):
+    station_id = request.path_params['station_id']
+    task = BackgroundTask(context.player.play_station_with_id, station_id)
+    return JSONResponse({"message": "station change initiated"}, background=task)
 
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
+        Route('/api/radio/station/{station_id}', set_station, methods=['PUT']),
         WebSocketRoute("/api/websocket", WebSocketConnection),
         Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
     ]
@@ -123,7 +161,7 @@ app = Starlette(
 
 @app.on_event("startup")
 async def startup():
-    asyncio.create_task(background_task())
+    asyncio.create_task(observe_current_track())
 
 @app.on_event("shutdown")
 async def shutdown():
