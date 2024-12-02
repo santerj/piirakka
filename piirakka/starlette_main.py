@@ -2,6 +2,9 @@ import os
 
 from http import HTTPMethod
 
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+
 from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.responses import PlainTextResponse
@@ -13,16 +16,31 @@ import uvicorn
 import asyncio
 
 from piirakka.model.player import Player
+from piirakka.model.station import Station
 from piirakka.model.sidebar_item import sidebar_items
 
 
 templates = Jinja2Templates(directory="piirakka/templates")
 
+if False:  # cheap seeding
+    engine = create_engine("sqlite:///piirakka.db", echo=True)
+    with Session(engine) as session:
+        junkkaa = Station(
+            name="junkkaa",
+            url="http://andromeda.shoutca.st/tunein/differentdrumz.pls"
+        )
+        lush = Station(
+            name="lush",
+            url="https://api.somafm.com/lush.pls"
+        )
+        session.add_all([junkkaa, lush])
+        session.commit()
 
 class Context:
     SPAWN_MPV = os.getenv("MPV", True)
     SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
-    DATABASE = os.getenv("DATABASE", "./piirakka.db")
+    DATABASE = os.getenv("DATABASE", "piirakka.db")
+    TRACK_HISTORY_LENGTH = 50
 
     @staticmethod
     def player_callback(message):
@@ -33,6 +51,12 @@ class Context:
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
         self.track_history = []
         self.subscribers = []
+
+    def push_track(self, track):
+        if len(self.track_history) > self.TRACK_HISTORY_LENGTH:
+            self.track_history.pop()
+        self.track_history.insert(track)
+        # TODO: broadcast via websocket
 
 context = Context()
 
@@ -66,7 +90,7 @@ async def background_task():
         await asyncio.sleep(5)
         task(context.player_callback)
 
-# endpoints
+###--- endpoints
 
 async def index(request):
     return templates.TemplateResponse("index.html",

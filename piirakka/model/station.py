@@ -14,10 +14,21 @@ class Station(Base):
     url = Column(String, nullable=False)
     added_on = Column(DateTime, default=datetime.utcnow)
 
+    def to_pydantic(self):
+        return StationPydantic(
+            station_id=str(self.station_id),
+            name=self.name,
+            url=self.url,
+            added_on=self.added_on
+        )
+
 class StationPydantic(BaseModel):
     # pydantic representation of Station
-    # TODO: construct from instance of Station
     station_id: str
     name: str
     url: str
-    added_on: str  # TODO: datetime
+    added_on: datetime
+
+    def to_sqlalchemy(self):
+        # TODO:
+        pass

@@ -4,8 +4,11 @@ import sqlite3
 import json
 import time
 
+from sqlalchemy.orm import Session, sessionmaker  ## TODO: get from main
+from sqlalchemy import create_engine
+
 from piirakka.model.player_state import PlayerState
-from piirakka.model.station import Station
+from piirakka.model.station import Station, StationPydantic
 
 VOLUME_INIT = 50
 VOLUME_MAX = 130
@@ -18,23 +21,27 @@ class Player:
         self.database = database
         self.callback = callback
 
-        self.stations: list[Station] = []
-        self.playing = True
-        self._init_db()
+        self.engine = create_engine(f"sqlite:///{self.database}", echo=True)
+        self.Session = sessionmaker(bind=self.engine)
+        self.session = self.Session()
+
+        self.stations: list[StationPydantic] = []
+        self.playing = True  # TODO: get from mpv
 
         if self.use_mpv:
             self.proc = self._init_mpv()    # mpv process
 
-        self.current_station: Station = None
-        self.current_station_index: int = None  # index inside self.stations
+        self.current_station: StationPydantic = None
+        self.volume = self.get_volume()
+
+        print(self.socket)
 
         self.update_stations()
         if len(self.stations) > 0:
             # set initial station if db is populated
             default_index = 0
             self.current_station = self.stations[default_index]
-            self.current_station_index = default_index
-            self.play_station_with_id(default_index)
+            self.play_station_with_id(self.current_station.station_id)
 
     def __del__(self) -> None:
         if self.use_mpv and hasattr(self, "proc"):
@@ -45,7 +52,7 @@ class Player:
             'mpv',
                 '--idle',
                 '--input-ipc-server=' + self.socket,
-                '--volume' + str(VOLUME_INIT),
+                '--volume=' + str(VOLUME_INIT),
                 '--volume-max=' + str(VOLUME_MAX),  # TODO: source from config file
                 '--cache=yes', 
                 '--cache-secs=' + str(15),
@@ -81,15 +88,8 @@ class Player:
     def _dumps(self, cmd: dict) -> str:
         return json.dumps(cmd) + '\n'
 
-    def _init_db(self):
-        return
-        conn = sqlite3.connect(self.database)
-        cursor = conn.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS stations (url VARCHAR(255), description VARCHAR(255), source VARCHAR(10))")
-        conn.commit()
-        conn.close()
-    
     def to_player_state(self) -> PlayerState:
+        # TODO: might be redundant
         return PlayerState(
             playing=self.playing,
             volume=self.volume,
@@ -97,7 +97,7 @@ class Player:
             current_station=self.current_station,
             current_station_index=self.current_station_index
         )
-    
+
     def get_volume(self) -> int:
         cmd = {
             "command": [
@@ -125,31 +125,26 @@ class Player:
         return self._ipc_success(resp)
 
     def update_stations(self) -> None:
-        # TODO: rewrite
-        if self.current_station:
-            self.current_station_index = self.stations.index(self.current_station)
-        conn = sqlite3.connect(self.database)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM stations")
-        rows = cursor.fetchall()
-        stations = []
-        for row in rows:
-            url = row[0]
-            description = row[1]
-            source = row[2]
-            stations.append(Station(url=url, description=description, source=source))  # goes to end of array
-        conn.close()
-        self.stations = stations
-        if self.current_station:
+        if s := self.current_station:
+            current_station_id = s.station_id
+
+        stations = self.session.query(Station).all()
+        self.stations = [s.to_pydantic() for s in stations]
+
+        if self.current_station and current_station_id:
             # keep currently playing station info
-            self.current_station = self.stations[self.current_station_index]
+            matching_station = next((s for s in self.stations if s.station_id == current_station_id))
+            if matching_station:
+                self.current_station = matching_station
 
     def get_stations(self) -> list[Station]:
         return self.stations
 
-    def play_station_with_id(self, id: int):
-        self._set_station(url=self.stations[id].url)
-        self.current_station = self.stations[id]
+    def play_station_with_id(self, id: str):
+        matching_station = next((s for s in self.stations if s.station_id == id))
+        if matching_station:
+            self._set_station(url=matching_station.url)
+            self.current_station = matching_station
 
     def _set_station(self, url: str):
         cmd = {
@@ -195,7 +190,7 @@ class Player:
         else:
             return self.play()
 
-    def now_playing(self) -> dict | None:
+    def current_track(self) -> str | None:
         # TODO: don't assume stream is Icecast
         # TODO: check if equivalent fields exist for shoutcast, hls, dash
         # other interesting fields
@@ -209,18 +204,9 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        resp = json.loads(resp)
-        try:
-            icy_title = resp["data"]["icy-title"] if resp["data"]["icy-title"] else None
-            icy_genre = resp["data"]["icy-genre"] if resp["data"]["icy-genre"] else None
-            icy_name = resp["data"]["icy-name"] if resp["data"]["icy-name"] else None
-            payload = {
-                'status': 'playing' if self.playing else 'paused',
-                'icy_title': icy_title,
-                'icy_genre': icy_genre,
-                'icy_name': icy_name
-            }
-            return payload
-
-        except KeyError:
-            return None
+        if self._ipc_success(resp):
+            try:
+                return resp["icy-title"]
+            except KeyError:
+                pass
+        return None
