@@ -7,10 +7,25 @@ from piirakka.model.station import StationPydantic
 # instead of updating ui always with entire PlayerState, we can
 # send smaller event dtos that only contain the changed value.
 
+# --- begin note
+# TODO: these all reflect change in the player bar
+# a single event can emit everything necessary
 class StationSetEvent(BaseModel):
     # someone changed stations
     event: str = "station_set"
     station_index: int
+
+class StatusChangeEvent(BaseModel):
+    # status changed – playing or paused
+    event: str = "status_changed"
+    status: str
+
+class VolumeSetEvent(BaseModel):
+    # someone changed volume
+    event: str = "volume_set"
+    volume: int
+
+# --- end note
 
 class StationsChangeEvent(BaseModel):
     # stations updated in db
@@ -21,16 +36,6 @@ class TrackChangeEvent(BaseModel):
     # track changed
     event: str = "track_changed"
     html: str
-
-class VolumeSetEvent(BaseModel):
-    # someone changed volume
-    event: str = "volume_set"
-    volume: int
-
-class StatusChangeEvent(BaseModel):
-    # status changed – playing or paused
-    event: str = "status_changed"
-    status: str
 
 class PlayerEvent(Enum):
     STATION_SET = StationSetEvent
