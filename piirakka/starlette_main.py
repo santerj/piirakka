@@ -171,10 +171,19 @@ async def shuffle_station(request):
     # TODO:
     pass
 
+async def new(request):
+    # TODO: dev route for new grid layout
+    return templates.TemplateResponse("new_grid.html",
+        {
+            "request": request
+        }
+    )
+
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
+        Route("/new", endpoint=new, methods=[HTTPMethod.GET]),
         Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
         Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
         Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
