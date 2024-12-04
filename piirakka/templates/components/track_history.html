@@ -1,15 +1,14 @@
 
 <div class="overflow-y relative">
-    <div class="sticky top-0 w-120 h-8 bg-rose-300 blur-2xl -mx-4"></div>
-    <h1 class="top-0 text-xl pb-3 ml-2 -mt-6 font-nunito font-semibold text-black">Recent tracks</h1>
-    <div class="divider -my-2"></div>
+    <!-- <div class="sticky top-0 w-120 h-8 bg-rose-300 blur-2xl -mx-4"></div> -->
+    <h1 class="top-0 text-xl pt-4 pl-3 font-nunito font-semibold">Recent tracks</h1>
+    <div class="divider"></div>
     <table class="table table-s inherit h-full overflow-x-clip">
       <!-- head -->
       <thead>
       </thead>
       <tbody>
         {% for track in recent_tracks %}
-        <!-- TODO: add human readable timestamp (2 minutes ago, etc...) -->
           {% include 'components/recent_track.html' %}
         {% endfor %}
       </tbody>
