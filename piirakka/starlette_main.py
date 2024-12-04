@@ -175,7 +175,16 @@ async def new(request):
     # TODO: dev route for new grid layout
     return templates.TemplateResponse("new_grid.html",
         {
-            "request": request
+            "request": request,
+            "sidebar_items": sidebar_items,
+            "stations": context.player.stations,
+            "recent_tracks": context.track_history,
+            "volume": context.player.get_volume(),
+            "playing": context.player.get_status(),
+            "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
+            "station_name": context.player.current_station.name,
+            "bitrate": f"{context.player.get_bitrate() / 1000} kbps",
+            "codec": context.player.get_codec()
         }
     )
 
