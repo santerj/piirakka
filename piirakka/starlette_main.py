@@ -4,6 +4,7 @@ from datetime import datetime
 from http import HTTPMethod
 import json
 
+import anyio
 from jinja2 import Environment, FileSystemLoader
 
 #from setproctitle import setproctitle
@@ -58,15 +59,30 @@ class Context:
     DATABASE = os.getenv("DATABASE", "piirakka.db")
     TRACK_HISTORY_LENGTH = 50
 
-    @staticmethod
-    def player_callback(message):
-        loop = asyncio.get_event_loop()
-        loop.create_task(broadcast_message(str(message)))
+    def player_callback(self, message):
+        #loop = asyncio.get_event_loop()
+        #loop.create_task(broadcast_message(str(message)))
+        if isinstance(message, events.ControlBarUpdated):
+            self.refresh_control_bar()
 
     def __init__(self):
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
         self.track_history: list[RecentTrack] = []
         self.subscribers = []
+
+    def refresh_control_bar(self):
+        message = events.ControlBarUpdated()
+        template = env.get_template('components/player.html')
+        html = template.render(
+            volume=self.player.get_volume(),
+            playing=self.player.get_status(),
+            track_name=self.track_history[0].title if len(self.track_history) > 0 else '',
+            station_name=self.player.current_station.name,
+            bitrate=f"{self.player.get_bitrate() / 1000} kbps",
+            codec=self.player.get_codec()
+        )
+        message.html = html
+        anyio.from_thread.run(broadcast_message, json.dumps(message.model_dump()))
 
     async def push_track(self, track):
         if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
@@ -75,6 +91,7 @@ class Context:
         template = env.get_template('components/track_history.html')
         html = template.render(recent_tracks=self.track_history)
         await broadcast_message(json.dumps(events.TrackChangeEvent(html=html).model_dump()))  # TODO: functionize
+        await anyio.to_thread.run_sync(self.refresh_control_bar)
 
 context = Context()
 

@@ -7,7 +7,7 @@ import time
 from sqlalchemy.orm import Session, sessionmaker  ## TODO: get from main
 from sqlalchemy import create_engine
 
-from piirakka.model.player_state import PlayerState
+from piirakka.model.event import ControlBarUpdated
 from piirakka.model.station import Station, StationPydantic
 
 VOLUME_INIT = 50
@@ -86,16 +86,6 @@ class Player:
     def _dumps(self, cmd: dict) -> str:
         return json.dumps(cmd) + '\n'
 
-    def to_player_state(self) -> PlayerState:
-        # TODO: might be redundant
-        return PlayerState(
-            playing=self.playing,
-            volume=self.volume,
-            stations=self.stations,
-            current_station=self.current_station,
-            current_station_index=self.current_station_index
-        )
-    
     def get_status(self) -> bool:
         # true: playing
         # false: paused
@@ -134,8 +124,8 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
+        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar
         return self._ipc_success(resp)
-        # TODO: send new value via callback
 
     def get_bitrate(self) -> int:
         cmd = {
@@ -195,7 +185,6 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        # TODO: send new value via callback
 
     def play(self) -> bool:
         cmd = {
@@ -207,9 +196,8 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        #self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
+        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar
         return True if resp else False
-        # TODO: send new value via callback
 
     def pause(self) -> bool:
         cmd = {
@@ -221,9 +209,8 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = False
-        #self.callback(self.to_player_state().model_dump())  # TODO: don't do this if state didn't change!
+        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar
         return True if resp else False
-        # TODO: send new value via callback
 
     def toggle(self) -> bool:
         if self.playing:
