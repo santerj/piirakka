@@ -10,7 +10,7 @@
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
         <button 
             id="playPauseButton" 
-            class="btn bg-white hover:bg-white border shadow-md hover:shadow-inner" 
+            class="btn no-animation bg-white hover:bg-white border shadow-md hover:shadow-inner" 
             onclick="handleToggle()">
             <!-- TODO: icon state only set on initial render, needs to reflect websocket events -->
             <img id="playIcon" src="static/icons/play-circle-line.svg" alt="Play" class="h-6 w-6 {% if playing %}hidden{% endif %}">
@@ -20,7 +20,7 @@
         <!-- Shuffle Button -->
         <button 
             id="shuffleButton" 
-            class="btn bg-white hover:bg-white border shadow-md hover:shadow-inner" 
+            class="btn no-animation bg-white hover:bg-white border shadow-md hover:shadow-inner" 
             onclick="handleShuffle()">
             <img src="static/icons/shuffle-line.svg" alt="Shuffle" class="h-6 w-6">
         </button>
@@ -30,7 +30,7 @@
         <!-- TODO: needs to reflect websocket events -->
         <button 
             id="volumeButton" 
-            class="btn bg-white hover:bg-white border shadow-md hover:shadow-inner" 
+            class="btn no-animation bg-white hover:bg-white border shadow-md hover:shadow-inner" 
             onclick="handleVolumeToggle()">
             <img id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Volume Up" class="h-6 w-6">
             <img id="volumeMuteIcon" src="static/icons/volume-mute-line.svg" alt="Mute" class="h-6 w-6 hidden">
