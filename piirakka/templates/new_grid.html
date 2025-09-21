@@ -9,17 +9,56 @@
 <body class="bg-gray-100 h-screen overflow-hidden">
     <div class="grid grid-cols-12 grid-rows-12 h-full">
         <!-- Main Element -->
-        <main class="col-span-10 row-span-11 bg-blue-300 p-4 overflow-auto h-[calc(100vh-2.5rem)]">
+        <main id="TrackHistory" class="col-span-10 row-span-11 bg-blue-300 p-4 overflow-auto h-[calc(100vh-2.5rem)]">
             {% include 'components/track_history.html' %}
         </main>
         <!-- Sidebar -->
-        <aside class="col-span-2 row-span-12 bg-green-300 p-1 overflow-auto h-full">
+        <aside  class="col-span-2 row-span-12 bg-green-300 p-1 overflow-auto h-full">
             {% include 'components/sidebar.html' %}
         </aside>
         <!-- Navbar -->
-        <nav class="col-span-10 col-start-1 bg-red-300 p-1 fixed bottom-0 w-[calc(100%-16.66%)]">
+        <nav id="ControlBar" class="col-span-10 col-start-1 bg-red-300 p-1 fixed bottom-0 w-[calc(100%-16.66%)]">
             {% include 'components/player.html' %}
         </nav>
     </div>
 </body>
 </html>
+
+<script>
+    // open websocket
+    const socket = new WebSocket('ws://localhost:8000/api/websocket');
+
+    // Listen for connection open event
+    socket.addEventListener('open', function(event) {
+        console.log('WebSocket is connected.');
+    });
+
+    // Listen for messages from the server
+    socket.addEventListener('message', function(event) {
+        // Parse the incoming message
+        const message = JSON.parse(event.data);
+
+        // check event type
+        if (message.event === 'track_changed') {
+            // set track history
+            const trackHistoryElement = document.getElementById('TrackHistory');
+            trackHistoryElement.innerHTML = message.html;
+        }
+
+        else if (message.event === 'control_bar_updated') {
+            const controlBar = document.getElementById('ControlBar');
+            controlBar.innerHTML = message.html;
+        }
+    });
+
+    // Listen for connection close event
+    socket.addEventListener('close', function(event) {
+        console.log('WebSocket is closed now.');
+    });
+
+    // Listen for errors
+    socket.addEventListener('error', function(event) {
+        console.error('WebSocket error:', event);
+    });
+
+  </script>
