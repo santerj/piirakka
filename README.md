@@ -18,11 +18,10 @@
     $ pip-compile -o requirements/requirements.txt requirements/requirements.in
     $ pip-compile -o requirements/dev-requirements.txt requirements/dev-requirements.in
 
-### run fastapi in development mode
+### run starlette (main.py is old fastapi stuff)
 
-    $ uvicorn piirakka.main:app --timeout-graceful-shutdown 5 --workers 1
+    $ uvicorn piirakka.starlette_main:app --timeout-graceful-shutdown 5 --workers 1
 
-Note that shutdown with ctrl+C here will be very messy if there are existing SSE connections.
 
 ### run tailwind in watch mode
 
@@ -45,3 +44,7 @@ Note that shutdown with ctrl+C here will be very messy if there are existing SSE
 ### subscribe to websockets in shell (needs websocat)
 
     $ websocat ws://localhost:8000/api/websocket
+
+### run alembic
+
+    $ TODO
