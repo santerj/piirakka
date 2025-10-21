@@ -1609,6 +1609,18 @@ html {
       calc(var(--filler-size) * -1 - var(--filler-offset)) 0 0 var(--filler-size);
 }
 
+.range-primary {
+  --range-shdw: var(--fallback-p,oklch(var(--p)/1));
+}
+
+.range-secondary {
+  --range-shdw: var(--fallback-s,oklch(var(--s)/1));
+}
+
+.range-accent {
+  --range-shdw: var(--fallback-a,oklch(var(--a)/1));
+}
+
 @keyframes rating-pop {
   0% {
     transform: translateY(-0.125em);
@@ -2093,6 +2105,16 @@ html {
   margin: 0px;
 }
 
+.mx-4 {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 .-mt-2 {
   margin-top: -0.5rem;
 }
@@ -2283,6 +2305,16 @@ html {
   padding-bottom: 0.75rem;
 }
 
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
 .pb-6 {
   padding-bottom: 1.5rem;
 }
@@ -2343,7 +2375,21 @@ html {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.\[--range-fill\:0\] {
+  --range-fill: 0;
+}
+
 /* DaisyUI components */
+
+@media (prefers-color-scheme: dark) {
+  .dark\:range-primary {
+    --range-shdw: var(--fallback-p,oklch(var(--p)/1));
+  }
+
+  .dark\:range-accent {
+    --range-shdw: var(--fallback-a,oklch(var(--a)/1));
+  }
+}
 
 .hover\:bg-white:hover {
   --tw-bg-opacity: 1;
@@ -2377,9 +2423,48 @@ html {
     background-color: rgb(23 23 23 / var(--tw-bg-opacity, 1));
   }
 
+  .dark\:bg-black {
+    --tw-bg-opacity: 1;
+    background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
+  }
+
+  .dark\:bg-neutral-950 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(10 10 10 / var(--tw-bg-opacity, 1));
+  }
+
+  .dark\:bg-neutral-700 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(64 64 64 / var(--tw-bg-opacity, 1));
+  }
+
+  .dark\:bg-stone-800 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(41 37 36 / var(--tw-bg-opacity, 1));
+  }
+
+  .dark\:bg-stone-900 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(28 25 23 / var(--tw-bg-opacity, 1));
+  }
+
   .dark\:text-neutral-300 {
     --tw-text-opacity: 1;
     color: rgb(212 212 212 / var(--tw-text-opacity, 1));
+  }
+
+  .dark\:invert {
+    --tw-invert: invert(100%);
+    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+  }
+
+  .dark\:\[--range-bg\:orange\] {
+    --range-bg: orange;
+  }
+
+  .dark\:hover\:bg-black:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
   }
 }
 

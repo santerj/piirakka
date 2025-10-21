@@ -4,7 +4,7 @@
         {% for item in sidebar_items %}
         <li class="mb-2">
             <a href="{{ item.url }}" class="flex items-center space-x-2 overflow-hidden text-ellipsis">
-                <img src="{{ item.icon }}" alt="{{ item.name }} Icon" class="w-6 h-6">
+                <img class="w-6 h-6 dark:invert" src="{{ item.icon }}" alt="{{ item.name }} Icon">
                 <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">{{ item.name }}</span>
             </a>
         </li>

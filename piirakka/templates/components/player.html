@@ -10,30 +10,33 @@
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
         <button 
             id="playPauseButton" 
-            class="btn no-animation bg-white hover:bg-white border shadow-md hover:shadow-inner" 
+            class="btn no-animation border shadow-md hover:shadow-inner
+                bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black" 
             onclick="handleToggle()">
             <!-- TODO: icon state only set on initial render, needs to reflect websocket events -->
-            <img id="playIcon" src="static/icons/play-circle-line.svg" alt="Play" class="h-6 w-6 {% if playing %}hidden{% endif %}">
-            <img id="pauseIcon" src="static/icons/pause-circle-line.svg" alt="Pause" class="h-6 w-6 {% if not playing %}hidden{% endif %}">
+            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}" id="playIcon" src="static/icons/play-circle-line.svg" alt="Play">
+            <img class="h-6 w-6 dark:invert {% if not playing %}hidden{% endif %}" id="pauseIcon" src="static/icons/pause-circle-line.svg" alt="Pause">
         </button>
 
         <!-- Shuffle Button -->
         <button 
             id="shuffleButton" 
-            class="btn no-animation bg-white hover:bg-white border shadow-md hover:shadow-inner" 
+            class="btn no-animation border shadow-md hover:shadow-inner
+                bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
             onclick="handleShuffle()">
-            <img src="static/icons/shuffle-line.svg" alt="Shuffle" class="h-6 w-6">
+            <img class="h-6 w-6 dark:invert" src="static/icons/shuffle-line.svg" alt="Shuffle">
         </button>
 
         <!-- Volume Button -->
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
         <!-- TODO: needs to reflect websocket events -->
         <button 
-            id="volumeButton" 
-            class="btn no-animation bg-white hover:bg-white border shadow-md hover:shadow-inner" 
+            id="volumeButton"
+            class="btn no-animation border shadow-md hover:shadow-inner
+                bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
             onclick="handleVolumeToggle()">
-            <img id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Volume Up" class="h-6 w-6">
-            <img id="volumeMuteIcon" src="static/icons/volume-mute-line.svg" alt="Mute" class="h-6 w-6 hidden">
+            <img class="h-6 w-6 dark:invert" id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Volume Up">
+            <img class="h-6 w-6 hidden dark:invert" id="volumeMuteIcon" src="static/icons/volume-mute-line.svg" alt="Mute">
         </button>
     </div>
 
@@ -46,7 +49,7 @@
             min="0"
             max="100"
             step="1"
-            class="range range-xs mr-2"
+            class="range range-xs mr-2 dark:range-neutral-600"
             style="max-width: 180px;" 
             id="volumeControl" 
             onchange="handleVolumeChange(this.value)">
