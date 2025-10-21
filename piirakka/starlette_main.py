@@ -82,7 +82,7 @@ class Context:
             playing=self.player.get_status(),
             track_name=self.track_history[0].title if len(self.track_history) > 0 else '',
             station_name=self.player.current_station.name,
-            bitrate=f"{self.player.get_bitrate() / 1000} kbps",
+            bitrate=self.render_bitrate(),
             codec=self.player.get_codec()
         )
         message.html = html
@@ -96,6 +96,13 @@ class Context:
         html = template.render(recent_tracks=self.track_history)
         await broadcast_message(json.dumps(events.TrackChangeEvent(html=html).model_dump()))  # TODO: functionize
         await anyio.to_thread.run_sync(self.refresh_control_bar)
+
+    def render_bitrate(self) -> str:
+        try:
+            bitrate = self.player.get_bitrate()
+            return f"{round(bitrate / 1000)} kbps"
+        except TypeError:
+            return "unknown bitrate"
 
 context = Context()
 
@@ -160,7 +167,7 @@ async def index(request):
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
             "station_name": context.player.current_station.name,
-            "bitrate": f"{context.player.get_bitrate() / 1000} kbps",
+            "bitrate": context.render_bitrate(),
             "codec": context.player.get_codec()
         }
     )
