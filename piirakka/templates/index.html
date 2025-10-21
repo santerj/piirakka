@@ -6,26 +6,28 @@
     {% include 'components/head.html' %}
 </head>
 
-<body class="min-h-screen grid grid-cols-12 gap-4">
-    <!-- sidebar -->
-    <div class="col-span-3 h-full w-64 overflow-x-hidden overflow-y-scroll
-                right-0 top-0 absolute
-                border border-gray-400 shadow-lg rounded-l-xl">
-        {% include 'components/sidebar.html' %}
-    </div>
+<body class="h-screen overflow-hidden m-0
+      dark:text-neutral-300">
+  <div class="grid grid-cols-12 h-screen">
+    <!-- Sidebar: full height -->
+    <aside class="col-span-2 border-r py-3 overflow-auto h-screen
+        bg-stone-50 border-gray-300 dark:bg-neutral-800 dark:border-neutral-700">
+      {% include 'components/sidebar.html' %}
+    </aside>
 
-    <!-- player controls -->
-    <div id="ControlBar" class="col-span-9 col-start-1 col-end-13 fixed bottom-0 left-0 right-64 bg-transparent p-3">
-        {% include 'components/player.html' %}
-    </div>
-
-    <!-- main content -->
-    <main class="col-span-9 px-5 py-5 overflow-y-auto h-[calc(100vh-4.5rem)] grid grid-cols-12 gap-4">
-        <!-- track history -->
-        <div id="TrackHistory" class="col-span-8 overscroll-auto border border-gray-400 rounded-xl p-2 shadow-lg overflow-y-auto h-full">
-            {% include 'components/track_history.html' %}
-        </div>
+    <!-- Main Content: height minus player bar -->
+    <main id="TrackHistory" style="height: calc(100vh - 4rem);"
+        class="col-span-10 p-4 overflow-auto
+            bg-white dark:bg-neutral-900">
+      {% include 'components/track_history.html' %}
     </main>
+  </div>
+
+  <!-- Player Bar: fixed bottom right, does NOT cover sidebar -->
+  <nav id="ControlBar" class="border-t shadow-lg fixed bottom-0 left-[16.66%] w-[83.33%] h-16
+      bg-gray-50 border-gray-300 dark:bg-[#2b2b2b] dark:border-neutral-700">
+    {% include 'components/player.html' %}
+  </nav>
 </body>
 </html>
 

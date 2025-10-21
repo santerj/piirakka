@@ -50,7 +50,11 @@ if False:  # cheap seeding
             name="lush",
             url="https://api.somafm.com/lush.pls"
         )
-        session.add_all([junkkaa, lush])
+        darkedge = Station(
+            name="dark edge",
+            url="https://stream.darkedge.ro:8002/stream/4/"
+        )
+        session.add_all([junkkaa, lush, darkedge])
         session.commit()
 
 class Context:
@@ -188,28 +192,10 @@ async def shuffle_station(request):
     # TODO:
     pass
 
-async def new(request):
-    # TODO: dev route for new grid layout
-    return templates.TemplateResponse("new_grid.html",
-        {
-            "request": request,
-            "sidebar_items": sidebar_items,
-            "stations": context.player.stations,
-            "recent_tracks": context.track_history,
-            "volume": context.player.get_volume(),
-            "playing": context.player.get_status(),
-            "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
-            "station_name": context.player.current_station.name,
-            "bitrate": f"{context.player.get_bitrate() / 1000} kbps",
-            "codec": context.player.get_codec()
-        }
-    )
-
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
-        Route("/new", endpoint=new, methods=[HTTPMethod.GET]),
         Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
         Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
         Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
