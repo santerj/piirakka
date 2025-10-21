@@ -16,7 +16,7 @@
     </aside>
 
     <!-- Main Content: height minus player bar -->
-    <main style="height: calc(100vh - 4rem);"
+    <main id="TrackHistory" style="height: calc(100vh - 4rem);"
         class="col-span-10 p-4 overflow-auto
             bg-white dark:bg-neutral-900">
       {% include 'components/track_history.html' %}
@@ -24,8 +24,8 @@
   </div>
 
   <!-- Player Bar: fixed bottom right, does NOT cover sidebar -->
-  <nav class="border-t shadow-lg fixed bottom-0 left-[16.66%] w-[83.33%] h-16
-      bg-gray-50 border-gray-300 dark:bg-neutral-800 dark:border-neutral-700">
+  <nav id="ControlBar" class="border-t shadow-lg fixed bottom-0 left-[16.66%] w-[83.33%] h-16
+      bg-gray-50 border-gray-300 dark:bg-[#2b2b2b] dark:border-neutral-700">
     {% include 'components/player.html' %}
   </nav>
 </body>
