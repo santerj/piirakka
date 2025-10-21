@@ -6,10 +6,6 @@
 #
 alembic==1.14.0
     # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
-annotated-types==0.7.0
-    # via
-    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
-    #   pydantic
 anyio==4.6.2.post1
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
@@ -35,14 +31,14 @@ colorlog==6.9.0
     # via nox
 distlib==0.3.9
     # via virtualenv
-fastapi==0.115.5
-    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 filelock==3.16.1
     # via virtualenv
 h11==0.14.0
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   uvicorn
+human-readable==2.0.0
+    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 idna==3.10
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
@@ -71,14 +67,6 @@ pip-tools==7.4.1
     # via -r requirements/dev-requirements.in
 platformdirs==4.3.6
     # via virtualenv
-pydantic==2.10.1
-    # via
-    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
-    #   fastapi
-pydantic-core==2.27.1
-    # via
-    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
-    #   pydantic
 pyproject-hooks==1.2.0
     # via
     #   build
@@ -98,16 +86,11 @@ sqlalchemy==2.0.36
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   alembic
 starlette==0.41.3
-    # via
-    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
-    #   fastapi
+    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 typing-extensions==4.12.2
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   alembic
-    #   fastapi
-    #   pydantic
-    #   pydantic-core
     #   sqlalchemy
 urllib3==2.2.3
     # via
@@ -119,6 +102,8 @@ validators==0.34.0
     # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 virtualenv==20.27.1
     # via nox
+websockets==15.0.1
+    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 wheel==0.45.1
     # via pip-tools
 
