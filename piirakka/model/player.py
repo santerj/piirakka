@@ -4,6 +4,8 @@ import sqlite3
 import json
 import time
 
+from random import choice
+
 from sqlalchemy.orm import Session, sessionmaker  ## TODO: get from main
 from sqlalchemy import create_engine
 
@@ -238,3 +240,12 @@ class Player:
             except KeyError:
                 pass
         return None
+
+    def shuffle(self) -> None:
+        if len(self.stations) < 2:
+            return
+        current_id = self.current_station.station_id
+        choices = [s for s in self.stations if s.station_id != current_id]
+        random_station = choice(choices)
+        self.play_station_with_id(random_station.station_id)
+        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar

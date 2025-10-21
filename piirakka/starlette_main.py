@@ -196,8 +196,8 @@ async def set_volume(request):
     return JSONResponse({"message": "volume change initiated"}, background=task)
 
 async def shuffle_station(request):
-    # TODO:
-    pass
+    task = BackgroundTask(context.player.shuffle)
+    return JSONResponse({"message": "station shuffle initiated"}, background=task)
 
 app = Starlette(
     routes=[
@@ -206,6 +206,7 @@ app = Starlette(
         Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
         Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
         Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/shuffle', shuffle_station, methods=[HTTPMethod.PUT]),
         WebSocketRoute("/api/websocket", WebSocketConnection),
         Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
     ]
