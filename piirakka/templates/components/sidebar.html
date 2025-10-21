@@ -1,7 +1,8 @@
 <nav class="h-full p-1">
+    <h1 class="font-nunito font-semibold ml-6 text-2xl">🥧 piirakka</h1>
     <ul class="menu w-full mt-2">
         {% for item in sidebar_items %}
-        <li class="mb-4">
+        <li class="mb-2">
             <a href="{{ item.url }}" class="flex items-center space-x-2 overflow-hidden text-ellipsis">
                 <img src="{{ item.icon }}" alt="{{ item.name }} Icon" class="w-6 h-6">
                 <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">{{ item.name }}</span>
