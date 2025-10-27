@@ -1,7 +1,7 @@
 <!-- TODO: add ellipsis when viewport too narrow -->
 <div class="flex items-center space-x-4 px-2">
     <!-- Left side: Icon -->
-    <img src="static/icons/music-2-line.svg" alt="Now playing icon" class="w-6 h-6">
+    <img class="w-6 h-6 dark:invert" src="static/icons/music-2-line.svg" alt="Now playing icon">
 
     <!-- Right side: Text fields -->
     <div class="text-xs leading-tight">
@@ -10,7 +10,7 @@
             {{ track_name }}
         </div>
         <!-- Station and bitrate -->
-        <div class="text-gray-600">
+        <div class="text-gray-600 dark:text-gray-400">
             {{ station_name }} - {{ bitrate }} ({{ codec }})
         </div>
     </div>
