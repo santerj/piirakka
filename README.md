@@ -2,8 +2,6 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/846ea04459dc4aaf8a20ee15d9667fca)](https://app.codacy.com/gh/santerj/piirakka/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-## acknowledgements
-
 ## development
 
 ### initialize dev environment
@@ -20,7 +18,7 @@
 
 ### run starlette
 
-    uvicorn piirakka.main:app --timeout-graceful-shutdown 5 --workers 1
+    python -m piirakka.main
 
 ### build tailwind
 
@@ -48,3 +46,11 @@
 
     alembic revision -m "New migration"
     alembic upgrade head
+
+### build app
+
+    python -m build
+
+### install app
+
+    pip install dist/piirakka-*-py3-none-any.whl

@@ -1,6 +1,7 @@
 alembic
-human-readable
+#human-readable
 jinja2
+pydantic
 requests
 setproctitle
 #sse-starlette

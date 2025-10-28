@@ -6,6 +6,10 @@
 #
 alembic==1.14.0
     # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+annotated-types==0.7.0
+    # via
+    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+    #   pydantic
 anyio==4.6.2.post1
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
@@ -13,7 +17,9 @@ anyio==4.6.2.post1
 argcomplete==3.5.1
     # via nox
 build==1.2.2.post1
-    # via pip-tools
+    # via
+    #   -r requirements/dev-requirements.in
+    #   pip-tools
 certifi==2024.8.30
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
@@ -37,8 +43,6 @@ h11==0.14.0
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   uvicorn
-human-readable==2.0.0
-    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
 idna==3.10
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
@@ -67,6 +71,12 @@ pip-tools==7.4.1
     # via -r requirements/dev-requirements.in
 platformdirs==4.3.6
     # via virtualenv
+pydantic==2.11.10
+    # via -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+pydantic-core==2.33.2
+    # via
+    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+    #   pydantic
 pyproject-hooks==1.2.0
     # via
     #   build
@@ -91,7 +101,14 @@ typing-extensions==4.12.2
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
     #   alembic
+    #   pydantic
+    #   pydantic-core
     #   sqlalchemy
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via
+    #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt
+    #   pydantic
 urllib3==2.2.3
     # via
     #   -r /Users/santeri/repos/omenapiirakka/requirements/requirements.txt

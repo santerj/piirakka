@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "piirakka"
+version = "0.1.0"
+description = "Your app description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "alembic",
+    "jinja2",
+    "pydantic",
+    "requests",
+    "setproctitle",
+    "sqlalchemy",
+    "starlette",
+    "uvicorn",
+    "validators",
+    "websockets"
+]
+
+[project.scripts]
+piirakka = "piirakka.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+"piirakka" = ["templates/*", "static/*"]
