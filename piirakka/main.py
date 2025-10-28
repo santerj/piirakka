@@ -1,133 +1,226 @@
-import asyncio
-import anyio
 import os
-import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from datetime import datetime
+from http import HTTPMethod
+import json
 
-from model.sidebar_item import sidebar_items
-from model.player import Player
+import anyio
+from jinja2 import Environment, FileSystemLoader
 
-from fastapi import FastAPI, BackgroundTasks, Request
-from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from setproctitle import setproctitle
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
 
-SPAWN_MPV = os.getenv("MPV", True)
-SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
-DATABASE = os.getenv("DATABASE", "./piirakka.db")
+from starlette.applications import Starlette
+from starlette.background import BackgroundTask
+from starlette.endpoints import WebSocketEndpoint
+from starlette.responses import JSONResponse
+from starlette.routing import Route, Mount, WebSocketRoute
+from starlette.applications import Starlette
+from starlette.templating import Jinja2Templates
+from starlette.staticfiles import StaticFiles
+import uvicorn
+import asyncio
 
-def create_app(mpv, socket, database, callback):
-    player = Player(mpv, socket, database, callback)
-    app = FastAPI()
-    app.state.player = player
-    app.state.subscribers = []
-    return app
+import piirakka.model.event as events
+from piirakka.model.player import Player
+from piirakka.model.station import Station
+from piirakka.model.recent_track import RecentTrack
+from piirakka.model.sidebar_item import sidebar_items
 
-async def notify_all(message: str):
-    # send message to SSE subscribers
-    for queue in app.state.subscribers:
-        await queue.put(message)
 
-def player_callback(message):
-    anyio.from_thread.run(notify_all, message)
+setproctitle("piirakka")
 
-async def periodic_task():
-    while True:
-        print("Running periodic task")
-        await asyncio.sleep(5)  # Wait for 5 seconds before running again
 
-app = create_app(SPAWN_MPV, SOCKET, DATABASE, player_callback)  # fastapi app initialized here
-player = app.state.player
 templates = Jinja2Templates(directory="piirakka/templates")
-app.mount("/static", StaticFiles(directory="piirakka/static"), name="static")
 
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(periodic_task())
+# TODO: hacking to get jinja rendering working,
+# doesn't necessarily have to be done twice
+file_loader = FileSystemLoader("piirakka/templates")
+env = Environment(loader=file_loader)
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    for queue in app.state.subscribers:
-        queue.put_nowait(None)
-    app.state.subscribers.clear()
+if False:  # cheap seeding
+    engine = create_engine("sqlite:///piirakka.db", echo=True)
+    with Session(engine) as session:
+        junkkaa = Station(
+            name="junkkaa",
+            url="http://andromeda.shoutca.st/tunein/differentdrumz.pls"
+        )
+        lush = Station(
+            name="lush",
+            url="https://api.somafm.com/lush.pls"
+        )
+        darkedge = Station(
+            name="dark edge",
+            url="https://stream.darkedge.ro:8002/stream/4/"
+        )
+        session.add_all([junkkaa, lush, darkedge])
+        session.commit()
 
-@app.get("/")
-async def index(request: Request):
+class Context:
+    SPAWN_MPV = os.getenv("MPV", True)
+    SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
+    DATABASE = os.getenv("DATABASE", "piirakka.db")
+    TRACK_HISTORY_LENGTH = 50
+
+    def player_callback(self, message):
+        #loop = asyncio.get_event_loop()
+        #loop.create_task(broadcast_message(str(message)))
+        if isinstance(message, events.ControlBarUpdated):
+            self.refresh_control_bar()
+
+    def __init__(self):
+        self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
+        self.track_history: list[RecentTrack] = []
+        self.subscribers = []
+
+    def refresh_control_bar(self):
+        message = events.ControlBarUpdated()
+        template = env.get_template('components/player.html')
+        html = template.render(
+            volume=self.player.get_volume(),
+            playing=self.player.get_status(),
+            track_name=self.track_history[0].title if len(self.track_history) > 0 else '',
+            station_name=self.player.current_station.name,
+            bitrate=self.render_bitrate(),
+            codec=self.player.get_codec()
+        )
+        message.html = html
+        anyio.from_thread.run(broadcast_message, json.dumps(message.model_dump()))
+
+    async def push_track(self, track):
+        if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
+            self.track_history.pop()
+        self.track_history.insert(0, track)
+        template = env.get_template('components/track_history.html')
+        html = template.render(recent_tracks=self.track_history)
+        await broadcast_message(json.dumps(events.TrackChangeEvent(html=html).model_dump()))  # TODO: functionize
+        await anyio.to_thread.run_sync(self.refresh_control_bar)
+
+    def render_bitrate(self) -> str:
+        try:
+            bitrate = self.player.get_bitrate()
+            return f"{round(bitrate / 1000)} kbps"
+        except TypeError:
+            return "unknown bitrate"
+
+context = Context()
+
+
+class WebSocketConnection(WebSocketEndpoint):
+    encoding = 'text'
+
+    async def on_connect(self, websocket):
+        await websocket.accept()
+        context.subscribers.append(websocket)
+        print("New connection accepted")
+
+    async def on_disconnect(self, websocket, close_code):
+        context.subscribers.remove(websocket)
+        print("Connection closed")
+
+    async def on_receive(self, websocket, data):
+        print(f"Received message: {data}")
+        await broadcast_message(data)
+
+async def broadcast_message(message):
+    for subscriber in context.subscribers:
+        await subscriber.send_text(message)
+
+def task(callback):
+    # placeholder
+    callback("task")
+
+async def observe_current_track(interval: int = 5):
+    while True:
+        await asyncio.sleep(interval)
+        current_track_title = context.player.current_track()
+        if current_track_title == None:
+            # did not get Icy-Title
+            continue
+        else:
+            current_track = RecentTrack(
+                        title=current_track_title,
+                        station=context.player.current_station.name,
+                        timestamp=datetime.now().strftime('%H:%M')
+                    )
+
+        if len(context.track_history) == 0:
+            await context.push_track(current_track)
+        elif context.track_history[0].title == current_track_title:
+            # track hasn't changed
+            continue
+        else:
+            await context.push_track(current_track)
+
+
+###--- endpoints
+
+async def index(request):
     return templates.TemplateResponse("index.html",
-                {
-                    "request": request,
-                    "sidebar_items": sidebar_items,
-                    # placeholders
-                    "stations": [i for i in range(30)],
-                    "recent_tracks": [f"Artist name – Track name which is long (Remastered 2009) {i}" for i in range(50)]
-                }
+        {
+            "request": request,
+            "sidebar_items": sidebar_items,
+            "stations": context.player.stations,
+            "recent_tracks": context.track_history,
+            "volume": context.player.get_volume(),
+            "playing": context.player.get_status(),
+            "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
+            "station_name": context.player.current_station.name,
+            "bitrate": context.render_bitrate(),
+            "codec": context.player.get_codec()
+        }
     )
 
-@app.get("/stations")
-async def stations_page(request: Request):
+async def stations_page(request):
     return templates.TemplateResponse("legacy_stations.html",
                 {
                     "request": request,
-                    "stations": player.stations
+                    "stations": context.player.stations
                 }
     )
 
-@app.get("/api/events")
-async def events(request: Request):
-    queue = asyncio.Queue()
-    app.state.subscribers.append(queue)
-    async def event_generator(request: Request, queue: asyncio.Queue):
-        try:
-            while True:
-                disconnected = await request.is_disconnected()
-                if disconnected:
-                    print(f"Disconnecting client {request.client}")
-                    break
-                message = await queue.get()
-                #if message == MAGIC_FLUSH_SSE_CONNECTIONS:
-                    
-                    # a magic message sent with 'await notify_all()' can be used to
-                    # tear down all SSE connections. this can be useful due to a deadlock
-                    # between event generator lifecycle and uvicorn's shutdown procedure.
-                    # https://github.com/fastapi/fastapi/discussions/11237
-                    
-                #     break
-                yield f"data: {message}\n\n"
-        except asyncio.CancelledError as e:
-            # cleanup tasks here
-            del app.state.player # destroy Player()
-            raise e
-    return StreamingResponse(event_generator(request, queue), media_type="text/event-stream")
+async def set_station(request):
+    station_id = request.path_params['station_id']
+    task = BackgroundTask(context.player.play_station_with_id, station_id)
+    return JSONResponse({"message": "station change initiated"}, background=task)
 
-@app.get("/api/radio/playerState")
-async def get_player_state():
-    return JSONResponse(content=player.to_player_state().dict(by_alias=True))
+async def toggle_playback(request):
+    task = BackgroundTask(context.player.toggle)
+    return JSONResponse({"message": "toggle initiated"}, background=task)
 
-@app.post("/api/radio/play")
-async def play(background_tasks: BackgroundTasks):
-    background_tasks.add_task(player.play)
-    return {"message": "play task initiated"}
+async def set_volume(request):
+    data = await request.json()
+    volume = int(data.get('volume'))
+    task = BackgroundTask(context.player.set_volume, volume)
+    return JSONResponse({"message": "volume change initiated"}, background=task)
 
-@app.post("/api/radio/pause")
-async def pause(background_tasks: BackgroundTasks):
-    background_tasks.add_task(player.pause)
-    return {"message": "pause task initiated"}
+async def shuffle_station(request):
+    task = BackgroundTask(context.player.shuffle)
+    return JSONResponse({"message": "station shuffle initiated"}, background=task)
 
-@app.post("/api/radio/toggle")
-async def toggle(background_tasks: BackgroundTasks):
-    background_tasks.add_task(player.toggle)
-    return {"message": "toggle task initiated"}
+app = Starlette(
+    routes=[
+        Route("/", endpoint=index, methods=[HTTPMethod.GET]),
+        Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
+        Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/shuffle', shuffle_station, methods=[HTTPMethod.PUT]),
+        WebSocketRoute("/api/websocket", WebSocketConnection),
+        Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
+    ]
+)
 
-@app.post("/api/radio/station")
-async def create_station(body: dict):
-    pass
+@app.on_event("startup")
+async def startup():
+    asyncio.create_task(observe_current_track())
 
-@app.put("/api/radio/station/{station_id}")
-async def set_station(station_id: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(player.set_station, station_id)
-    return {"message": "Station change initiated"}
+@app.on_event("shutdown")
+async def shutdown():
+    for subscriber in context.subscribers:
+        await subscriber.close()
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+

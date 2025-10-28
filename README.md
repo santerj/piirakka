@@ -18,10 +18,9 @@
     $ pip-compile -o requirements/requirements.txt requirements/requirements.in
     $ pip-compile -o requirements/dev-requirements.txt requirements/dev-requirements.in
 
-### run starlette (main.py is old fastapi stuff)
+### run starlette
 
-    $ uvicorn piirakka.starlette_main:app --timeout-graceful-shutdown 5 --workers 1
-
+    $ uvicorn piirakka.main:app --timeout-graceful-shutdown 5 --workers 1
 
 ### run tailwind in watch mode
 
