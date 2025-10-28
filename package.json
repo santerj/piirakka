@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build:css": "npx tailwindcss -i ./piirakka/static/css/tailwind.css -o ./piirakka/static/css/output.css --minify"
+    "build:css": "npx tailwindcss -i ./piirakka/static/css/tailwind.css -o ./piirakka/static/css/output.css --minify",
+    "watch:css": "npx tailwindcss -i piirakka/static/css/tailwind.css -o piirakka/static/css/output.css --watch"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
