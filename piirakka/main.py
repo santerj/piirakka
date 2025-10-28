@@ -1,140 +1,227 @@
-from functools import wraps
-from os import getenv
+import os
 
-from flask import Flask, request, jsonify, render_template
+from datetime import datetime
+from http import HTTPMethod
+import json
 
-from utils.player import Player
+import anyio
+from jinja2 import Environment, FileSystemLoader
 
-# init player
+from setproctitle import setproctitle
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
 
-SPAWN_MPV = getenv("MPV", True)
-SOCKET = getenv("SOCKET", "/tmp/piirakka.sock")
-DATABASE = getenv("DATABASE", "./piirakka.db")
+from starlette.applications import Starlette
+from starlette.background import BackgroundTask
+from starlette.endpoints import WebSocketEndpoint
+from starlette.responses import JSONResponse
+from starlette.routing import Route, Mount, WebSocketRoute
+from starlette.applications import Starlette
+from starlette.templating import Jinja2Templates
+from starlette.staticfiles import StaticFiles
+import uvicorn
+import asyncio
 
-def create_app(mpv, socket, database):
-    player = Player(mpv, socket, database)
-    app = Flask(__name__, static_folder='static')
-    app.config['player'] = player
-    return app
+import piirakka.model.event as events
+from piirakka.model.player import Player
+from piirakka.model.station import Station
+from piirakka.model.recent_track import RecentTrack
+from piirakka.model.sidebar_item import sidebar_items
 
-app = create_app(SPAWN_MPV, SOCKET, DATABASE)
-player = app.config['player']
+
+setproctitle("piirakka")
+
+
+templates = Jinja2Templates(directory="piirakka/templates")
+
+# TODO: hacking to get jinja rendering working,
+# doesn't necessarily have to be done twice
+file_loader = FileSystemLoader("piirakka/templates")
+env = Environment(loader=file_loader)
+
+
+class Context:
+    SPAWN_MPV = os.getenv("MPV", True)
+    SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
+    DATABASE = os.getenv("DATABASE", "piirakka.db")
+    TRACK_HISTORY_LENGTH = 50
+
+    def player_callback(self, message):
+        #loop = asyncio.get_event_loop()
+        #loop.create_task(broadcast_message(str(message)))
+        if isinstance(message, events.ControlBarUpdated):
+            self.refresh_control_bar()
+
+    def __init__(self):
+        self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
+        self.track_history: list[RecentTrack] = []
+        self.subscribers = []
+        self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
+
+    def refresh_control_bar(self):
+        message = events.ControlBarUpdated()
+        template = env.get_template('components/player.html')
+        html = template.render(
+            volume=self.player.get_volume(),
+            playing=self.player.get_status(),
+            track_name=self.track_history[0].title if len(self.track_history) > 0 else '',
+            station_name=self.player.current_station.name,
+            bitrate=self.render_bitrate(),
+            codec=self.player.get_codec()
+        )
+        message.html = html
+        anyio.from_thread.run(broadcast_message, json.dumps(message.model_dump()))
+
+    async def push_track(self, track):
+        if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
+            self.track_history.pop()
+        self.track_history.insert(0, track)
+        template = env.get_template('components/track_history.html')
+        html = template.render(recent_tracks=self.track_history)
+        await broadcast_message(json.dumps(events.TrackChangeEvent(html=html).model_dump()))  # TODO: functionize
+        await anyio.to_thread.run_sync(self.refresh_control_bar)
+
+    def render_bitrate(self) -> str:
+        try:
+            bitrate = self.player.get_bitrate()
+            return f"{round(bitrate / 1000)} kbps"
+        except TypeError:
+            return "unknown bitrate"
+
+context = Context()
+
+
+class WebSocketConnection(WebSocketEndpoint):
+    encoding = 'text'
+
+    async def on_connect(self, websocket):
+        await websocket.accept()
+        context.subscribers.append(websocket)
+        print("New connection accepted")
+
+    async def on_disconnect(self, websocket, close_code):
+        context.subscribers.remove(websocket)
+        print("Connection closed")
+
+    async def on_receive(self, websocket, data):
+        print(f"Received message: {data}")
+        await broadcast_message(data)
+
+async def broadcast_message(message):
+    for subscriber in context.subscribers:
+        await subscriber.send_text(message)
+
+def task(callback):
+    # placeholder
+    callback("task")
+
+async def observe_current_track(interval: int = 5):
+    while True:
+        await asyncio.sleep(interval)
+        current_track_title = context.player.current_track()
+        if current_track_title == None:
+            # did not get Icy-Title
+            continue
+        else:
+            current_track = RecentTrack(
+                        title=current_track_title,
+                        station=context.player.current_station.name,
+                        timestamp=datetime.now().strftime('%H:%M')
+                    )
+
+        if len(context.track_history) == 0:
+            await context.push_track(current_track)
+        elif context.track_history[0].title == current_track_title:
+            # track hasn't changed
+            continue
+        else:
+            await context.push_track(current_track)
+
+
+###--- endpoints
+
+async def index(request):
+    return templates.TemplateResponse("index.html",
+        {
+            "request": request,
+            "sidebar_items": sidebar_items,
+            "stations": context.player.stations,
+            "recent_tracks": context.track_history,
+            "volume": context.player.get_volume(),
+            "playing": context.player.get_status(),
+            "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
+            "station_name": context.player.current_station.name,
+            "bitrate": context.render_bitrate(),
+            "codec": context.player.get_codec()
+        }
+    )
+
+async def stations_page(request):
+    return templates.TemplateResponse("legacy_stations.html",
+                {
+                    "request": request,
+                    "stations": context.player.stations
+                }
+    )
+
+async def set_station(request):
+    station_id = request.path_params['station_id']
+    task = BackgroundTask(context.player.play_station_with_id, station_id)
+    return JSONResponse({"message": "station change initiated"}, background=task)
+
+async def toggle_playback(request):
+    task = BackgroundTask(context.player.toggle)
+    return JSONResponse({"message": "toggle initiated"}, background=task)
+
+async def set_volume(request):
+    data = await request.json()
+    volume = int(data.get('volume'))
+    task = BackgroundTask(context.player.set_volume, volume)
+    return JSONResponse({"message": "volume change initiated"}, background=task)
+
+async def shuffle_station(request):
+    task = BackgroundTask(context.player.shuffle)
+    return JSONResponse({"message": "station shuffle initiated"}, background=task)
+
+async def create_station(request):
+    data = await request.json()
+    station = Station(
+        name=data.get('station_name'),
+        url=data.get('station_url')
+    )
+    with Session(context.db_engine) as session:
+        session.add(station)
+        session.commit()
+        # ensure the instance has its attributes loaded while the session is still open
+        session.refresh(station)
+    context.player.update_stations()
+    return JSONResponse({"message": "station created successfully"})
+
+app = Starlette(
+    routes=[
+        Route("/", endpoint=index, methods=[HTTPMethod.GET]),
+        Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
+        Route('/api/station', create_station, methods=[HTTPMethod.POST]),
+        Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
+        Route('/api/radio/shuffle', shuffle_station, methods=[HTTPMethod.PUT]),
+        WebSocketRoute("/ws/socket", WebSocketConnection),
+        Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
+    ]
+)
+
+@app.on_event("startup")
+async def startup():
+    asyncio.create_task(observe_current_track())
+
+@app.on_event("shutdown")
+async def shutdown():
+    for subscriber in context.subscribers:
+        await subscriber.close()
+
+def main():
+    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1, timeout_graceful_shutdown=5)
 
 if __name__ == "__main__":
-    # run flask
-    app.run()
-
-def require_token(func):
-    @wraps(func)
-    # middleware to check for Reload-Token validity
-    def wrapper(*args, **kwargs):
-        header_value = request.headers.get('Reload-Token')
-        #print('got header', header_value, 'actual value', player.hash)
-        if header_value != player.hash:
-            return jsonify({'error': 'stale Reload-Token'}), 412
-        else:
-            # Call the original route function if the header is correct
-            return func(*args, **kwargs)
-
-    return wrapper
-
-# routes:
-
-@app.route('/favicon.ico')
-def favicon():
-    return app.send_static_file('favicon.ico')
-
-@app.route('/')
-def index():
-    return render_template('index.html', reload_token=player.hash, stations=player.stations)
-
-@app.route('/stations')
-def stations():
-    return render_template('stations.html', reload_token=player.hash, stations=player.stations)
-
-@app.route('/api/token', methods=['GET'])
-def get_token():
-    return jsonify({'token': str(player.hash)})
-
-@app.route('/api/radio/play', methods=['POST'])
-def play():
-    if player.play():
-        return 'success', 200
-    else:
-        return 'error', 500
-
-@app.route('/api/radio/pause', methods=['POST'])
-def pause():
-    if player.pause():
-        return 'success', 200
-    else:
-        return 'error', 500
-    
-@app.route('/api/radio/toggle', methods=['POST'])
-def toggle():
-    if player.toggle():
-        return 'success', 200
-    else:
-        return 'error', 500
-    
-@app.route('/api/radio/stations', methods=['GET'])
-def get_stations():
-    payload = {}
-    stations = player.get_stations()
-    for i, station in enumerate(stations):
-        payload[str(i)] = {
-            'url': station.url,
-            'description': station.description
-        }
-    return jsonify(payload)
-
-@app.route('/api/radio/station_id', methods=['GET'])
-@require_token
-def station_id():
-    id = player.stations.index(player.current_station)
-    return jsonify(id)
-
-@app.route('/api/radio/station/<int:id>', methods=['PUT', 'DELETE'])
-@require_token
-def set_or_delete_station(id: int):
-    if request.method == 'PUT':
-        # playback selected station
-        player.play_station_with_id(id)
-        return 'success', 200
-    elif request.method == 'DELETE':
-        # remove selected station from db
-        player.delete_station(id)
-        return 'accepted', 202
-
-@app.route('/api/radio/station', methods=['POST'])
-def create_station():
-    try:
-        data = request.json
-        url = data['url']
-        desc = data['description']
-        result, msg = player.add_station(url=url, description=desc)
-        if result:
-            return msg, 201
-        else:
-            return msg, 400
-    except KeyError:
-        return 'error', 400
-
-
-@app.route('/api/radio/now', methods=['GET'])
-def now():
-    return jsonify(player.now_playing())
-
-@app.route('/api/volume', methods=['PUT'])
-def set_volume():
-    data = request.get_json()
-    if "level" not in data:
-        return 'error', 400
-    elif not 0 <= data["level"] <= 130:
-        return 'error', 400
-
-    resp = player.set_volume(data["level"])
-    if resp:
-        return 'success', 200
-    else:
-        return 'error', 500
+    main()

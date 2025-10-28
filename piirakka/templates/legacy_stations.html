@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>stations | piirakka</title>
+    {% include 'components/head.html' %}
+    <link rel="stylesheet" href="static/css/legacy_stations.css">
+</head>
+
+<body>
+
+    <header>
+        <a href="/">← back to index</a>
+    </header>
+
+    <main>
+        <h2>add station</h2>
+        <!-- Form for creating a new station -->
+        <form id="createStationForm" onsubmit="createStation(event)">
+            <label for="newStationUrl">url:</label>
+            <input type="text" id="newStationUrl" name="url" required>
+
+            <label for="newStationName">name:</label>
+            <input type="text" id="newStationName" name="name" required>
+
+            <div class="button-container">
+                <button type="submit">apply</button>
+            </div>
+        </form>
+
+        <h2>stations</h2>
+
+        <!-- Table for displaying stations -->
+        <table>
+            <thead>
+                <tr>
+                    <th>name</th>
+                    <th>url</th>
+                    <th></th> <!-- Empty column for buttons -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Each station item with edit and delete links -->
+                {% for station in stations %}
+                    <tr data-index="{{ loop.index0 }}">
+                        <td>{{ station.description }}</td>
+                        <td>{{ station.url }}</td>
+                        <td>
+                            <span class="delete-link" onclick="deleteStation({{ loop.index0 }})">delete</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% include "components/legacy_error_dialog.html" %}
+
+    </main>
+
+</body>
+
+    <script>const reloadToken = "{{ reload_token }}";</script>
+    <script>
+        document.getElementById('reloadButton').addEventListener('click', () => {
+            window.location.reload();
+          });
+          
+          document.getElementById('cancelButton').addEventListener('click', () => {
+            errorDialog.close();
+          });
+        
+        function createStation(event) {
+            event.preventDefault();
+        
+            // Get form data
+            const url = document.getElementById('newStationUrl').value;
+            const name = document.getElementById('newStationName').value;
+        
+            // Make API request to create a new station
+            // You can use Axios or fetch here
+            axios.post('/api/radio/station', {
+                url: url,
+                description: name
+            })
+            .then(response => {
+                // Handle success, if needed
+                console.log(response.data);
+                location.reload();
+            })
+            .catch(error => {
+                // Handle error, if needed
+                console.error(error);
+            });
+        }
+        
+        function deleteStation(index) {
+            axios.delete(`/api/radio/station/${index}`, { headers: {'Reload-Token': reloadToken} })
+              .then(response => {
+                console.log('Delete response:', response.data);
+                location.reload();
+            })
+              .catch(error => {
+                console.error('Error deleting station:', error);
+                if (error.response.status === 412) {
+                    const errorMessage = document.getElementById('errorMessage');
+                    errorMessage.textContent = 'Stations have been updated! Reload page?';
+                    errorDialog.showModal();
+                  }
+            });
+        }
+    </script>
+
+</html>

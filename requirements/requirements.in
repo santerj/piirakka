@@ -1,0 +1,12 @@
+alembic
+#human-readable
+jinja2
+pydantic
+requests
+setproctitle
+#sse-starlette
+sqlalchemy
+starlette
+uvicorn
+validators
+websockets

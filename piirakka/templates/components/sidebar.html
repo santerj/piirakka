@@ -1,0 +1,50 @@
+<nav class="h-full p-1">
+    <h1 class="font-nunito font-semibold ml-6 text-2xl select-none">🥧 piirakka</h1>
+    <ul class="menu w-full mt-2">
+        {% for item in sidebar_items %}
+        <li class="mb-2">
+            <a href="{{ item.url }}" class="flex items-center space-x-2 overflow-hidden text-ellipsis">
+                <img class="w-6 h-6 dark:invert" src="{{ item.icon }}" alt="{{ item.name }} Icon">
+                <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">{{ item.name }}</span>
+            </a>
+        </li>
+        {% endfor %}
+
+        <li class="mb-2">
+            <a href="#" class="flex items-center space-x-2 overflow-hidden text-ellipsis" onclick="add_station_modal.showModal()">
+                <img class="w-6 h-6 dark:invert" src="static/icons/add-line.svg" alt="Add Station Icon">
+                <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">
+                    add new station
+                </span>
+            </a>
+        </li>
+        {% include 'components/add_station_modal.html' %}
+
+        <div class="divider font-nunito px-2">stations</div>
+        {% for station in stations %}
+        <li class="">
+            <p data-stationId="{{ station.station_id }}">{{ station.name }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>
+
+<script>
+    // make all stations clickable - upon click, send PUT request to select the station
+    document.querySelectorAll('li p[data-stationId]').forEach(item => {
+        item.addEventListener('click', function() {
+            const stationId = this.getAttribute('data-stationId');
+
+            fetch(`/api/radio/station/${stationId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stationId: stationId })
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>

@@ -1,0 +1,22 @@
+<tr>
+    <th class="font-nunito font-light" id="timeStamp">{{ track.timestamp }}</th>
+    <th title="{{ track.title }}" class="overflow-hidden truncate max-w-64">{{ track.title }}</th>
+    <th title="{{ track.station }}" class="font-nunito font-light truncate max-w-24">{{ track.station }}</th>
+    <th>
+        <div class="dropdown dropdown-top dropdown-end">
+        <div class="hover:cursor-pointer" tabindex="0" role="button">•••</div>
+        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-64 shadow-lg text-xs">
+            <li>
+                <a href="music://music.apple.com/us/search?term={{ track.title }}"><img class="w-5 h-5 dark:invert" src="static/icons/apple-line.svg" alt="Apple Music icon">
+                    Search in Apple Music
+                </a>
+            </li>
+            <li>
+                <a href="spotify://search/{{ track.title }}"><img class="w-5 h-5 dark:invert" src="static/icons/spotify-line.svg" alt="Spotify icon">
+                    Search in Spotify
+                </a>
+            </li>
+        </ul>
+        </div>
+    </th>
+</tr>
