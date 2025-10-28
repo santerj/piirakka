@@ -40,7 +40,7 @@
 
 ### subscribe to websockets in shell (needs websocat)
 
-    websocat ws://localhost:8000/api/websocket
+    websocat ws://localhost:8000/ws/socket
 
 ### run alembic
 

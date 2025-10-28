@@ -1,4 +1,4 @@
-const wsEndpoint = `ws://${window.location.host}/api/websocket`;
+const wsEndpoint = `ws://${window.location.host}/ws/socket`;
 
 // Open websocket
 const socket = new WebSocket(wsEndpoint);

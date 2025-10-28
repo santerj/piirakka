@@ -207,7 +207,7 @@ app = Starlette(
         Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
         Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
         Route('/api/radio/shuffle', shuffle_station, methods=[HTTPMethod.PUT]),
-        WebSocketRoute("/api/websocket", WebSocketConnection),
+        WebSocketRoute("/ws/socket", WebSocketConnection),
         Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
     ]
 )
