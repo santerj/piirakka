@@ -14,8 +14,8 @@
                 bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black" 
             onclick="handleToggle()">
             <!-- TODO: icon state only set on initial render, needs to reflect websocket events -->
-            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}" id="playIcon" src="static/icons/play-circle-line.svg" alt="Play">
-            <img class="h-6 w-6 dark:invert {% if not playing %}hidden{% endif %}" id="pauseIcon" src="static/icons/pause-circle-line.svg" alt="Pause">
+            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}" id="playIcon" src="static/icons/play-fill.svg" alt="Play">
+            <img class="h-6 w-6 dark:invert {% if not playing %}hidden{% endif %}" id="pauseIcon" src="static/icons/pause-line.svg" alt="Pause">
         </button>
 
         <!-- Shuffle Button -->
@@ -35,8 +35,8 @@
             class="btn no-animation border shadow-md hover:shadow-inner
                 bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
             onclick="handleVolumeToggle()">
-            <img class="h-6 w-6 dark:invert" id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Volume Up">
-            <img class="h-6 w-6 hidden dark:invert" id="volumeMuteIcon" src="static/icons/volume-mute-line.svg" alt="Mute">
+            <img class="h-6 w-6 dark:invert" id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Mute">
+            <img class="h-6 w-6 hidden dark:invert" id="volumeMuteIcon" src="static/icons/volume-mute-line.svg" alt="Unmute">
         </button>
     </div>
 

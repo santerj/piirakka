@@ -38,6 +38,7 @@
     4. make changes to icon collection
     5. download in svg format
     6. unzip file, move contents to piirakka/static/icons
+    7. export collection, replace .remixicon file
 
 ### subscribe to websockets in shell (needs websocat)
 
