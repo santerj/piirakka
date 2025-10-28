@@ -109,7 +109,7 @@ typing-inspection==0.4.2
     # via
     #   -r requirements.txt
     #   pydantic
-urllib3==2.2.3
+urllib3==2.5.0
     # via
     #   -r requirements.txt
     #   requests
