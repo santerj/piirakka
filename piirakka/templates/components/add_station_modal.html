@@ -33,7 +33,7 @@
     const payload = { station_name: stationDisplayName, station_url: stationUrl };
 
     try {
-      const response = await fetch('/api/stations', {
+      const response = await fetch('/api/station', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -39,23 +39,6 @@ templates = Jinja2Templates(directory="piirakka/templates")
 file_loader = FileSystemLoader("piirakka/templates")
 env = Environment(loader=file_loader)
 
-if False:  # cheap seeding
-    engine = create_engine("sqlite:///piirakka.db", echo=True)
-    with Session(engine) as session:
-        junkkaa = Station(
-            name="junkkaa",
-            url="http://andromeda.shoutca.st/tunein/differentdrumz.pls"
-        )
-        lush = Station(
-            name="lush",
-            url="https://api.somafm.com/lush.pls"
-        )
-        darkedge = Station(
-            name="dark edge",
-            url="https://stream.darkedge.ro:8002/stream/4/"
-        )
-        session.add_all([junkkaa, lush, darkedge])
-        session.commit()
 
 class Context:
     SPAWN_MPV = os.getenv("MPV", True)
@@ -73,6 +56,7 @@ class Context:
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
         self.track_history: list[RecentTrack] = []
         self.subscribers = []
+        self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
 
     def refresh_control_bar(self):
         message = events.ControlBarUpdated()
@@ -199,10 +183,25 @@ async def shuffle_station(request):
     task = BackgroundTask(context.player.shuffle)
     return JSONResponse({"message": "station shuffle initiated"}, background=task)
 
+async def create_station(request):
+    data = await request.json()
+    station = Station(
+        name=data.get('station_name'),
+        url=data.get('station_url')
+    )
+    with Session(context.db_engine) as session:
+        session.add(station)
+        session.commit()
+        # ensure the instance has its attributes loaded while the session is still open
+        session.refresh(station)
+    context.player.update_stations()
+    return JSONResponse({"message": "station created successfully"})
+
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
+        Route('/api/station', create_station, methods=[HTTPMethod.POST]),
         Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
         Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
         Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),

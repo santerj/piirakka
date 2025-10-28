@@ -1,5 +1,5 @@
 .DS_STORE
-piirakka.db
+*.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
