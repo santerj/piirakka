@@ -5,12 +5,12 @@
     </div>
 
     <!-- middle button controls  -->
-    <div class="navbar-center flex space-x-5">
+    <div class="navbar-center flex space-x-4">
         <!-- Play/Pause Button -->
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
         <button 
             id="playPauseButton" 
-            class="btn no-animation border shadow-md hover:shadow-inner
+            class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner
                 bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black" 
             onclick="handleToggle()">
             <!-- TODO: icon state only set on initial render, needs to reflect websocket events -->
@@ -21,7 +21,7 @@
         <!-- Shuffle Button -->
         <button 
             id="shuffleButton" 
-            class="btn no-animation border shadow-md hover:shadow-inner
+            class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner
                 bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
             onclick="handleShuffle()">
             <img class="h-6 w-6 dark:invert" src="static/icons/shuffle-line.svg" alt="Shuffle">
@@ -32,7 +32,7 @@
         <!-- TODO: needs to reflect websocket events -->
         <button 
             id="volumeButton"
-            class="btn no-animation border shadow-md hover:shadow-inner
+            class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner
                 bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
             onclick="handleVolumeToggle()">
             <img class="h-6 w-6 dark:invert" id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Mute">
@@ -49,7 +49,7 @@
             min="0"
             max="100"
             step="1"
-            class="range range-xs mr-2 dark:range-neutral-600"
+            class="range range-xs mr-2"
             style="max-width: 180px;" 
             id="volumeControl" 
             onchange="handleVolumeChange(this.value)">
