@@ -4,5 +4,4 @@
 @tailwind utilities;
 
 /* DaisyUI components */
-@import "daisyui";
-
+@plugin "daisyui";
