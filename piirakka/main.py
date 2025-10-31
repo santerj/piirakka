@@ -16,7 +16,6 @@ from starlette.background import BackgroundTask
 from starlette.endpoints import WebSocketEndpoint
 from starlette.responses import JSONResponse
 from starlette.routing import Route, Mount, WebSocketRoute
-from starlette.applications import Starlette
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
 import uvicorn
@@ -88,6 +87,7 @@ class Context:
         except TypeError:
             return "unknown bitrate"
 
+
 context = Context()
 
 
@@ -115,11 +115,11 @@ def task(callback):
     # placeholder
     callback("task")
 
-async def observe_current_track(interval: int = 5):
+async def observe_current_track(interval: int = 1):
     while True:
         await asyncio.sleep(interval)
         current_track_title = context.player.current_track()
-        if current_track_title == None:
+        if current_track_title is None:
             # did not get Icy-Title
             continue
         else:
@@ -222,6 +222,7 @@ async def shutdown():
 
 def main():
     uvicorn.run(app, host="0.0.0.0", port=8000, workers=1, timeout_graceful_shutdown=5)
+
 
 if __name__ == "__main__":
     main()

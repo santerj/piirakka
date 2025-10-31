@@ -68,7 +68,7 @@ class Player:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
                 # Connect to the MPV IPC socket
                 sock.connect(self.socket)
-                
+
                 # Send the command
                 sock.sendall(cmd.encode())
                 
@@ -170,8 +170,8 @@ class Player:
     def get_stations(self) -> list[Station]:
         return self.stations
 
-    def play_station_with_id(self, id: str):
-        matching_station = next((s for s in self.stations if s.station_id == id))
+    def play_station_with_id(self, station_id: str):
+        matching_station = next((s for s in self.stations if s.station_id == station_id))
         if matching_station:
             self._set_station(url=matching_station.url)
             self.current_station = matching_station
