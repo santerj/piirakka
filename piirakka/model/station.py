@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
@@ -14,6 +14,7 @@ class Station(Base):
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
     added_on = Column(DateTime, default=datetime.utcnow)
+    listen_time = Column(Integer, default=0, nullable=False)
 
     def to_pydantic(self):
         return StationPydantic(
