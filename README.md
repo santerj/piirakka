@@ -44,9 +44,9 @@
 
 ### run alembic
 
-    alembic -c piirakka/alembic.ini revision -m "New migration"
-    alembic -c piirakka/alembic.ini revision --autogenerate -m "Refresh model"
-    alembic -c piirakka/alembic.ini upgrade head
+    alembic revision -m "New migration"
+    alembic revision --autogenerate -m "Refresh model"
+    alembic upgrade head
 
 ### build app
 
