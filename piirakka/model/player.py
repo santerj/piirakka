@@ -1,6 +1,6 @@
+import os
 import subprocess
 import socket
-import sqlite3
 import json
 import time
 
@@ -46,6 +46,7 @@ class Player:
     def __del__(self) -> None:
         if self.use_mpv and hasattr(self, "proc"):
             self.proc.terminate()
+            os.remove(self.socket)
 
     def _init_mpv(self):
         cmd = [
