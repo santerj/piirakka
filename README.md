@@ -38,7 +38,7 @@
     6. unzip file, move contents to piirakka/static/icons
     7. export collection, replace .remixicon file
 
-### subscribe to websockets in shell (needs websocat)
+### subscribe to websockets in shell (needs [websocat](https://github.com/vi/websocat))
 
     websocat ws://localhost:8000/ws/socket
 
@@ -55,3 +55,7 @@
 ### install app
 
     pip install dist/piirakka-*-py3-none-any.whl
+
+### look at included files in dist
+
+    unzip -l piirakka-*-py3-none-any.whl
