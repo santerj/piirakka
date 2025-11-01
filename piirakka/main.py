@@ -22,6 +22,7 @@ import uvicorn
 import asyncio
 
 import piirakka.model.event as events
+import piirakka.preflight as preflight
 from piirakka.model.player import Player
 from piirakka.model.station import Station
 from piirakka.model.recent_track import RecentTrack
@@ -42,7 +43,7 @@ env = Environment(loader=file_loader)
 class Context:
     SPAWN_MPV = os.getenv("MPV", True)
     SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
-    DATABASE = os.getenv("DATABASE", "piirakka.db")
+    DATABASE = os.getenv("DATABASE", preflight.DB_PATH)
     TRACK_HISTORY_LENGTH = 50
 
     def player_callback(self, message):

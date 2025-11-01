@@ -45,6 +45,7 @@
 ### run alembic
 
     alembic revision -m "New migration"
+    alembic revision --autogenerate -m "Refresh model"
     alembic upgrade head
 
 ### build app

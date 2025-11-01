@@ -5,7 +5,8 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
 
-Base = declarative_base()
+from piirakka.model.base import Base
+
 
 class Station(Base):
     __tablename__ = 'stations'

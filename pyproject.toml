@@ -1,17 +1,17 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=62.6", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "piirakka"
-version = "0.1.0"
 description = "Online radio player"
 readme = "README.md"
 requires-python = ">=3.10"
-dynamic = ["dependencies"]
+dynamic = ["dependencies", "version"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["piirakka/requirements.in"]}
+version = {attr = "piirakka.__version__.__version__"}
 
 [project.scripts]
 piirakka = "piirakka.main:main"
@@ -20,4 +20,4 @@ piirakka = "piirakka.main:main"
 where = ["."]
 
 [tool.setuptools.package-data]
-"piirakka" = ["templates/*", "static/*"]
+"piirakka" = ["templates/*", "static/*", "migrations/alembic.ini"]
