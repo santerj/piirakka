@@ -20,4 +20,4 @@ piirakka = "piirakka.main:main"
 where = ["."]
 
 [tool.setuptools.package-data]
-"piirakka" = ["templates/*", "static/*", "alembic.ini"]
+"piirakka" = ["templates/*", "static/*", "migrations/alembic.ini"]
