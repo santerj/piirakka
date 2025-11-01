@@ -42,7 +42,7 @@ env = Environment(loader=file_loader)
 class Context:
     SPAWN_MPV = os.getenv("MPV", True)
     SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
-    DATABASE = os.getenv("DATABASE", "piirakka.db")
+    DATABASE = os.getenv("DATABASE", "./piirakka/piirakka.db")
     TRACK_HISTORY_LENGTH = 50
 
     def player_callback(self, message):

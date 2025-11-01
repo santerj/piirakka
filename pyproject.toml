@@ -21,3 +21,4 @@ where = ["."]
 
 [tool.setuptools.package-data]
 "piirakka" = ["templates/*", "static/*"]
+"" = ["alembic.ini"]
