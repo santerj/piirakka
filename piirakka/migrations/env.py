@@ -9,7 +9,6 @@ from sqlalchemy import pool
 from alembic import context
 
 from piirakka.model.base import Base
-from piirakka.model.station import Station
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
