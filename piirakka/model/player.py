@@ -1,6 +1,6 @@
+import os
 import subprocess
 import socket
-import sqlite3
 import json
 import time
 
@@ -17,9 +17,9 @@ VOLUME_MAX = 130
 
 
 class Player:
-    def __init__(self, mpv, socket, database, callback) -> None:
+    def __init__(self, mpv, ipc_socket, database, callback) -> None:
         self.use_mpv = mpv
-        self.socket = socket
+        self.ipc_socket = ipc_socket
         self.database = database
         self.callback = callback
 
@@ -46,12 +46,13 @@ class Player:
     def __del__(self) -> None:
         if self.use_mpv and hasattr(self, "proc"):
             self.proc.terminate()
+            os.remove(self.ipc_socket)
 
     def _init_mpv(self):
         cmd = [
             'mpv',
                 '--idle',
-                '--input-ipc-server=' + self.socket,
+                '--input-ipc-server=' + self.ipc_socket,
                 '--volume=' + str(VOLUME_INIT),
                 '--volume-max=' + str(VOLUME_MAX),  # TODO: source from config file
                 '--cache=yes', 
@@ -67,7 +68,7 @@ class Player:
             # Create a Unix domain socket
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
                 # Connect to the MPV IPC socket
-                sock.connect(self.socket)
+                sock.connect(self.ipc_socket)
 
                 # Send the command
                 sock.sendall(cmd.encode())

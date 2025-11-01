@@ -42,7 +42,7 @@ env = Environment(loader=file_loader)
 
 class Context:
     SPAWN_MPV = os.getenv("MPV", True)
-    SOCKET = os.getenv("SOCKET", "/tmp/piirakka.sock")
+    SOCKET = os.getenv("SOCKET", preflight.generate_socket_path())
     DATABASE = os.getenv("DATABASE", preflight.DB_PATH)
     TRACK_HISTORY_LENGTH = 50
 
