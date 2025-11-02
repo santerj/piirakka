@@ -13,6 +13,7 @@ DB_URL = f"sqlite:///{DB_PATH}"
 def generate_socket_path():
     return os.path.join(tempfile.gettempdir(), f"piirakka_{os.getpid()}.sock")
 
+
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
