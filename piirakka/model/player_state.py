@@ -1,7 +1,8 @@
-from piirakka.model.station import Station, StationPydantic
-
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel
+
+from piirakka.model.station import Station, StationPydantic
+
 
 class PlayerState(BaseModel):
     # this class is used to hydrate the frontend with server-sent events.

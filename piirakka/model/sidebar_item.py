@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
 # App sidebar items. This data is not dynamic (not queried from API), so pydantic is not needed.
 
