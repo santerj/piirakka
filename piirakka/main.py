@@ -96,11 +96,9 @@ class WebSocketConnection(WebSocketEndpoint):
     async def on_connect(self, websocket):
         await websocket.accept()
         context.subscribers.append(websocket)
-        print("New connection accepted")
 
     async def on_disconnect(self, websocket, close_code):
         context.subscribers.remove(websocket)
-        print("Connection closed")
 
     async def on_receive(self, websocket, data):
         print(f"Received message: {data}")
