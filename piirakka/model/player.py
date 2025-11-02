@@ -1,13 +1,12 @@
-import os
-import subprocess
-import socket
 import json
+import os
+import socket
+import subprocess
 import time
-
 from random import choice
 
-from sqlalchemy.orm import Session, sessionmaker  ## TODO: get from main
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker  # # TODO: get from main
 
 from piirakka.model.event import ControlBarUpdated
 from piirakka.model.station import Station, StationPydantic

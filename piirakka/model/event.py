@@ -1,7 +1,9 @@
 from enum import Enum
+
 from pydantic import BaseModel
 
 from piirakka.model.station import StationPydantic
+
 
 class ControlBarUpdated(BaseModel):
     event: str = "control_bar_updated"

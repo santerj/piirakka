@@ -1,9 +1,10 @@
-from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
+
+from pydantic import BaseModel
+from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import declarative_base
 
 from piirakka.model.base import Base
 

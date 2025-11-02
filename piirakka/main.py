@@ -1,36 +1,34 @@
+import asyncio
+import json
+import logging
 import os
-
 from datetime import datetime
 from http import HTTPMethod
-import json
 
 import anyio
+import uvicorn
 from jinja2 import Environment, FileSystemLoader
-
 from setproctitle import setproctitle
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-
+from sqlalchemy.orm import Session
 from starlette.applications import Starlette
 from starlette.background import BackgroundTask
 from starlette.endpoints import WebSocketEndpoint
 from starlette.responses import JSONResponse
-from starlette.routing import Route, Mount, WebSocketRoute
-from starlette.templating import Jinja2Templates
+from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
-import uvicorn
-import asyncio
+from starlette.templating import Jinja2Templates
 
 import piirakka.model.event as events
 import piirakka.preflight as preflight
+from piirakka.__version__ import __version__
 from piirakka.model.player import Player
-from piirakka.model.station import Station
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
-
+from piirakka.model.station import Station
 
 setproctitle("piirakka")
-
+logger = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory="piirakka/templates")
 
@@ -222,8 +220,9 @@ async def shutdown():
         await subscriber.close()
 
 def main():
-    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1, timeout_graceful_shutdown=5)
+    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1, timeout_graceful_shutdown=5, log_config=preflight.LOGGING_CONFIG)
 
 
 if __name__ == "__main__":
+    logger.info(f"piirakka v{__version__}")
     main()
