@@ -52,6 +52,16 @@ LOGGING_CONFIG = {
             "handlers": ["console"],
             "propagate": False,
         },
+        "sqlalchemy.engine": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "sqlalchemy.orm": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
         "alembic": {
             "level": "INFO",
             "handlers": ["console"],

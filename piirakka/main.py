@@ -224,5 +224,5 @@ def main():
 
 
 if __name__ == "__main__":
-    logger.info(f"piirakka v{__version__}")
+    logger.info(f"Starting piirakka v{__version__}")
     main()
