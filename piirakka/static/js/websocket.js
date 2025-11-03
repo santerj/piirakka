@@ -139,5 +139,5 @@ function insertNewTrack(content) {
  */
 function updateTitle(track, station) {
   const playingMediaTitle = track !== "" ? track : station;
-  document.title = `${playingMediaTitle} | piirakka`
+  document.title = `${playingMediaTitle} | piirakka`;
 }
