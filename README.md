@@ -11,6 +11,13 @@
     source venv/bin/activate
     npm install
 
+### (in VS Code) start all dev tasks
+
+- Open command palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
+- type `'Run Task'` > select `Start All`
+
+This will open the stack of dev tools in the Terminal tab.
+
 ### update python dependencies
 
     pip-compile -o requirements/requirements.txt requirements/requirements.in

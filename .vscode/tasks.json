@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "run piirakka",
+      "type": "shell",
+      "command": "venv/bin/python -m piirakka.main",
+      "group": "none"
+    },
+    {
+      "label": "watch css",
+      "type": "shell",
+      "command": "npm run watch:css",
+      "group": "none"
+    },
+    {
+      "label": "sqlite shell",
+      "type": "shell",
+      "command": "sqlite3 piirakka/piirakka.db",
+      "group": "none"
+    },
+    {
+      "label": "websocket subscriber",
+      "type": "shell",
+      "command": "sleep 5; websocat ws://localhost:8000/ws/subscribe",
+      "group": "none"
+    },
+    {
+      "label": "zsh",
+      "type": "shell",
+      "command": "zsh",
+      "group": "none"
+    },
+    {
+      "label": "Start All",
+      "dependsOn": [
+        "run piirakka",
+        "watch css",
+        "sqlite shell",
+        "websocket subscriber",
+        "zsh"
+      ],
+      "dependsOrder": "parallel"
+    }
+  ]
+}
