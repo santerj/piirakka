@@ -26,7 +26,7 @@ class Station(Base):
             added_on=self.added_on,
             listen_time=self.listen_time
         )
-    
+
 def create_station(session: Session, name: str, url: str) -> Station:
     station = Station(name=name, url=url)
     session.add(station)

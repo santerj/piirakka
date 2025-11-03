@@ -48,7 +48,7 @@ class Context:
         anyio.from_thread.run(broadcast_message, payload)
 
     def __init__(self):
-        self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback, )
+        self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
         self.track_history: list[RecentTrack] = []
         self.subscribers = []
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)

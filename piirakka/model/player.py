@@ -76,7 +76,7 @@ class Player:
         except Exception as e:
             print(f"Error: {e}")
             return None
-    
+
     @staticmethod
     def _ipc_success(resp: dict) -> bool:
         if resp and 'error' in resp.keys():
