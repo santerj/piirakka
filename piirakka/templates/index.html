@@ -2,7 +2,13 @@
 <html lang="en">
 
 <head>
-    <title>piirakka</title>
+    <title>
+      {% if track_name %}
+        {{ track_name }} | piirakka
+      {% else %}
+        {{ station_name }} | piirakka
+      {% endif %}
+    </title>
     <script src="static/js/websocket.js"></script>
     {% include 'components/head.html' %}
 </head>

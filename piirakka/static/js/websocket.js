@@ -26,6 +26,8 @@ socket.addEventListener("message", function (event) {
           case "track_changed":
             insertNewTrack(content);
             break;
+          default:
+            console.log("Event type unknown:", eventItem.event_type);
         }
       });
     } else {
@@ -128,4 +130,12 @@ function insertNewTrack(content) {
   while (tbody.rows.length > 50) {
     tbody.deleteRow(tbody.rows.length - 1);
   }
+
+  if (history_track_title !== "") {
+  updateTitle(`${history_track_title} | piirakka`)
+  }
+}
+
+function updateTitle(track) {
+  document.title = track;
 }
