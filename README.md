@@ -15,6 +15,7 @@
 
     pip-compile -o requirements/requirements.txt requirements/requirements.in
     pip-compile -o requirements/dev-requirements.txt requirements/dev-requirements.in
+    pip-sync requirements/dev-requirements.txt
 
 ### run starlette
 

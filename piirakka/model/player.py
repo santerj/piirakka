@@ -5,9 +5,6 @@ import subprocess
 import time
 from random import choice
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker  # # TODO: get from main
-
 from piirakka.model.event import PlayerBarUpdateEvent
 from piirakka.model.player_state import PlayerState
 from piirakka.model.station import Station, StationPydantic
@@ -22,26 +19,14 @@ class Player:
         self.ipc_socket = ipc_socket
         self.database = database
         self.callback = callback
-
-        self.engine = create_engine(f"sqlite:///{self.database}", echo=True)
-        self.Session = sessionmaker(bind=self.engine)
-        self.session = self.Session()
-
-        self.stations: list[StationPydantic] = []
-        self.playing = True  # TODO: get from mpv
-
         if self.use_mpv:
             self.proc = self._init_mpv()    # mpv process
-
-        self.current_station: StationPydantic = None
+        
         self.volume = self.get_volume()
-
-        self.update_stations()
-        if len(self.stations) > 0:
-            # set initial station if db is populated
-            default_index = 0
-            self.current_station = self.stations[default_index]
-            self.play_station_with_id(self.current_station.station_id)
+        self.playing = self.get_status()
+        self.stations: list[StationPydantic] = []
+        self.current_station: StationPydantic = None
+        # initial station set by context
 
     def __del__(self) -> None:
         if self.use_mpv and hasattr(self, "proc"):
@@ -90,7 +75,7 @@ class Player:
         except Exception as e:
             print(f"Error: {e}")
             return None
-    
+
     @staticmethod
     def _ipc_success(resp: dict) -> bool:
         if resp and 'error' in resp.keys():
@@ -165,30 +150,32 @@ class Player:
         if self._ipc_success(resp):
             return resp['data']
 
-    def update_stations(self) -> None:
-        # TODO: let controller handle DB select, pass via argument here
-        if s := self.current_station:
-            current_station_id = s.station_id
+    def update_stations(self, stations: list[StationPydantic]) -> None:
+        # TODO: verify if is uuid4 or str
+        current_station_id = None
+        if self.current_station:
+            current_station_id = self.current_station.station_id
 
-        stations = self.session.query(Station).all()
-        self.stations = [s.to_pydantic() for s in stations]
+        self.stations = stations
 
-        if self.current_station and current_station_id:
-            # keep currently playing station info
-            matching_station = next((s for s in self.stations if s.station_id == current_station_id))
+        if current_station_id:
+            matching_station = next((s for s in stations if s.station_id == current_station_id), None)
             if matching_station:
+                # keep currently playing station
                 self.current_station = matching_station
 
     def get_stations(self) -> list[Station]:
         return self.stations
 
     def play_station_with_id(self, station_id: str):
+        # TODO: verify if is uuid4 or str
         matching_station = next((s for s in self.stations if s.station_id == station_id))
         if matching_station:
             self._set_station(url=matching_station.url)
             self.current_station = matching_station
 
     def _set_station(self, url: str):
+        # TODO: rework to accept StationPydantic
         cmd = {
             "command": [
                 "loadfile",
@@ -261,4 +248,5 @@ class Player:
         choices = [s for s in self.stations if s.station_id != current_id]
         random_station = choice(choices)
         self.play_station_with_id(random_station.station_id)
+        # TODO: add small wait to have a better chance of actually broadcasting an update here
         self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
