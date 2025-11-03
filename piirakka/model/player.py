@@ -112,7 +112,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return not resp['data']
+            return not resp['data'] if resp else False
 
     def get_volume(self) -> int:
         cmd = {

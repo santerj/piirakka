@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 from datetime import datetime
@@ -40,15 +41,11 @@ class Context:
     def player_callback(self, message):
         #loop = asyncio.get_event_loop()
         #loop.create_task(broadcast_message(str(message)))
-        match message:  # TODO: doesn't really need matching if pydantic validation passed
-            case events.PlayerBarUpdateEvent():
-                payload = message.model_dump_json()
-                logging.info(f"Broadcasting Websocket message {payload}")
-                anyio.from_thread.run(broadcast_message, payload)
-            case events.TrackChangeEvent():
-                payload = message.model_dump_json()
-                logging.info(f"Broadcasting Websocket message {payload}")
-                anyio.from_thread.run(broadcast_message, payload)
+
+        logging.info(f"Received event {type(message)} from player via callback")
+        payload = self.serialize_events(message)
+        logging.info(f"Broadcasting Websocket message {payload}")
+        anyio.from_thread.run(broadcast_message, payload)
 
     def __init__(self):
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
@@ -67,17 +64,22 @@ class Context:
         if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
             self.track_history.pop()
         self.track_history.insert(0, track)
-        message = events.TrackChangeEvent(content=track)
 
-        await broadcast_message(message.model_dump_json())
-        await self.push_player_bar()  # also refresh player bar
+        track_update_message = events.TrackChangeEvent(content=track)
 
-    def render_bitrate(self) -> str:
-        try:
-            bitrate = self.player.get_bitrate()
-            return f"{round(bitrate / 1000)} kbps"
-        except TypeError:
-            return "unknown bitrate"
+        # track change also refreshes player bar in the same broadcast
+        player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state())
+        message = self.serialize_events(track_update_message, player_bar_update_message)
+
+        await broadcast_message(message=message)
+
+    @staticmethod
+    def serialize_events(*args) -> str:
+        # accepts events and serializes to json
+        payload = {'events': []}
+        for event in args:
+            payload['events'].append(event.model_dump())
+        return json.dumps(payload)
 
 
 context = Context()
