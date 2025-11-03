@@ -1,20 +1,20 @@
-from enum import Enum
-
 from pydantic import BaseModel
 
 from piirakka.model.station import StationPydantic
+from piirakka.model.player_state import PlayerState
+from piirakka.model.recent_track import RecentTrack
 
 
-class ControlBarUpdated(BaseModel):
-    event: str = "control_bar_updated"
-    html: str = ""
+class PlayerBarUpdateEvent(BaseModel):
+    event_type: str = "player_bar_updated"
+    content: PlayerState
 
-class StationsChangeEvent(BaseModel):
+class StationListChangeEvent(BaseModel):
     # stations updated in db
-    event: str = "stations_changed"
-    stations: list[StationPydantic]
+    event_type: str = "stations_changed"
+    content: list[StationPydantic]
 
 class TrackChangeEvent(BaseModel):
     # track changed
-    event: str = "track_changed"
-    html: str
+    event_type: str = "track_changed"
+    content: RecentTrack

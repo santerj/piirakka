@@ -47,8 +47,15 @@ class Context:
     def player_callback(self, message):
         #loop = asyncio.get_event_loop()
         #loop.create_task(broadcast_message(str(message)))
-        if isinstance(message, events.ControlBarUpdated):
-            self.refresh_control_bar()
+        match message:  # TODO: doesn't really need matching if pydantic validation passed
+            case events.PlayerBarUpdateEvent():
+                payload = message.model_dump_json()
+                logging.info(f"Broadcasting Websocket message {payload}")
+                anyio.from_thread.run(broadcast_message, payload)
+            case events.TrackChangeEvent():
+                payload = message.model_dump_json()
+                logging.info(f"Broadcasting Websocket message {payload}")
+                anyio.from_thread.run(broadcast_message, payload)
 
     def __init__(self):
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
@@ -56,28 +63,21 @@ class Context:
         self.subscribers = []
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
 
-    def refresh_control_bar(self):
-        message = events.ControlBarUpdated()
-        template = env.get_template('components/player.html')
-        html = template.render(
-            volume=self.player.get_volume(),
-            playing=self.player.get_status(),
-            track_name=self.track_history[0].title if len(self.track_history) > 0 else '',
-            station_name=self.player.current_station.name,
-            bitrate=self.render_bitrate(),
-            codec=self.player.get_codec()
-        )
-        message.html = html
-        anyio.from_thread.run(broadcast_message, json.dumps(message.model_dump()))
+    async def push_player_bar(self):
+        player_bar_status = self.player.get_player_state()
+        message = events.PlayerBarUpdateEvent(content=player_bar_status)
+        await broadcast_message(message.model_dump_json())
 
-    async def push_track(self, track):
+    async def push_track(self, track: RecentTrack):
+        # updates the in-memory track history
+        # and broadcasts updates to websocket subscribers
         if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
             self.track_history.pop()
         self.track_history.insert(0, track)
-        template = env.get_template('components/track_history.html')
-        html = template.render(recent_tracks=self.track_history)
-        await broadcast_message(json.dumps(events.TrackChangeEvent(html=html).model_dump()))  # TODO: functionize
-        await anyio.to_thread.run_sync(self.refresh_control_bar)
+        message = events.TrackChangeEvent(content=track)
+
+        await broadcast_message(message.model_dump_json())
+        await self.push_player_bar()  # also refresh player bar
 
     def render_bitrate(self) -> str:
         try:
