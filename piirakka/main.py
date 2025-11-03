@@ -24,7 +24,7 @@ from piirakka.__version__ import __version__
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
-from piirakka.model.station import Station
+from piirakka.model.station import create_station, list_stations
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
@@ -48,10 +48,20 @@ class Context:
         anyio.from_thread.run(broadcast_message, payload)
 
     def __init__(self):
-        self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
+        self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback, )
         self.track_history: list[RecentTrack] = []
         self.subscribers = []
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
+
+        with Session(self.db_engine) as session:
+            stations = list_stations(session)
+            stations_pydantic = [s.to_pydantic() for s in stations]
+            self.player.update_stations(stations_pydantic)
+            if len(stations) > 0:
+                # set initial station if db is populated
+                default_index = 0
+                self.player.current_station_id = str(stations[default_index].station_id)
+                self.player.play_station_with_id(self.player.current_station_id)
 
     async def push_player_bar(self):
         player_bar_status = self.player.get_player_state()
@@ -173,25 +183,26 @@ async def shuffle_station(request):
     task = BackgroundTask(context.player.shuffle)
     return JSONResponse({"message": "station shuffle initiated"}, background=task)
 
-async def create_station(request):
+async def create_station_handler(request):
     data = await request.json()
-    station = Station(
-        name=data.get('station_name'),
-        url=data.get('station_url')
-    )
+    name=data.get('station_name')
+    url=data.get('station_url')
+
     with Session(context.db_engine) as session:
-        session.add(station)
-        session.commit()
-        # ensure the instance has its attributes loaded while the session is still open
-        session.refresh(station)
-    context.player.update_stations()
+        create_station(session, name, url)
+
+    with Session(context.db_engine) as session:
+        stations = list_stations(session)
+        stations_pydantic = [s.to_pydantic() for s in stations]
+        context.player.update_stations(stations_pydantic)
+
     return JSONResponse({"message": "station created successfully"})
 
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
-        Route('/api/station', create_station, methods=[HTTPMethod.POST]),
+        Route('/api/station', create_station_handler, methods=[HTTPMethod.POST]),
         Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
         Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
         Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
