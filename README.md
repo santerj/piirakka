@@ -16,7 +16,11 @@
 - Open command palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
 - type `'Run Task'` > select `Start All`
 
-This will open the stack of dev tools in the Terminal tab.
+This will open the stack of dev tools in the Terminal tab. Prerequisite is that the python env and
+node packages have been installed. Websocat and sqlite3 are also required.
+
+Due to subprocess spawning, uvicorn doesn't have the development server (hot reloading)
+enabled. That task will have to be rerun manually by clicking on the task.
 
 ### update python dependencies
 
