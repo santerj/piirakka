@@ -5,13 +5,11 @@ from piirakka.model.station import Station, StationPydantic
 
 
 class PlayerState(BaseModel):
-    # this class is used to hydrate the frontend with server-sent events.
-    # it contains everyhting required to populate the frontend with real time data.
-    status: str  # playing or paused
+    # representation of the player bar in json
+    playback_status: bool  # True: playing | False: paused
     volume: int
-    stations: list[StationPydantic]
-    current_station_index: int | None  # index in stations
-    title: int | None  # usually from Icy-Title
+    current_station_name: str | None  # index in stations
+    track_title: str | None  # usually from Icy-Title
 
     class Config:
         alias_generator = to_camel

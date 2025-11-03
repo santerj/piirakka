@@ -8,7 +8,8 @@ from random import choice
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker  # # TODO: get from main
 
-from piirakka.model.event import ControlBarUpdated
+from piirakka.model.event import PlayerBarUpdateEvent
+from piirakka.model.player_state import PlayerState
 from piirakka.model.station import Station, StationPydantic
 
 VOLUME_INIT = 50
@@ -47,6 +48,15 @@ class Player:
             self.proc.terminate()
             os.remove(self.ipc_socket)
 
+    def get_player_state(self) -> PlayerState:
+        # for creation of callback events - sent into websocket
+        return PlayerState(
+            playback_status=self.get_status(),
+            volume=self.get_volume(),
+            current_station_name=self.current_station.name,
+            track_title=self.current_track()
+        )
+
     def _init_mpv(self):
         cmd = [
             'mpv',
@@ -71,7 +81,7 @@ class Player:
 
                 # Send the command
                 sock.sendall(cmd.encode())
-                
+
                 # Receive the response
                 response = sock.recv(4096).decode()
                 sock.close()
@@ -83,7 +93,9 @@ class Player:
     
     @staticmethod
     def _ipc_success(resp: dict) -> bool:
-        return resp['error'] == 'success'
+        if resp and 'error' in resp.keys():
+            return resp['error'] == 'success'
+        else: return False
     
     def _dumps(self, cmd: dict) -> str:
         return json.dumps(cmd) + '\n'
@@ -100,7 +112,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return not resp['data']
+            return not resp['data'] if resp else False
 
     def get_volume(self) -> int:
         cmd = {
@@ -126,7 +138,7 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar
+        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
         return self._ipc_success(resp)
 
     def get_bitrate(self) -> int:
@@ -187,6 +199,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
+        return True if resp else False
 
     def play(self) -> bool:
         cmd = {
@@ -198,7 +211,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar
+        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
         return True if resp else False
 
     def pause(self) -> bool:
@@ -211,7 +224,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = False
-        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar
+        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
         return True if resp else False
 
     def toggle(self) -> bool:
@@ -248,4 +261,4 @@ class Player:
         choices = [s for s in self.stations if s.station_id != current_id]
         random_station = choice(choices)
         self.play_station_with_id(random_station.station_id)
-        self.callback(ControlBarUpdated())  # signal to controller to re-render control bar
+        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar

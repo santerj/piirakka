@@ -7,7 +7,6 @@ from http import HTTPMethod
 
 import anyio
 import uvicorn
-from jinja2 import Environment, FileSystemLoader
 from setproctitle import setproctitle
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -32,11 +31,6 @@ logger = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory="piirakka/templates")
 
-# TODO: hacking to get jinja rendering working,
-# doesn't necessarily have to be done twice
-file_loader = FileSystemLoader("piirakka/templates")
-env = Environment(loader=file_loader)
-
 
 class Context:
     SPAWN_MPV = os.getenv("MPV", True)
@@ -47,8 +41,11 @@ class Context:
     def player_callback(self, message):
         #loop = asyncio.get_event_loop()
         #loop.create_task(broadcast_message(str(message)))
-        if isinstance(message, events.ControlBarUpdated):
-            self.refresh_control_bar()
+
+        logging.info(f"Received event {type(message)} from player via callback")
+        payload = self.serialize_events(message)
+        logging.info(f"Broadcasting Websocket message {payload}")
+        anyio.from_thread.run(broadcast_message, payload)
 
     def __init__(self):
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
@@ -56,35 +53,33 @@ class Context:
         self.subscribers = []
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
 
-    def refresh_control_bar(self):
-        message = events.ControlBarUpdated()
-        template = env.get_template('components/player.html')
-        html = template.render(
-            volume=self.player.get_volume(),
-            playing=self.player.get_status(),
-            track_name=self.track_history[0].title if len(self.track_history) > 0 else '',
-            station_name=self.player.current_station.name,
-            bitrate=self.render_bitrate(),
-            codec=self.player.get_codec()
-        )
-        message.html = html
-        anyio.from_thread.run(broadcast_message, json.dumps(message.model_dump()))
+    async def push_player_bar(self):
+        player_bar_status = self.player.get_player_state()
+        message = events.PlayerBarUpdateEvent(content=player_bar_status)
+        await broadcast_message(message.model_dump_json())
 
-    async def push_track(self, track):
+    async def push_track(self, track: RecentTrack):
+        # updates the in-memory track history
+        # and broadcasts updates to websocket subscribers
         if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
             self.track_history.pop()
         self.track_history.insert(0, track)
-        template = env.get_template('components/track_history.html')
-        html = template.render(recent_tracks=self.track_history)
-        await broadcast_message(json.dumps(events.TrackChangeEvent(html=html).model_dump()))  # TODO: functionize
-        await anyio.to_thread.run_sync(self.refresh_control_bar)
 
-    def render_bitrate(self) -> str:
-        try:
-            bitrate = self.player.get_bitrate()
-            return f"{round(bitrate / 1000)} kbps"
-        except TypeError:
-            return "unknown bitrate"
+        track_update_message = events.TrackChangeEvent(content=track)
+
+        # track change also refreshes player bar in the same broadcast
+        player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state())
+        message = self.serialize_events(track_update_message, player_bar_update_message)
+
+        await broadcast_message(message=message)
+
+    @staticmethod
+    def serialize_events(*args) -> str:
+        # accepts events and serializes to json
+        payload = {'events': []}
+        for event in args:
+            payload['events'].append(event.model_dump())
+        return json.dumps(payload)
 
 
 context = Context()
@@ -148,8 +143,6 @@ async def index(request):
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
             "station_name": context.player.current_station.name,
-            "bitrate": context.render_bitrate(),
-            "codec": context.player.get_codec()
         }
     )
 
@@ -203,7 +196,7 @@ app = Starlette(
         Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
         Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
         Route('/api/radio/shuffle', shuffle_station, methods=[HTTPMethod.PUT]),
-        WebSocketRoute("/ws/socket", WebSocketConnection),
+        WebSocketRoute("/ws/subscribe", WebSocketConnection),
         Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
     ]
 )
