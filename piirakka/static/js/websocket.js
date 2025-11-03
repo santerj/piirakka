@@ -131,11 +131,13 @@ function insertNewTrack(content) {
     tbody.deleteRow(tbody.rows.length - 1);
   }
 
-  if (history_track_title !== "") {
-  updateTitle(`${history_track_title} | piirakka`)
-  }
+  updateTitle(history_track_title, history_station_name);
 }
 
-function updateTitle(track) {
-  document.title = track;
+/**
+ * Refresh currently
+ */
+function updateTitle(track, station) {
+  const playingMediaTitle = track !== "" ? track : station;
+  document.title = `${playingMediaTitle} | piirakka`
 }
