@@ -12,10 +12,9 @@
             id="playPauseButton" 
             class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner
                 bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black" 
-            onclick="handleToggle()">
-            <!-- TODO: icon state only set on initial render, needs to reflect websocket events -->
-            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}" id="playIcon" src="static/icons/play-fill.svg" alt="Play">
+            onclick="togglePlayPause()">
             <img class="h-6 w-6 dark:invert {% if not playing %}hidden{% endif %}" id="pauseIcon" src="static/icons/pause-line.svg" alt="Pause">
+            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}" id="playIcon" src="static/icons/play-fill.svg" alt="Play">
         </button>
 
         <!-- Shuffle Button -->
@@ -57,19 +56,7 @@
 </div>
 
 <script>
-  // JavaScript to handle play/pause button
-  function handleToggle() {
-      const playIcon = document.getElementById('playIcon');
-      const pauseIcon = document.getElementById('pauseIcon');
-
-      if (playIcon.classList.contains('hidden')) {
-          playIcon.classList.remove('hidden');
-          pauseIcon.classList.add('hidden');
-      } else {
-          playIcon.classList.add('hidden');
-          pauseIcon.classList.remove('hidden');
-      }
-
+  function togglePlayPause() {
       fetch('/api/radio/toggle', {
           method: 'PUT'
       });
@@ -110,10 +97,5 @@
           },
           body: JSON.stringify({ volume: value })
       });
-  }
-
-  // set currently playing station
-  function setCurrentStation(value) {
-      document.getElementById('currentStation').textContent = value;
   }
 </script>

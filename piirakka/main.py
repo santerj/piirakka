@@ -143,8 +143,6 @@ async def index(request):
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
             "station_name": context.player.current_station.name,
-            "bitrate": context.render_bitrate(),
-            "codec": context.player.get_codec()
         }
     )
 
