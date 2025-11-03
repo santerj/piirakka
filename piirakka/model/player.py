@@ -93,7 +93,7 @@ class Player:
     
     @staticmethod
     def _ipc_success(resp: dict) -> bool:
-        if 'error' in resp.keys():
+        if resp and 'error' in resp.keys():
             return resp['error'] == 'success'
         else: return False
     
@@ -138,7 +138,7 @@ class Player:
         }
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        self.callback(PlayerBarUpdateEvent(self.get_player_state()))  # signal to controller to re-render control bar
+        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
         return self._ipc_success(resp)
 
     def get_bitrate(self) -> int:
@@ -210,7 +210,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        self.callback(PlayerBarUpdateEvent(self.get_player_state()))  # signal to controller to re-render control bar
+        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
         return True if resp else False
 
     def pause(self) -> bool:
@@ -223,7 +223,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = False
-        self.callback(PlayerBarUpdateEvent(self.get_player_state()))  # signal to controller to re-render control bar
+        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
         return True if resp else False
 
     def toggle(self) -> bool:

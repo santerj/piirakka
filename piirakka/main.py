@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import os
 from datetime import datetime
@@ -7,7 +6,6 @@ from http import HTTPMethod
 
 import anyio
 import uvicorn
-from jinja2 import Environment, FileSystemLoader
 from setproctitle import setproctitle
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -31,11 +29,6 @@ setproctitle("piirakka")
 logger = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory="piirakka/templates")
-
-# TODO: hacking to get jinja rendering working,
-# doesn't necessarily have to be done twice
-file_loader = FileSystemLoader("piirakka/templates")
-env = Environment(loader=file_loader)
 
 
 class Context:
