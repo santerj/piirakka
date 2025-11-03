@@ -18,16 +18,15 @@ socket.addEventListener("message", function (event) {
     if (Array.isArray(data.events)) {
       data.events.forEach((eventItem) => {
         const content = eventItem.content;
-        
+
         switch (eventItem.event_type) {
-          case 'player_bar_updated':
+          case "player_bar_updated":
             updatePlayerBar(content);
             break;
-          case 'track_changed':
+          case "track_changed":
             insertNewTrack(content);
             break;
         }
-
       });
     } else {
       console.warn("No events array found in message.");
@@ -47,32 +46,39 @@ socket.addEventListener("error", function (event) {
   console.error("WebSocket error:", event);
 });
 
+/**
+ * update text fields, icons and slider
+ * in player bar to match actual app state
+ */
 function updatePlayerBar(content) {
-  // update fields in player bar
   const player_track_title = content.track_title;
   const player_station_name = content.current_station_name;
   const volume = content.volume;
   const playback = content.playback_status;
 
-  document.getElementById('player_bar_track_name').innerText = player_track_title;
-  document.getElementById('player_bar_station_name').innerText = player_station_name;
+  document.getElementById("player_bar_track_name").innerText = player_track_title;
+  document.getElementById("player_bar_station_name").innerText = player_station_name;
   document.getElementById("volumeControl").value = volume;
   if (!playback) {
-    document.getElementById('pauseIcon').classList.add('hidden');
-    document.getElementById('playIcon').classList.remove('hidden');
+    document.getElementById("pauseIcon").classList.add("hidden");
+    document.getElementById("playIcon").classList.remove("hidden");
   } else {
-    document.getElementById('pauseIcon').classList.remove('hidden');
-    document.getElementById('playIcon').classList.add('hidden');
+    document.getElementById("pauseIcon").classList.remove("hidden");
+    document.getElementById("playIcon").classList.add("hidden");
   }
-  if (volume == 0) {
-    document.getElementById('volumeUpIcon').classList.add('hidden');
-    document.getElementById('volumeMuteIcon').classList.remove('hidden');
+  if (volume === 0) {
+    document.getElementById("volumeUpIcon").classList.add("hidden");
+    document.getElementById("volumeMuteIcon").classList.remove("hidden");
   } else {
-    document.getElementById('volumeUpIcon').classList.remove('hidden');
-    document.getElementById('volumeMuteIcon').classList.add('hidden');
+    document.getElementById("volumeUpIcon").classList.remove("hidden");
+    document.getElementById("volumeMuteIcon").classList.add("hidden");
   }
 }
 
+/**
+ * due to track component being a prerendered jinja template, we have to hack
+ * a little and clone an existing row + replace contents manually
+ */
 function insertNewTrack(content) {
   // due to track component being a prerendered jinja template, we have to hack
   // a bit and clone an existing row + replace contents manually
