@@ -38,7 +38,7 @@ socket.addEventListener("message", function (event) {
 
 // Listen for connection close event
 socket.addEventListener("close", function (event) {
-  console.log("WebSocket is closed.");
+  console.log("WebSocket is closed", event);
 });
 
 // Listen for errors

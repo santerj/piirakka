@@ -81,7 +81,7 @@ class Player:
 
                 # Send the command
                 sock.sendall(cmd.encode())
-                
+
                 # Receive the response
                 response = sock.recv(4096).decode()
                 sock.close()
@@ -199,6 +199,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
+        return True if resp else False
 
     def play(self) -> bool:
         cmd = {
