@@ -19,15 +19,14 @@ class Player:
         self.ipc_socket = ipc_socket
         self.database = database
         self.callback = callback
-        self.volume = VOLUME_INIT
-
-        self.stations: list[StationPydantic] = []
-        self.playing = True  # TODO: get state from mpv
-
         if self.use_mpv:
             self.proc = self._init_mpv()    # mpv process
-
+        
+        self.volume = self.get_volume()
+        self.playing = self.get_status()
+        self.stations: list[StationPydantic] = []
         self.current_station: StationPydantic = None
+        # initial station set by context
 
     def __del__(self) -> None:
         if self.use_mpv and hasattr(self, "proc"):
