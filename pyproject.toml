@@ -59,3 +59,4 @@ line-ending = "lf"
 
 [tool.djlint]
 profile="jinja"
+format_js=true
