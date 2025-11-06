@@ -79,3 +79,9 @@ enabled. That task will have to be rerun manually by clicking on the task.
 ### run ruff
 
     ruff check piirakka/
+    ruff format piirakka/
+
+### run djlint
+
+    djlint piirakka/templates/ --check
+    djlint piirakka/templates/ --reformat
