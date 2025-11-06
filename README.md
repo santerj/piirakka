@@ -71,3 +71,11 @@ enabled. That task will have to be rerun manually by clicking on the task.
 ### look at included files in dist
 
     unzip -l piirakka-*-py3-none-any.whl
+
+### run bandit
+
+    bandit -c pyproject.toml piirakka/
+
+### run ruff
+
+    ruff check piirakka/
