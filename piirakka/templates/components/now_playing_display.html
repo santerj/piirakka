@@ -1,17 +1,14 @@
 <!-- TODO: add ellipsis when viewport too narrow -->
 <div class="flex items-center space-x-4 px-2">
     <!-- icon -->
-    <img class="w-6 h-6 dark:invert" src="static/icons/music-2-line.svg" alt="Now playing icon">
-
+    <img class="w-6 h-6 dark:invert"
+         src="static/icons/music-2-line.svg"
+         alt="Now playing icon">
     <!-- track + station div -->
     <div class="text-xs leading-tight">
         <!-- track title -->
-        <div id="player_bar_track_name">
-            {{ track_name }}
-        </div>
+        <div id="player_bar_track_name">{{ track_name }}</div>
         <!-- station -->
-        <div id="player_bar_station_name" class="text-gray-600 dark:text-gray-400">
-            {{ station_name }}
-        </div>
+        <div id="player_bar_station_name" class="text-gray-600 dark:text-gray-400">{{ station_name }}</div>
     </div>
 </div>
