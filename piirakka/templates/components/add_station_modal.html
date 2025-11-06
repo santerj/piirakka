@@ -1,55 +1,68 @@
 <dialog id="add_station_modal" class="modal">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">Add new station</h3>
-    <form id="stationForm">
-        <fieldset class="fieldset">
-            <input type="text" class="input mt-3 w-full" name="station_url" id="station_url" placeholder="http://" required />
-            <p class="label pl-0.5">url</p>
-            <input type="text" class="input mt-5 w-full" name="station_name" id="station_name" placeholder="piirakka" required />
-            <p class="label mb-5 pl-0.5">name</p>
-        </fieldset>
-
-        <div class="flex justify-between mt-4">
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <button type="button" class="btn" onclick="add_station_modal.close()">Close</button>
-        </div>
-    </form>
-  </div>
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Add new station</h3>
+        <form id="stationForm">
+            <fieldset class="fieldset">
+                <input type="text"
+                       class="input mt-3 w-full"
+                       name="station_url"
+                       id="station_url"
+                       placeholder="http://"
+                       required />
+                <p class="label pl-0.5">url</p>
+                <input type="text"
+                       class="input mt-5 w-full"
+                       name="station_name"
+                       id="station_name"
+                       placeholder="piirakka"
+                       required />
+                <p class="label mb-5 pl-0.5">name</p>
+            </fieldset>
+            <div class="flex justify-between mt-4">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="button" class="btn" onclick="add_station_modal.close()">Close</button>
+            </div>
+        </form>
+    </div>
 </dialog>
-
 <script>
-  document.getElementById('stationForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+    document.getElementById('stationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-    const stationDisplayName = document.getElementById('station_name').value.trim();
-    const stationUrl = document.getElementById('station_url').value.trim();
+        const stationDisplayName = document.getElementById('station_name').value.trim();
+        const stationUrl = document.getElementById('station_url').value.trim();
 
-    // Basic validation
-    if (!stationDisplayName || !stationUrl) {
-      alert('Both fields are required.');
-      return;
-    }
+        // Basic validation
+        if (!stationDisplayName || !stationUrl) {
+            alert('Both fields are required.');
+            return;
+        }
 
-    const payload = { station_name: stationDisplayName, station_url: stationUrl };
+        const payload = {
+            station_name: stationDisplayName,
+            station_url: stationUrl
+        };
 
-    try {
-      const response = await fetch('/api/station', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        try {
+            const response = await fetch('/api/station', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
 
-      if (response.ok) {
-        alert('Station added successfully!');
-        add_station_modal.close();
-        this.reset();
-      } else {
-        const errorText = await response.text();
-        alert('Failed to add station: ' + errorText);
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      alert('Something went wrong.');
-    }
-  });
+            if (response.ok) {
+                alert('Station added successfully!');
+                add_station_modal.close();
+                this.reset();
+            } else {
+                const errorText = await response.text();
+                alert('Failed to add station: ' + errorText);
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Something went wrong.');
+        }
+    });
 </script>

@@ -21,3 +21,42 @@ where = ["."]
 
 [tool.setuptools.package-data]
 "piirakka" = ["templates/*", "static/*", "migrations/alembic.ini"]
+
+[tool.bandit]
+skips = ["B104", "B404", "B311"]
+
+[tool.bandit.any_other_function_with_shell_equals_true]
+subprocess = ["subprocess.Popen"]
+
+[tool.ruff]
+exclude = [
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".mypy_cache",
+    ".nox",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "dist",
+    "node_modules",
+    "venv",
+]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+
+[tool.djlint]
+profile="jinja"
+format_js=true

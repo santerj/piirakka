@@ -20,8 +20,8 @@ class Player:
         self.database = database
         self.callback = callback
         if self.use_mpv:
-            self.proc = self._init_mpv()    # mpv process
-        
+            self.proc = self._init_mpv()  # mpv process
+
         self.volume = self.get_volume()
         self.playing = self.get_status()
         self.stations: list[StationPydantic] = []
@@ -39,19 +39,19 @@ class Player:
             playback_status=self.get_status(),
             volume=self.get_volume(),
             current_station_name=self.current_station.name,
-            track_title=self.current_track()
+            track_title=self.current_track(),
         )
 
     def _init_mpv(self):
         cmd = [
-            'mpv',
-                '--idle',
-                '--input-ipc-server=' + self.ipc_socket,
-                '--volume=' + str(VOLUME_INIT),
-                '--volume-max=' + str(VOLUME_MAX),  # TODO: source from config file
-                '--cache=yes', 
-                '--cache-secs=' + str(15),
-                '--really-quiet'
+            "mpv",
+            "--idle",
+            "--input-ipc-server=" + self.ipc_socket,
+            "--volume=" + str(VOLUME_INIT),
+            "--volume-max=" + str(VOLUME_MAX),  # TODO: source from config file
+            "--cache=yes",
+            "--cache-secs=" + str(15),
+            "--really-quiet",
         ]
         proc = subprocess.Popen(cmd)
         time.sleep(4)  # wait for mpv to start
@@ -78,77 +78,54 @@ class Player:
 
     @staticmethod
     def _ipc_success(resp: dict) -> bool:
-        if resp and 'error' in resp.keys():
-            return resp['error'] == 'success'
-        else: return False
-    
+        if resp and "error" in resp.keys():
+            return resp["error"] == "success"
+        else:
+            return False
+
     def _dumps(self, cmd: dict) -> str:
-        return json.dumps(cmd) + '\n'
+        return json.dumps(cmd) + "\n"
 
     def get_status(self) -> bool:
         # true: playing
         # false: paused
-        cmd = {
-            "command": [
-                "get_property",
-                "pause"
-            ]
-        }
+        cmd = {"command": ["get_property", "pause"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return not resp['data'] if resp else False
+            return not resp["data"] if resp else False
 
     def get_volume(self) -> int:
-        cmd = {
-            "command": [
-                "get_property",
-                "volume"
-            ]
-        }
+        cmd = {"command": ["get_property", "volume"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return round(resp['data'])
+            return round(resp["data"])
 
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
             return False
-        cmd = {
-            "command": [
-                "set_property",
-                "volume",
-                str(vol)
-            ]
-        }
+        cmd = {"command": ["set_property", "volume", str(vol)]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
-        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
+        self.callback(
+            PlayerBarUpdateEvent(content=self.get_player_state())
+        )  # signal to controller to re-render control bar
         return self._ipc_success(resp)
 
     def get_bitrate(self) -> int:
-        cmd = {
-            "command": [
-                "get_property",
-                "audio-bitrate"
-            ]
-        }
+        cmd = {"command": ["get_property", "audio-bitrate"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return int(resp['data'])
-        
+            return int(resp["data"])
+
     def get_codec(self) -> str:
-        cmd = {
-            "command": [
-                "get_property",
-                "audio-codec-name"
-            ]
-        }
+        cmd = {"command": ["get_property", "audio-codec-name"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return resp['data']
+            return resp["data"]
 
     def update_stations(self, stations: list[StationPydantic]) -> None:
         # TODO: verify if is uuid4 or str
@@ -176,42 +153,30 @@ class Player:
 
     def _set_station(self, url: str):
         # TODO: rework to accept StationPydantic
-        cmd = {
-            "command": [
-                "loadfile",
-                f"{url}",
-                "replace"
-            ]
-        }
+        cmd = {"command": ["loadfile", f"{url}", "replace"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
         return True if resp else False
 
     def play(self) -> bool:
-        cmd = {
-            "command": [
-                "set_property",
-                "pause", False
-            ]
-        }
+        cmd = {"command": ["set_property", "pause", False]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
+        self.callback(
+            PlayerBarUpdateEvent(content=self.get_player_state())
+        )  # signal to controller to re-render control bar
         return True if resp else False
 
     def pause(self) -> bool:
-        cmd = {
-            "command": [
-                "set_property",
-                "pause", True
-            ]
-        }
+        cmd = {"command": ["set_property", "pause", True]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = False
-        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
+        self.callback(
+            PlayerBarUpdateEvent(content=self.get_player_state())
+        )  # signal to controller to re-render control bar
         return True if resp else False
 
     def toggle(self) -> bool:
@@ -226,12 +191,7 @@ class Player:
         # other interesting fields
         # genre: resp["data"]["icy-genre"]
         # desc: resp["data"]["icy-name"]
-        cmd = {
-            "command": [
-                "get_property",
-                "metadata"
-            ]
-        }
+        cmd = {"command": ["get_property", "metadata"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
@@ -249,4 +209,6 @@ class Player:
         random_station = choice(choices)
         self.play_station_with_id(random_station.station_id)
         # TODO: add small wait to have a better chance of actually broadcasting an update here
-        self.callback(PlayerBarUpdateEvent(content=self.get_player_state()))  # signal to controller to re-render control bar
+        self.callback(
+            PlayerBarUpdateEvent(content=self.get_player_state())
+        )  # signal to controller to re-render control bar

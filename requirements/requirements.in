@@ -1,4 +1,5 @@
 alembic
+colorlog
 #human-readable
 jinja2
 pydantic

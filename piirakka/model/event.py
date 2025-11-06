@@ -10,10 +10,12 @@ class PlayerBarUpdateEvent(BaseModel):
     content: PlayerState
     event_type: str = "player_bar_updated"
 
+
 class StationListChangeEvent(BaseModel):
     # stations updated in db
     content: list[StationPydantic]
     event_type: str = "stations_changed"
+
 
 class TrackChangeEvent(BaseModel):
     # track changed

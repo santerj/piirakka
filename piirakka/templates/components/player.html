@@ -3,99 +3,103 @@
         <!-- <h2 class="font-nunito ml-2" id="nowPlaying">now playing: <span id="currentStation"></span></h2>> -->
         {% include 'components/now_playing_display.html' %}
     </div>
-
     <!-- middle button controls  -->
     <div class="navbar-center flex space-x-4">
         <!-- Play/Pause Button -->
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
-        <button 
-            id="playPauseButton" 
-            class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner
-                bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black" 
-            onclick="togglePlayPause()">
-            <img class="h-6 w-6 dark:invert {% if not playing %}hidden{% endif %}" id="pauseIcon" src="static/icons/pause-line.svg" alt="Pause">
-            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}" id="playIcon" src="static/icons/play-fill.svg" alt="Play">
+        <button id="playPauseButton"
+                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
+                onclick="togglePlayPause()">
+            <img class="h-6 w-6 dark:invert {% if not playing %}hidden{% endif %}"
+                 id="pauseIcon"
+                 src="static/icons/pause-line.svg"
+                 alt="Pause">
+            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}"
+                 id="playIcon"
+                 src="static/icons/play-fill.svg"
+                 alt="Play">
         </button>
-
         <!-- Shuffle Button -->
-        <button 
-            id="shuffleButton" 
-            class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner
-                bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
-            onclick="handleShuffle()">
-            <img class="h-6 w-6 dark:invert" src="static/icons/shuffle-line.svg" alt="Shuffle">
+        <button id="shuffleButton"
+                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
+                onclick="handleShuffle()">
+            <img class="h-6 w-6 dark:invert"
+                 src="static/icons/shuffle-line.svg"
+                 alt="Shuffle">
         </button>
-
         <!-- Volume Button -->
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
         <!-- TODO: needs to reflect websocket events -->
-        <button 
-            id="volumeButton"
-            class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner
-                bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
-            onclick="handleVolumeToggle()">
-            <img class="h-6 w-6 dark:invert" id="volumeUpIcon" src="static/icons/volume-up-line.svg" alt="Mute">
-            <img class="h-6 w-6 hidden dark:invert" id="volumeMuteIcon" src="static/icons/volume-mute-line.svg" alt="Unmute">
+        <button id="volumeButton"
+                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
+                onclick="handleVolumeToggle()">
+            <img class="h-6 w-6 dark:invert"
+                 id="volumeUpIcon"
+                 src="static/icons/volume-up-line.svg"
+                 alt="Mute">
+            <img class="h-6 w-6 hidden dark:invert"
+                 id="volumeMuteIcon"
+                 src="static/icons/volume-mute-line.svg"
+                 alt="Unmute">
         </button>
     </div>
-
     <div class="navbar-end">
         <!-- Volume Control -->
         <i class="fa fa-volume-up"></i>
-        <input 
-            type="range"
-            value="{{ volume }}" 
-            min="0"
-            max="100"
-            step="1"
-            class="range range-xs mr-2"
-            style="max-width: 180px;" 
-            id="volumeControl" 
-            onchange="handleVolumeChange(this.value)">
+        <input type="range"
+               value="{{ volume }}"
+               min="0"
+               max="100"
+               step="1"
+               class="range range-xs mr-2"
+               style="max-width: 180px"
+               id="volumeControl"
+               onchange="handleVolumeChange(this.value)">
     </div>
 </div>
-
 <script>
-  function togglePlayPause() {
-      fetch('/api/radio/toggle', {
-          method: 'PUT'
-      });
-  }
+    function togglePlayPause() {
+        fetch('/api/radio/toggle', {
+            method: 'PUT'
+        });
+    }
 
-  // JavaScript to handle shuffle button
-  function handleShuffle() {
-      fetch('/api/radio/shuffle', {
-          method: 'PUT'
-      });
-  }
+    // JavaScript to handle shuffle button
+    function handleShuffle() {
+        fetch('/api/radio/shuffle', {
+            method: 'PUT'
+        });
+    }
 
-  // JavaScript to handle volume toggle button
-  function handleVolumeToggle() {
-      const volumeControl = document.getElementById('volumeControl');
-      const volumeUpIcon = document.getElementById('volumeUpIcon');
-      const volumeMuteIcon = document.getElementById('volumeMuteIcon');
+    // JavaScript to handle volume toggle button
+    function handleVolumeToggle() {
+        const volumeControl = document.getElementById('volumeControl');
+        const volumeUpIcon = document.getElementById('volumeUpIcon');
+        const volumeMuteIcon = document.getElementById('volumeMuteIcon');
 
-      if (volumeUpIcon.classList.contains('hidden')) {
-          volumeUpIcon.classList.remove('hidden');
-          volumeMuteIcon.classList.add('hidden');
-          volumeControl.value = 50;  // Reset to some default volume when unmuted
-      } else {
-          volumeUpIcon.classList.add('hidden');
-          volumeMuteIcon.classList.remove('hidden');
-          volumeControl.value = 0;  // Mute
-      }
+        if (volumeUpIcon.classList.contains('hidden')) {
+            volumeUpIcon.classList.remove('hidden');
+            volumeMuteIcon.classList.add('hidden');
+            volumeControl.value = 50; // Reset to some default volume when unmuted
+        } else {
+            volumeUpIcon.classList.add('hidden');
+            volumeMuteIcon.classList.remove('hidden');
+            volumeControl.value = 0; // Mute
+        }
 
-      handleVolumeChange(volumeControl.value);  // Update volume on toggle
-  }
+        handleVolumeChange(volumeControl.value); // Update volume on toggle
+    }
 
-  // JavaScript to handle volume change
-  function handleVolumeChange(value) {
-      fetch('/api/radio/volume', {
-          method: 'PUT',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ volume: value })
-      });
-  }
+    // JavaScript to handle volume change
+    function handleVolumeChange(value) {
+        fetch('/api/radio/volume', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                volume: value
+            })
+        });
+    }
 </script>

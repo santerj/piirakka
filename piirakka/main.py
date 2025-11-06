@@ -39,8 +39,8 @@ class Context:
     TRACK_HISTORY_LENGTH = 50
 
     def player_callback(self, message):
-        #loop = asyncio.get_event_loop()
-        #loop.create_task(broadcast_message(str(message)))
+        # loop = asyncio.get_event_loop()
+        # loop.create_task(broadcast_message(str(message)))
 
         logging.info(f"Received event {type(message)} from player via callback")
         payload = self.serialize_events(message)
@@ -86,9 +86,9 @@ class Context:
     @staticmethod
     def serialize_events(*args) -> str:
         # accepts events and serializes to json
-        payload = {'events': []}
+        payload = {"events": []}
         for event in args:
-            payload['events'].append(event.model_dump())
+            payload["events"].append(event.model_dump())
         return json.dumps(payload)
 
 
@@ -96,7 +96,7 @@ context = Context()
 
 
 class WebSocketConnection(WebSocketEndpoint):
-    encoding = 'text'
+    encoding = "text"
 
     async def on_connect(self, websocket):
         await websocket.accept()
@@ -109,13 +109,16 @@ class WebSocketConnection(WebSocketEndpoint):
         print(f"Received message: {data}")
         await broadcast_message(data)
 
+
 async def broadcast_message(message):
     for subscriber in context.subscribers:
         await subscriber.send_text(message)
 
+
 def task(callback):
     # placeholder
     callback("task")
+
 
 async def observe_current_track(interval: int = 1):
     while True:
@@ -126,10 +129,10 @@ async def observe_current_track(interval: int = 1):
             continue
         else:
             current_track = RecentTrack(
-                        title=current_track_title,
-                        station=context.player.current_station.name,
-                        timestamp=datetime.now().strftime('%H:%M')
-                    )
+                title=current_track_title,
+                station=context.player.current_station.name,
+                timestamp=datetime.now().strftime("%H:%M"),
+            )
 
         if len(context.track_history) == 0:
             await context.push_track(current_track)
@@ -142,8 +145,10 @@ async def observe_current_track(interval: int = 1):
 
 ###--- endpoints
 
+
 async def index(request):
-    return templates.TemplateResponse("index.html",
+    return templates.TemplateResponse(
+        "index.html",
         {
             "request": request,
             "sidebar_items": sidebar_items,
@@ -151,42 +156,43 @@ async def index(request):
             "recent_tracks": context.track_history,
             "volume": context.player.get_volume(),
             "playing": context.player.get_status(),
-            "track_name": context.track_history[0].title if len(context.track_history) > 0 else '',
+            "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
             "station_name": context.player.current_station.name,
-        }
+        },
     )
+
 
 async def stations_page(request):
-    return templates.TemplateResponse("legacy_stations.html",
-                {
-                    "request": request,
-                    "stations": context.player.stations
-                }
-    )
+    return templates.TemplateResponse("legacy_stations.html", {"request": request, "stations": context.player.stations})
+
 
 async def set_station(request):
-    station_id = request.path_params['station_id']
+    station_id = request.path_params["station_id"]
     task = BackgroundTask(context.player.play_station_with_id, station_id)
     return JSONResponse({"message": "station change initiated"}, background=task)
+
 
 async def toggle_playback(request):
     task = BackgroundTask(context.player.toggle)
     return JSONResponse({"message": "toggle initiated"}, background=task)
 
+
 async def set_volume(request):
     data = await request.json()
-    volume = int(data.get('volume'))
+    volume = int(data.get("volume"))
     task = BackgroundTask(context.player.set_volume, volume)
     return JSONResponse({"message": "volume change initiated"}, background=task)
+
 
 async def shuffle_station(request):
     task = BackgroundTask(context.player.shuffle)
     return JSONResponse({"message": "station shuffle initiated"}, background=task)
 
+
 async def create_station_handler(request):
     data = await request.json()
-    name=data.get('station_name')
-    url=data.get('station_url')
+    name = data.get("station_name")
+    url = data.get("station_url")
 
     with Session(context.db_engine) as session:
         create_station(session, name, url)
@@ -198,31 +204,37 @@ async def create_station_handler(request):
 
     return JSONResponse({"message": "station created successfully"})
 
+
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
-        Route('/api/station', create_station_handler, methods=[HTTPMethod.POST]),
-        Route('/api/radio/station/{station_id}', set_station, methods=[HTTPMethod.PUT]),
-        Route('/api/radio/toggle', toggle_playback, methods=[HTTPMethod.PUT]),
-        Route('/api/radio/volume', set_volume, methods=[HTTPMethod.PUT]),
-        Route('/api/radio/shuffle', shuffle_station, methods=[HTTPMethod.PUT]),
+        Route("/api/station", create_station_handler, methods=[HTTPMethod.POST]),
+        Route("/api/radio/station/{station_id}", set_station, methods=[HTTPMethod.PUT]),
+        Route("/api/radio/toggle", toggle_playback, methods=[HTTPMethod.PUT]),
+        Route("/api/radio/volume", set_volume, methods=[HTTPMethod.PUT]),
+        Route("/api/radio/shuffle", shuffle_station, methods=[HTTPMethod.PUT]),
         WebSocketRoute("/ws/subscribe", WebSocketConnection),
         Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
     ]
 )
 
+
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(observe_current_track())
+
 
 @app.on_event("shutdown")
 async def shutdown():
     for subscriber in context.subscribers:
         await subscriber.close()
 
+
 def main():
-    uvicorn.run(app, host="0.0.0.0", port=8000, workers=1, timeout_graceful_shutdown=5, log_config=preflight.LOGGING_CONFIG)
+    uvicorn.run(
+        app, host="0.0.0.0", port=8000, workers=1, timeout_graceful_shutdown=5, log_config=preflight.LOGGING_CONFIG
+    )
 
 
 if __name__ == "__main__":
