@@ -11,7 +11,7 @@ from piirakka.model.base import Base
 
 
 class Station(Base):
-    __tablename__ = 'stations'
+    __tablename__ = "stations"
     station_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
@@ -24,8 +24,9 @@ class Station(Base):
             name=self.name,
             url=self.url,
             added_on=self.added_on,
-            listen_time=self.listen_time
+            listen_time=self.listen_time,
         )
+
 
 def create_station(session: Session, name: str, url: str) -> Station:
     station = Station(name=name, url=url)
@@ -33,6 +34,7 @@ def create_station(session: Session, name: str, url: str) -> Station:
     session.commit()
     session.refresh(station)
     return station
+
 
 def delete_station(session: Session, station_id: uuid.UUID) -> bool:
     station = session.get(Station, station_id)
@@ -42,11 +44,14 @@ def delete_station(session: Session, station_id: uuid.UUID) -> bool:
         return True
     return False
 
+
 def get_station(session: Session, station_id: uuid.UUID) -> Optional[Station]:
     return session.get(Station, station_id)
 
+
 def list_stations(session: Session) -> list[Station]:
     return session.query(Station).all()
+
 
 class StationPydantic(BaseModel):
     # pydantic representation of Station
@@ -62,5 +67,5 @@ class StationPydantic(BaseModel):
             name=self.name,
             url=self.url,
             added_on=self.added_on,
-            listen_time=self.listen_time
+            listen_time=self.listen_time,
         )
