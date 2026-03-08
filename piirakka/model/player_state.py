@@ -1,8 +1,6 @@
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel
 
-from piirakka.model.station import Station, StationPydantic
-
 
 class PlayerState(BaseModel):
     # representation of the player bar in json
