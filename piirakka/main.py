@@ -183,7 +183,11 @@ async def stations_page(request):
         {
             "request": request,
             "sidebar_items": sidebar_items,
-            "stations": context.player.stations
+            "stations": context.player.stations,
+            "volume": context.player.get_volume(),
+            "playing": context.player.get_status(),
+            "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
+            "station_name": context.player.current_station.name
         },
     )
 
