@@ -1,0 +1,18 @@
+<div class="overflow-y relative">
+    <h1 class="sticky top-0 text-3xl pt-3 pb-6 pl-3 font-nunito font-semibold bg-inherit">Stations</h1>
+    <div class="sticky -mt-2 top-12 divider bg-inherit"></div>
+    
+    <ul class=list bg-base-100 rounded-box shadow-md>
+    <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Most played songs this week</li> <!--not meant to be used, but cool font weight!-->
+        
+        {% for station in stations %}
+            <li class="list-row">
+                <div>
+                    <div>{{ station.name }}</div>
+                    <div class="text-sm opacity-70">{{ station.url }}</div>
+            </li>
+        {% endfor %}
+
+    </ul>
+
+</div>
