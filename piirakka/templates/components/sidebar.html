@@ -23,7 +23,7 @@
             </a>
         </li>
         {% include 'components/add_station_modal.html' %}
-        <div class="divider font-nunito px-2">stations</div>
+        <div class="divider p-4 pb-2 text-xs opacity-60">stations</div>
         {% for station in stations %}
             <li class="">
                 <p data-stationId="{{ station.station_id }}">{{ station.name }}</p>
