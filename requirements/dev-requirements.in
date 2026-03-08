@@ -5,4 +5,5 @@ djlint
 isort
 nox
 pip-tools
+pytest
 ruff

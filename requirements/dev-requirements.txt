@@ -63,6 +63,8 @@ idna==3.10
     #   -r requirements/requirements.txt
     #   anyio
     #   requests
+iniconfig==2.3.0
+    # via pytest
 isort==5.13.2
     # via -r requirements/dev-requirements.in
 jinja2==3.1.6
@@ -92,12 +94,15 @@ packaging==24.2
     # via
     #   build
     #   nox
+    #   pytest
 pathspec==1.0.4
     # via djlint
 pip-tools==7.5.3
     # via -r requirements/dev-requirements.in
 platformdirs==4.3.6
     # via virtualenv
+pluggy==1.6.0
+    # via pytest
 pydantic==2.11.10
     # via -r requirements/requirements.txt
 pydantic-core==2.33.2
@@ -105,11 +110,15 @@ pydantic-core==2.33.2
     #   -r requirements/requirements.txt
     #   pydantic
 pygments==2.19.2
-    # via rich
+    # via
+    #   pytest
+    #   rich
 pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
+pytest==9.0.2
+    # via -r requirements/dev-requirements.in
 pyyaml==6.0.3
     # via
     #   bandit

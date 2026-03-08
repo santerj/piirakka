@@ -38,7 +38,7 @@ class Context:
     DATABASE = os.getenv("DATABASE", preflight.DB_PATH)
     TRACK_HISTORY_LENGTH = 50
 
-    def player_callback(self, message):
+    def player_callback(self, message: events.PlayerBarUpdateEvent) -> None:
         # loop = asyncio.get_event_loop()
         # loop.create_task(broadcast_message(str(message)))
 
@@ -125,7 +125,7 @@ class WebSocketConnection(WebSocketEndpoint):
         await broadcast_message(data)
 
 
-async def broadcast_message(message):
+async def broadcast_message(message: str) -> None:
     for subscriber in context.subscribers:
         await subscriber.send_text(message)
 
@@ -161,7 +161,7 @@ async def observe_current_track(interval: int = 1):
 ###--- endpoints
 
 
-async def index(request):
+async def index(request) -> templates.TemplateResponse:
     return templates.TemplateResponse(
         "index.html",
         {
@@ -177,7 +177,7 @@ async def index(request):
     )
 
 
-async def stations_page(request):
+async def stations_page(request) -> templates.TemplateResponse:
     return templates.TemplateResponse(
         "stations.html",
         {
@@ -192,30 +192,30 @@ async def stations_page(request):
     )
 
 
-async def set_station(request):
+async def set_station(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
     task = BackgroundTask(context.player.play_station_with_id, station_id)
     return JSONResponse({"message": "station change initiated"}, background=task)
 
 
-async def toggle_playback(request):
+async def toggle_playback(request) -> JSONResponse:
     task = BackgroundTask(context.player.toggle)
     return JSONResponse({"message": "toggle initiated"}, background=task)
 
 
-async def set_volume(request):
+async def set_volume(request) -> JSONResponse:
     data = await request.json()
     volume = int(data.get("volume"))
     task = BackgroundTask(context.player.set_volume, volume)
     return JSONResponse({"message": "volume change initiated"}, background=task)
 
 
-async def shuffle_station(request):
+async def shuffle_station(request) -> JSONResponse:
     task = BackgroundTask(context.player.shuffle)
     return JSONResponse({"message": "station shuffle initiated"}, background=task)
 
 
-async def create_station_handler(request):
+async def create_station_handler(request) -> JSONResponse:
     data = await request.json()
     name = data.get("station_name")
     url = data.get("station_url")
@@ -228,7 +228,7 @@ async def create_station_handler(request):
 
     return JSONResponse({"message": "station created successfully"})
 
-async def update_station_handler(request):
+async def update_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
     data = await request.json()
     name = data.get("station_name")
@@ -250,7 +250,7 @@ async def update_station_handler(request):
 
     return JSONResponse({"message": "station updated successfully"})
 
-async def delete_station_handler(request):
+async def delete_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
 
     if station_id not in [s.station_id for s in context.player.stations]:
