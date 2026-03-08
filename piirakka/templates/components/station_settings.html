@@ -5,12 +5,14 @@
     <ul class="menu w-10/12 ml-6">
         
         {% for station in stations %}
-            <li>
+            <li data-station-id="{{ station.station_id }}"
+                data-station-name="{{ station.name }}"
+                data-station-url="{{ station.url }}">
                 <div class="flex items-center gap-3 p-2">
-                    <img class="size-6 dark:invert" src="static/icons/play-list-line.svg"/>
+                    <img class="size-6 dark:invert" src="static/icons/edit-line.svg"/>
                     <div>
-                        <div class="font-semibold">{{ station.name }}</div>
-                        <div class="text-sm opacity-70">{{ station.url }}</div>
+                        <div class="font-semibold truncate">{{ station.name }}</div>
+                        <div class="text-sm opacity-70 text-ellipsis">{{ station.url }}</div>
                     </div>
                 </div>
             </li>
@@ -19,3 +21,20 @@
     </ul>
 
 </div>
+
+{% include 'components/edit_station_modal.html' %}
+
+<script>
+    // open edit dialog with station data
+    document.querySelectorAll('.menu li[data-station-id]').forEach(li => {
+        li.addEventListener('click', function() {
+            const id = this.dataset.stationId;
+            const name = this.dataset.stationName;
+            const url = this.dataset.stationUrl;
+            document.getElementById('edit_station_id').value = id;
+            document.getElementById('edit_station_name').value = name;
+            document.getElementById('edit_station_url').value = url;
+            edit_station_modal.showModal();
+        });
+    });
+</script>
