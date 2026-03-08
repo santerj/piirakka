@@ -178,7 +178,18 @@ async def index(request):
 
 
 async def stations_page(request):
-    return templates.TemplateResponse("legacy_stations.html", {"request": request, "stations": context.player.stations})
+    return templates.TemplateResponse(
+        "stations.html",
+        {
+            "request": request,
+            "sidebar_items": sidebar_items,
+            "stations": context.player.stations,
+            "volume": context.player.get_volume(),
+            "playing": context.player.get_status(),
+            "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
+            "station_name": context.player.current_station.name
+        },
+    )
 
 
 async def set_station(request):
