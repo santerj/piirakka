@@ -36,8 +36,8 @@ def create_station(session: Session, name: str, url: str) -> Station:
     return station
 
 
-def delete_station(session: Session, station_id: uuid.UUID) -> bool:
-    station = session.get(Station, station_id)
+def delete_station(session: Session, station_id: str) -> bool:
+    station = session.get(Station, uuid.UUID(station_id))
     if station:
         session.delete(station)
         session.commit()
