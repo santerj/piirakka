@@ -260,7 +260,7 @@ app = Starlette(
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
         Route("/api/station", create_station_handler, methods=[HTTPMethod.POST]),
-        Route("/api/station/{station_id}", update_station_handler, methods=[HTTPMethod.PUT]),
+        Route("/api/station/{station_id}", update_station_handler, methods=[HTTPMethod.PATCH]),
         Route("/api/station/{station_id}", delete_station_handler, methods=[HTTPMethod.DELETE]),
         Route("/api/radio/station/{station_id}", set_station, methods=[HTTPMethod.PUT]),
         Route("/api/radio/toggle", toggle_playback, methods=[HTTPMethod.PUT]),
