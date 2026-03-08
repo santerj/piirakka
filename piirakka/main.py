@@ -233,7 +233,7 @@ async def update_station_handler(request):
         station = update_station(session, station_id, name, url)
         if station is None:
             return JSONResponse({"message": "station not updated"}, status_code=500)
-        
+
     await context.refresh_stations()
     await context.push_stations()
 
