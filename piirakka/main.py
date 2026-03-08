@@ -212,7 +212,7 @@ async def delete_station_handler(request):
 
     with Session(context.db_engine) as session:
         success = delete_station(session, station_id)
-        if not success: 
+        if not success:
             return JSONResponse({"message": "station not deleted"}, status_code=500)
 
     with Session(context.db_engine) as session:
