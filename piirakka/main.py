@@ -24,7 +24,7 @@ from piirakka.__version__ import __version__
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
-from piirakka.model.station import create_station, list_stations, delete_station
+from piirakka.model.station import create_station, list_stations, update_station, delete_station
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
@@ -64,6 +64,7 @@ class Context:
                 self.player.play_station_with_id(self.player.current_station_id)
 
     async def push_player_bar(self):
+        # TODO: unused dead code, consider removing
         player_bar_status = self.player.get_player_state()
         message = events.PlayerBarUpdateEvent(content=player_bar_status)
         await broadcast_message(message.model_dump_json())
@@ -82,6 +83,20 @@ class Context:
         message = self.serialize_events(track_update_message, player_bar_update_message)
 
         await broadcast_message(message=message)
+
+    async def refresh_stations(self):
+        with Session(self.db_engine) as session:
+            stations = list_stations(session)
+            stations_pydantic = [s.to_pydantic() for s in stations]
+            self.player.update_stations(stations_pydantic)
+
+    async def push_stations(self):
+        stations = self.player.stations
+        station_update_message = events.StationListChangeEvent(content=stations)
+        # TODO: serialization of datetime in StationPydantic is tricky,
+        # consider refactoring + using serialize_events here
+        message = {"events": [station_update_message.model_dump()]}
+        await broadcast_message(message=json.dumps(message, default=str))
 
     @staticmethod
     def serialize_events(*args) -> str:
@@ -197,12 +212,32 @@ async def create_station_handler(request):
     with Session(context.db_engine) as session:
         create_station(session, name, url)
 
-    with Session(context.db_engine) as session:
-        stations = list_stations(session)
-        stations_pydantic = [s.to_pydantic() for s in stations]
-        context.player.update_stations(stations_pydantic)
+    await context.refresh_stations()
+    await context.push_stations()
 
     return JSONResponse({"message": "station created successfully"})
+
+async def update_station_handler(request):
+    station_id = request.path_params["station_id"]
+    data = await request.json()
+    name = data.get("station_name")
+    url = data.get("station_url")
+
+    if not name and not url:
+        return JSONResponse({"message": "no update parameters provided"}, status_code=400)
+
+    if station_id not in [s.station_id for s in context.player.stations]:
+        return JSONResponse({"message": "station not found"}, status_code=404)
+
+    with Session(context.db_engine) as session:
+        station = update_station(session, station_id, name, url)
+        if station is None:
+            return JSONResponse({"message": "station not updated"}, status_code=500)
+
+    await context.refresh_stations()
+    await context.push_stations()
+
+    return JSONResponse({"message": "station updated successfully"})
 
 async def delete_station_handler(request):
     station_id = request.path_params["station_id"]
@@ -215,10 +250,8 @@ async def delete_station_handler(request):
         if not success:
             return JSONResponse({"message": "station not deleted"}, status_code=500)
 
-    with Session(context.db_engine) as session:
-        stations = list_stations(session)
-        stations_pydantic = [s.to_pydantic() for s in stations]
-        context.player.update_stations(stations_pydantic)
+    await context.refresh_stations()
+    await context.push_stations()
 
     return JSONResponse({"message": "station deleted successfully"})
 
@@ -227,6 +260,7 @@ app = Starlette(
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
         Route("/api/station", create_station_handler, methods=[HTTPMethod.POST]),
+        Route("/api/station/{station_id}", update_station_handler, methods=[HTTPMethod.PUT]),
         Route("/api/station/{station_id}", delete_station_handler, methods=[HTTPMethod.DELETE]),
         Route("/api/radio/station/{station_id}", set_station, methods=[HTTPMethod.PUT]),
         Route("/api/radio/toggle", toggle_playback, methods=[HTTPMethod.PUT]),

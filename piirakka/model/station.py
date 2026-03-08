@@ -36,6 +36,19 @@ def create_station(session: Session, name: str, url: str) -> Station:
     return station
 
 
+def update_station(session: Session, station_id: str, name: Optional[str], url: Optional[str]) -> Optional[Station]:
+    station = session.get(Station, uuid.UUID(station_id))
+    if station:
+        if name is not None:
+            station.name = name
+        if url is not None:
+            station.url = url
+        session.commit()
+        session.refresh(station)
+        return station
+    return False
+
+
 def delete_station(session: Session, station_id: str) -> bool:
     station = session.get(Station, uuid.UUID(station_id))
     if station:
@@ -45,8 +58,8 @@ def delete_station(session: Session, station_id: str) -> bool:
     return False
 
 
-def get_station(session: Session, station_id: uuid.UUID) -> Optional[Station]:
-    return session.get(Station, station_id)
+def get_station(session: Session, station_id: str) -> Optional[Station]:
+    return session.get(Station, uuid.UUID(station_id))
 
 
 def list_stations(session: Session) -> list[Station]:
