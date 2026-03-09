@@ -1,22 +1,17 @@
 """Application factory for creating and configuring the Starlette app."""
 
 import asyncio
-import json
 import logging
 import os
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 from starlette.applications import Starlette
 from starlette.routing import Mount, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 import piirakka
-import piirakka.model.event as events
 import piirakka.preflight as preflight
 from piirakka.context import Context
-from piirakka.model.station import list_stations
 from piirakka.services.track_history import TrackHistoryManager
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
 from piirakka.views import pages, playback, stations
