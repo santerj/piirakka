@@ -21,7 +21,11 @@
             <main id="TrackHistory"
                   style="height: calc(100vh - 4rem)"
                   class="col-span-10 p-4 overflow-auto bg-white dark:bg-neutral-900">
-                {% include 'components/track_history.html' %}
+                {% if stations and stations.length != 0 %}
+                    {% include 'components/track_history.html' %}
+                {% else %}
+                    {% include 'components/welcome.html' %}
+                {% endif %}
             </main>
         </div>
         <!-- Player Bar: fixed bottom right, does NOT cover sidebar -->
