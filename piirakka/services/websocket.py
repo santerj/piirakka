@@ -9,13 +9,10 @@ from starlette.websockets import WebSocket
 
 logger = logging.getLogger(__name__)
 
-# Module-level reference to subscriber manager, set by main.py during initialization
-subscriber_state: "WebSocketSubscriberManager | None" = None
-
 
 class WebSocketSubscriberManager:
     """
-    Manages active WebSocket connections and broadcasts messages to subscribers
+    Manages active websocket connections and broadcasts messages to subscribers
     """
 
     def __init__(self):
@@ -35,37 +32,35 @@ class WebSocketSubscriberManager:
         # Broadcast a message to all connected subscribers.
         for subscriber in self.subscribers:
             await subscriber.send_text(message)
+    
+    def __len__(self) -> int:
+        return len(self.subscribers)
 
 
-async def broadcast_message(message: str) -> None:
-    """
-    Broadcast a message to all WebSocket subscribers.
+def create_websocket_connection(manager: WebSocketSubscriberManager):
+    # Factory function that creates a WebSocketConnection endpoint with a bound subscription manager
 
-    Delegates to the subscriber_state manager that is set during initialization.
-    """
-    if subscriber_state is None:
-        logger.error("broadcast_message called but subscriber_state not initialized")
-        return
-    await subscriber_state.broadcast(message)
+    async def broadcast_message(message: str) -> None:
+        # broadcast message using the manager
+        await manager.broadcast(message)
 
+    class WebSocketConnection(WebSocketEndpoint):
+        # websocket endpoint
 
-class WebSocketConnection(WebSocketEndpoint):
-    """WebSocket endpoint for real-time updates."""
+        encoding = "text"
 
-    encoding = "text"
+        async def on_connect(self, websocket: WebSocket) -> None:
+            # add subscriber on connect
+            await websocket.accept()
+            await manager.add_subscriber(websocket)
 
-    async def on_connect(self, websocket: WebSocket) -> None:
-        # add subscriber on connect
-        await websocket.accept()
-        if subscriber_state is not None:
-            await subscriber_state.add_subscriber(websocket)
+        async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
+            # remove subscriber on disconnect
+            await manager.remove_subscriber(websocket)
 
-    async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
-        # remove subscriber on disconnect
-        if subscriber_state is not None:
-            await subscriber_state.remove_subscriber(websocket)
+        async def on_receive(self, websocket: WebSocket, data: str) -> None:
+            # echo received message back to all subscribers – consider the implications of exposing
+            logger.debug(f"Received message: {data}")
+            await broadcast_message(data)
 
-    async def on_receive(self, websocket: WebSocket, data: str) -> None:
-        # echo received message back to all subscribers - consider implications of using
-        logger.debug(f"Received message: {data}")
-        await broadcast_message(data)
+    return WebSocketConnection
