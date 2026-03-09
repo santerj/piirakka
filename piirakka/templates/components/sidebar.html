@@ -1,10 +1,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <nav class="h-full p-1">
     <h1 class="font-nunito font-semibold ml-6 text-2xl select-none flex items-center">
-        <img class="w-9 h-9 mr-3" src="static/icons/android-chrome-512x512.png"> piirakka
-        {% if version %}
-            <span class="ml-4 text-xs font-mono opacity-30">v{{ version }}</span>
-        {% endif %}
+        <img class="w-9 h-9 mr-3" src="static/icons/android-chrome-512x512.png">
+        piirakka
+        {% if version %}<span class="ml-4 text-xs font-mono opacity-30">v{{ version }}</span>{% endif %}
     </h1>
     <ul class="menu w-full mt-2">
         {% for item in sidebar_items %}
@@ -22,20 +21,22 @@
             <a href="#"
                class="flex items-center space-x-2 overflow-hidden text-ellipsis"
                onclick="add_station_modal.showModal()">
-                    <img class="w-6 h-6 dark:invert" src="static/icons/add-line.svg" alt="Add Station Icon">
-                    <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">add new station</span>
-                    {% if not stations or stations.length == 0 %}
-                        <span class="bg-center px-2.5 text-white text-sm whitespace-nowrap btn-circle bg-error animate-bounce">click me!</span>
-                    {% endif %}
+                <img class="w-6 h-6 dark:invert"
+                     src="static/icons/add-line.svg"
+                     alt="Add Station Icon">
+                <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">add new station</span>
+                {% if not stations or stations.length == 0 %}
+                    <span class="bg-center px-2.5 text-white text-sm whitespace-nowrap btn-circle bg-error animate-bounce">click me!</span>
+                {% endif %}
             </a>
         </li>
         {% include 'components/add_station_modal.html' %}
         <div class="divider pt-4 text-xs opacity-60">stations</div>
         <div class="p-3">
             <input id="stationSearch"
-                type="text"
-                placeholder="🔎 Search"
-                class="input input-sm input-bordered" />
+                   type="text"
+                   placeholder="🔎 Search"
+                   class="input input-sm input-bordered" />
         </div>
         <ul id="stationList">
             {% for station in stations %}
@@ -68,33 +69,36 @@
     });
 </script>
 <script>
-document.getElementById("stationSearch").addEventListener("input", function () {
-    const query = this.value.toLowerCase();
-    const items = document.querySelectorAll("li p[data-stationId]");
+    document.getElementById("stationSearch").addEventListener("input", function() {
+        const query = this.value.toLowerCase();
+        const items = document.querySelectorAll("li p[data-stationId]");
 
-    items.forEach(p => {
-        const name = p.textContent.toLowerCase();
-        p.parentElement.style.display = name.includes(query) ? "" : "none";
+        items.forEach(p => {
+            const name = p.textContent.toLowerCase();
+            p.parentElement.style.display = name.includes(query) ? "" : "none";
+        });
     });
-});
 </script>
 <script>
-const el = document.getElementById('stationList');
+    const el = document.getElementById('stationList');
 
-Sortable.create(el, {
-    animation: 150,
-    onEnd: async function () {
-        const order = [...el.querySelectorAll('li')].map(li =>
-            li.querySelector('p').dataset.stationid
-        );
+    Sortable.create(el, {
+        animation: 150,
+        onEnd: async function() {
+            const order = [...el.querySelectorAll('li')].map(li =>
+                li.querySelector('p').dataset.stationid
+            );
 
 
-        await fetch('/api/stations/reorder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order })
-        });
-    }
-});
+            await fetch('/api/stations/reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    order
+                })
+            });
+        }
+    });
 </script>
-
