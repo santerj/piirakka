@@ -106,7 +106,7 @@ class Context:
             payload["events"].append(event.model_dump())
         return json.dumps(payload)
 
-
+preflight.run_migrations()
 context = Context()
 
 
@@ -172,7 +172,7 @@ async def index(request):
             "volume": context.player.get_volume(),
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
-            "station_name": context.player.current_station.name,
+            "station_name": context.player.current_station.name if context.player.current_station else "",
         },
     )
 
