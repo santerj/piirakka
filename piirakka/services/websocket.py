@@ -9,7 +9,7 @@ from starlette.websockets import WebSocket
 logger = logging.getLogger(__name__)
 
 
-class WebSocketSubscriberState:
+class WebSocketSubscriberManager:
     """
     Manages active WebSocket connections and broadcasts messages to subscribers
     """

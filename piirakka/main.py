@@ -26,7 +26,8 @@ from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
 from piirakka.model.station import create_station, list_stations, order_stations, update_station, delete_station
-from piirakka.services.websocket import WebSocketSubscriberState
+from piirakka.services.track_history import TrackHistoryManager
+from piirakka.services.websocket import WebSocketSubscriberManager
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
@@ -40,7 +41,6 @@ class Context:
     SPAWN_MPV = os.getenv("MPV", True)
     SOCKET = os.getenv("SOCKET", preflight.generate_socket_path())
     DATABASE = preflight.DB_PATH
-    TRACK_HISTORY_LENGTH = 50
 
     def player_callback(self, message) -> None:
         # loop = asyncio.get_event_loop()
@@ -53,7 +53,6 @@ class Context:
 
     def __init__(self) -> None:
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
-        self.track_history: list[RecentTrack] = []
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
 
         with Session(self.db_engine) as session:
@@ -75,9 +74,7 @@ class Context:
     async def push_track(self, track: RecentTrack) -> None:
         # updates the in-memory track history
         # and broadcasts updates to websocket subscribers
-        if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
-            self.track_history.pop()
-        self.track_history.insert(0, track)
+        track_history.add_track(track)
 
         track_update_message = events.TrackChangeEvent(content=track)
 
@@ -111,7 +108,8 @@ class Context:
 
 
 preflight.run_migrations()
-subscriber_state = WebSocketSubscriberState()
+subscriber_state = WebSocketSubscriberManager()
+track_history = TrackHistoryManager()
 context = Context()
 
 
@@ -153,9 +151,9 @@ async def observe_current_track(interval: int = 1) -> None:
                 timestamp=datetime.now().strftime("%H:%M"),
             )
 
-        if len(context.track_history) == 0:
+        if not track_history:
             await context.push_track(current_track)
-        elif context.track_history[0].title == current_track_title:
+        elif track_history.most_recent().title == current_track_title:
             # track hasn't changed
             continue
         else:
@@ -172,10 +170,10 @@ async def index(request):
             "request": request,
             "sidebar_items": sidebar_items,
             "stations": context.player.stations,
-            "recent_tracks": context.track_history,
+            "recent_tracks": track_history.get_history(),
             "volume": context.player.get_volume(),
             "playing": context.player.get_status(),
-            "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
+            "track_name": track_history.most_recent().title if track_history else "",
             "station_name": context.player.current_station.name if context.player.current_station else "",
             "version": __version__,
         },
@@ -191,7 +189,7 @@ async def stations_page(request):
             "stations": context.player.stations,
             "volume": context.player.get_volume(),
             "playing": context.player.get_status(),
-            "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
+            "track_name": track_history.most_recent().title if track_history else "",
             "station_name": context.player.current_station.name if context.player.current_station else "",
         },
     )
