@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 import piirakka.model.event as events
-import piirakka.preflight as preflight
+from . import preflight
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.station import list_stations

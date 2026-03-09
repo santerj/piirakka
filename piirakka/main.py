@@ -5,9 +5,9 @@ import logging
 import uvicorn
 from setproctitle import setproctitle
 
-import piirakka.preflight as preflight
+import piirakka.core.preflight as preflight
 from piirakka.__version__ import __version__
-from piirakka.app_factory import create_app
+from piirakka.core.app_factory import create_app
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)

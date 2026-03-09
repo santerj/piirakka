@@ -10,12 +10,12 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 import piirakka
-import piirakka.preflight as preflight
-from piirakka.context import Context
+from . import preflight
+from .context import Context
+from .background import observe_current_track
 from piirakka.services.track_history import TrackHistoryManager
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
 from piirakka.views import pages, playback, stations
-from piirakka.background import observe_current_track
 
 logger = logging.getLogger(__name__)
 
