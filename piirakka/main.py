@@ -100,10 +100,8 @@ class Context:
 preflight.run_migrations()
 subscriber_state = WebSocketSubscriberManager()
 track_history = TrackHistoryManager()
+WebSocketConnection = create_websocket_connection(subscriber_state) # WebSocketConnection endpoint with bound manager
 context = Context()
-
-# Create the WebSocketConnection endpoint with a bound manager
-WebSocketConnection = create_websocket_connection(subscriber_state)
 
 
 async def broadcast_message(message: str) -> None:
