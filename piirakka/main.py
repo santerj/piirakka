@@ -26,7 +26,8 @@ from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
 from piirakka.model.station import create_station, list_stations, order_stations, update_station, delete_station
 from piirakka.services.track_history import TrackHistoryManager
-from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
+from piirakka.services import websocket as ws_service
+from piirakka.services.websocket import WebSocketSubscriberManager, WebSocketConnection, broadcast_message
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
@@ -108,16 +109,9 @@ class Context:
 
 preflight.run_migrations()
 subscriber_state = WebSocketSubscriberManager()
+ws_service.subscriber_state = subscriber_state
 track_history = TrackHistoryManager()
 context = Context()
-
-
-async def broadcast_message(message) -> None:
-    await subscriber_state.broadcast(message)
-
-
-# Create WebSocketConnection endpoint with dependencies bound
-WebSocketConnection = create_websocket_connection(subscriber_state, broadcast_message)
 
 
 def task(callback):
