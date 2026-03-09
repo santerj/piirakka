@@ -25,7 +25,13 @@
             </a>
         </li>
         {% include 'components/add_station_modal.html' %}
-        <div class="divider p-4 pb-2 text-xs opacity-60">stations</div>
+        <div class="divider pt-4 text-xs opacity-60">stations</div>
+        <div class="p-3">
+            <input id="stationSearch"
+                type="text"
+                placeholder="🔎 Search"
+                class="input input-sm input-bordered" />
+        </div>
         {% for station in stations %}
             <li class="">
                 <p data-stationId="{{ station.station_id }}">{{ station.name }}</p>
@@ -53,4 +59,15 @@
                 .catch(error => console.error('Error:', error));
         });
     });
+</script>
+<script>
+document.getElementById("stationSearch").addEventListener("input", function () {
+    const query = this.value.toLowerCase();
+    const items = document.querySelectorAll("li p[data-stationId]");
+
+    items.forEach(p => {
+        const name = p.textContent.toLowerCase();
+        p.parentElement.style.display = name.includes(query) ? "" : "none";
+    });
+});
 </script>
