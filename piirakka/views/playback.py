@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 
-def create_playback_routes(context):
+def create_routes(context):
     """
     Factory function that creates playback control route handlers with dependencies injected.
 

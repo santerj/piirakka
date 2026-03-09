@@ -9,7 +9,7 @@ from starlette.routing import Route
 from piirakka.model.station import create_station, delete_station, list_stations, order_stations, update_station
 
 
-def create_station_routes(db_engine, on_refresh_stations, on_stations_changed):
+def create_routes(db_engine, on_refresh_stations, on_stations_changed):
     """
     Factory function that creates station management route handlers with dependencies injected.
 

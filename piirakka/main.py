@@ -136,9 +136,9 @@ async def observe_current_track(interval: int = 1) -> None:
 
 app = Starlette(
     routes=[
-        *pages.create_page_routes(templates, context, track_history),
-        *stations.create_station_routes(context.db_engine, context.refresh_stations, context.push_stations),
-        *playback.create_playback_routes(context),
+        *pages.create_routes(templates, context, track_history),
+        *stations.create_routes(context.db_engine, context.refresh_stations, context.push_stations),
+        *playback.create_routes(context),
         WebSocketRoute("/ws/subscribe", WebSocketConnection),
         Mount("/static", app=StaticFiles(directory=static_dir), name="static"),
     ]
