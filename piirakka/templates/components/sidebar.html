@@ -1,3 +1,4 @@
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <nav class="h-full p-1">
     <h1 class="font-nunito font-semibold ml-6 text-2xl select-none flex items-center">
         <img class="w-9 h-9 mr-3" src="static/icons/android-chrome-512x512.png"> piirakka
@@ -32,11 +33,13 @@
                 placeholder="🔎 Search"
                 class="input input-sm input-bordered" />
         </div>
-        {% for station in stations %}
-            <li class="">
-                <p data-stationId="{{ station.station_id }}">{{ station.name }}</p>
-            </li>
-        {% endfor %}
+        <ul id="stationList">
+            {% for station in stations %}
+                <li class="">
+                    <p data-stationId="{{ station.station_id }}">{{ station.name }}</p>
+                </li>
+            {% endfor %}
+        </ul>
     </ul>
 </nav>
 <script>
@@ -71,3 +74,23 @@ document.getElementById("stationSearch").addEventListener("input", function () {
     });
 });
 </script>
+<script>
+const el = document.getElementById('stationList');
+
+Sortable.create(el, {
+    animation: 150,
+    onEnd: async function () {
+        const order = [...el.querySelectorAll('li')].map(li =>
+            li.querySelector('p').dataset.stationid
+        );
+
+
+        await fetch('/api/stations/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order })
+        });
+    }
+});
+</script>
+

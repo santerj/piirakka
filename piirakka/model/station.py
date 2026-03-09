@@ -26,6 +26,7 @@ class Station(Base):
             url=self.url,
             added_on=self.added_on,
             listen_time=self.listen_time,
+            sort_order=self.sort_order
         )
 
 
@@ -59,12 +60,21 @@ def delete_station(session: Session, station_id: str) -> bool:
     return False
 
 
+def order_stations(session: Session, station_ids: list[str]) -> bool:
+    for index, station_id in enumerate(station_ids):
+        station = session.get(Station, uuid.UUID(station_id))
+        if station:
+            station.sort_order = index
+    session.commit()
+    return True
+
+
 def get_station(session: Session, station_id: str) -> Optional[Station]:
     return session.get(Station, uuid.UUID(station_id))
 
 
 def list_stations(session: Session) -> list[Station]:
-    return session.query(Station).all()
+    return session.query(Station).order_by(Station.sort_order).all()
 
 
 class StationPydantic(BaseModel):
@@ -74,6 +84,7 @@ class StationPydantic(BaseModel):
     url: str
     added_on: datetime
     listen_time: int
+    sort_order: int
 
     def to_sqlalchemy(self):
         return Station(
@@ -82,4 +93,5 @@ class StationPydantic(BaseModel):
             url=self.url,
             added_on=self.added_on,
             listen_time=self.listen_time,
+            sort_order=self.sort_order
         )

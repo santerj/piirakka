@@ -24,7 +24,7 @@ from piirakka.__version__ import __version__
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
-from piirakka.model.station import create_station, list_stations, update_station, delete_station
+from piirakka.model.station import create_station, list_stations, order_stations, update_station, delete_station
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
@@ -266,6 +266,23 @@ async def delete_station_handler(request):
 
     return JSONResponse({"message": "station deleted successfully"})
 
+async def sort_stations(request) -> JSONResponse:
+    data = await request.json()
+    station_ids = data.get("order")
+
+    if not station_ids or not isinstance(station_ids, list):
+        return JSONResponse({"message": "invalid station_ids"}, status_code=400)
+
+    with Session(context.db_engine) as session:
+        success = order_stations(session, station_ids)
+        if not success:
+            return JSONResponse({"message": "stations not sorted"}, status_code=500)
+
+    await context.refresh_stations()
+    await context.push_stations()
+
+    return JSONResponse({"message": "stations sorted successfully"})
+
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
@@ -273,6 +290,7 @@ app = Starlette(
         Route("/api/station", create_station_handler, methods=[HTTPMethod.POST]),
         Route("/api/station/{station_id}", update_station_handler, methods=[HTTPMethod.PATCH]),
         Route("/api/station/{station_id}", delete_station_handler, methods=[HTTPMethod.DELETE]),
+        Route("/api/stations/reorder", sort_stations, methods=[HTTPMethod.POST]),
         Route("/api/radio/station/{station_id}", set_station, methods=[HTTPMethod.PUT]),
         Route("/api/radio/toggle", toggle_playback, methods=[HTTPMethod.PUT]),
         Route("/api/radio/volume", set_volume, methods=[HTTPMethod.PUT]),
