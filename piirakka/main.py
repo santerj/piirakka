@@ -26,6 +26,7 @@ from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
 from piirakka.model.station import create_station, list_stations, order_stations, update_station, delete_station
+from piirakka.services.websocket import WebSocketSubscriberState
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
@@ -53,7 +54,6 @@ class Context:
     def __init__(self) -> None:
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
         self.track_history: list[RecentTrack] = []
-        self.subscribers = []
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
 
         with Session(self.db_engine) as session:
@@ -111,6 +111,7 @@ class Context:
 
 
 preflight.run_migrations()
+subscriber_state = WebSocketSubscriberState()
 context = Context()
 
 
@@ -119,10 +120,10 @@ class WebSocketConnection(WebSocketEndpoint):
 
     async def on_connect(self, websocket) -> None:
         await websocket.accept()
-        context.subscribers.append(websocket)
+        await subscriber_state.add_subscriber(websocket)
 
     async def on_disconnect(self, websocket, close_code) -> None:
-        context.subscribers.remove(websocket)
+        await subscriber_state.remove_subscriber(websocket)
 
     async def on_receive(self, websocket, data) -> None:
         print(f"Received message: {data}")
@@ -130,8 +131,7 @@ class WebSocketConnection(WebSocketEndpoint):
 
 
 async def broadcast_message(message) -> None:
-    for subscriber in context.subscribers:
-        await subscriber.send_text(message)
+    await subscriber_state.broadcast(message)
 
 
 def task(callback):
@@ -317,7 +317,7 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    for subscriber in context.subscribers:
+    for subscriber in subscriber_state.subscribers:
         await subscriber.close()
 
 
