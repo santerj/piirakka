@@ -38,7 +38,7 @@ class Context:
     DATABASE = os.getenv("DATABASE", preflight.DB_PATH)
     TRACK_HISTORY_LENGTH = 50
 
-    def player_callback(self, message):
+    def player_callback(self, message) -> None:
         # loop = asyncio.get_event_loop()
         # loop.create_task(broadcast_message(str(message)))
 
@@ -47,7 +47,7 @@ class Context:
         logging.info(f"Broadcasting Websocket message {payload}")
         anyio.from_thread.run(broadcast_message, payload)
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.player = Player(self.SPAWN_MPV, self.SOCKET, self.DATABASE, self.player_callback)
         self.track_history: list[RecentTrack] = []
         self.subscribers = []
@@ -63,13 +63,13 @@ class Context:
                 self.player.current_station_id = str(stations[default_index].station_id)
                 self.player.play_station_with_id(self.player.current_station_id)
 
-    async def push_player_bar(self):
+    async def push_player_bar(self) -> None:
         # TODO: unused dead code, consider removing
         player_bar_status = self.player.get_player_state()
         message = events.PlayerBarUpdateEvent(content=player_bar_status)
         await broadcast_message(message.model_dump_json())
 
-    async def push_track(self, track: RecentTrack):
+    async def push_track(self, track: RecentTrack) -> None:
         # updates the in-memory track history
         # and broadcasts updates to websocket subscribers
         if len(self.track_history) == self.TRACK_HISTORY_LENGTH:
@@ -84,13 +84,13 @@ class Context:
 
         await broadcast_message(message=message)
 
-    async def refresh_stations(self):
+    async def refresh_stations(self) -> None:
         with Session(self.db_engine) as session:
             stations = list_stations(session)
             stations_pydantic = [s.to_pydantic() for s in stations]
             self.player.update_stations(stations_pydantic)
 
-    async def push_stations(self):
+    async def push_stations(self) -> None:
         stations = self.player.stations
         station_update_message = events.StationListChangeEvent(content=stations)
         # TODO: serialization of datetime in StationPydantic is tricky,
@@ -113,19 +113,19 @@ context = Context()
 class WebSocketConnection(WebSocketEndpoint):
     encoding = "text"
 
-    async def on_connect(self, websocket):
+    async def on_connect(self, websocket) -> None:
         await websocket.accept()
         context.subscribers.append(websocket)
 
-    async def on_disconnect(self, websocket, close_code):
+    async def on_disconnect(self, websocket, close_code) -> None:
         context.subscribers.remove(websocket)
 
-    async def on_receive(self, websocket, data):
+    async def on_receive(self, websocket, data) -> None:
         print(f"Received message: {data}")
         await broadcast_message(data)
 
 
-async def broadcast_message(message):
+async def broadcast_message(message) -> None:
     for subscriber in context.subscribers:
         await subscriber.send_text(message)
 
@@ -135,7 +135,7 @@ def task(callback):
     callback("task")
 
 
-async def observe_current_track(interval: int = 1):
+async def observe_current_track(interval: int = 1) -> None:
     while True:
         await asyncio.sleep(interval)
         current_track_title = context.player.current_track()
@@ -192,30 +192,30 @@ async def stations_page(request):
     )
 
 
-async def set_station(request):
+async def set_station(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
     task = BackgroundTask(context.player.play_station_with_id, station_id)
     return JSONResponse({"message": "station change initiated"}, background=task)
 
 
-async def toggle_playback(request):
+async def toggle_playback(request) -> JSONResponse:
     task = BackgroundTask(context.player.toggle)
     return JSONResponse({"message": "toggle initiated"}, background=task)
 
 
-async def set_volume(request):
+async def set_volume(request) -> JSONResponse:
     data = await request.json()
     volume = int(data.get("volume"))
     task = BackgroundTask(context.player.set_volume, volume)
     return JSONResponse({"message": "volume change initiated"}, background=task)
 
 
-async def shuffle_station(request):
+async def shuffle_station(request) -> JSONResponse:
     task = BackgroundTask(context.player.shuffle)
     return JSONResponse({"message": "station shuffle initiated"}, background=task)
 
 
-async def create_station_handler(request):
+async def create_station_handler(request) -> JSONResponse:
     data = await request.json()
     name = data.get("station_name")
     url = data.get("station_url")
@@ -228,7 +228,7 @@ async def create_station_handler(request):
 
     return JSONResponse({"message": "station created successfully"})
 
-async def update_station_handler(request):
+async def update_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
     data = await request.json()
     name = data.get("station_name")
@@ -250,7 +250,7 @@ async def update_station_handler(request):
 
     return JSONResponse({"message": "station updated successfully"})
 
-async def delete_station_handler(request):
+async def delete_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
 
     if station_id not in [s.station_id for s in context.player.stations]:
