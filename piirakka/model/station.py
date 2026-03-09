@@ -17,6 +17,7 @@ class Station(Base):
     url = Column(String, nullable=False)
     added_on = Column(DateTime, default=datetime.utcnow)
     listen_time = Column(Integer, default=0, nullable=False)
+    sort_order = Column(Integer, default=0, nullable=False)
 
     def to_pydantic(self):
         return StationPydantic(
