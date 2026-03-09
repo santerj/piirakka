@@ -38,7 +38,7 @@ static_dir = os.path.join(os.path.dirname(piirakka.__file__), "static")
 class Context:
     SPAWN_MPV = os.getenv("MPV", True)
     SOCKET = os.getenv("SOCKET", preflight.generate_socket_path())
-    DATABASE = os.getenv("DATABASE", preflight.DB_PATH)
+    DATABASE = preflight.DB_PATH
     TRACK_HISTORY_LENGTH = 50
 
     def player_callback(self, message) -> None:

@@ -18,6 +18,9 @@ os.makedirs(db_dir, exist_ok=True)
 
 DB_PATH = os.path.join(db_dir, "piirakka.db")
 
+if override := os.getenv("PIIRAKKA_DB"):
+    DB_PATH = override
+
 BASE_DIR = Path(__file__).resolve().parent  # dir of main.py
 DB_NAME = "piirakka.db"
 #DB_PATH = BASE_DIR / f"{DB_NAME}"
