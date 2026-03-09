@@ -12,7 +12,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from starlette.applications import Starlette
 from starlette.background import BackgroundTask
-from starlette.endpoints import WebSocketEndpoint
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
@@ -27,7 +26,7 @@ from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
 from piirakka.model.station import create_station, list_stations, order_stations, update_station, delete_station
 from piirakka.services.track_history import TrackHistoryManager
-from piirakka.services.websocket import WebSocketSubscriberManager
+from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
 
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
@@ -113,23 +112,12 @@ track_history = TrackHistoryManager()
 context = Context()
 
 
-class WebSocketConnection(WebSocketEndpoint):
-    encoding = "text"
-
-    async def on_connect(self, websocket) -> None:
-        await websocket.accept()
-        await subscriber_state.add_subscriber(websocket)
-
-    async def on_disconnect(self, websocket, close_code) -> None:
-        await subscriber_state.remove_subscriber(websocket)
-
-    async def on_receive(self, websocket, data) -> None:
-        print(f"Received message: {data}")
-        await broadcast_message(data)
-
-
 async def broadcast_message(message) -> None:
     await subscriber_state.broadcast(message)
+
+
+# Create WebSocketConnection endpoint with dependencies bound
+WebSocketConnection = create_websocket_connection(subscriber_state, broadcast_message)
 
 
 def task(callback):
