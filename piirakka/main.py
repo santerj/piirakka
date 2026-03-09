@@ -18,6 +18,7 @@ from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
+import piirakka
 import piirakka.model.event as events
 import piirakka.preflight as preflight
 from piirakka.__version__ import __version__
@@ -29,7 +30,9 @@ from piirakka.model.station import create_station, list_stations, order_stations
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
 
-templates = Jinja2Templates(directory="piirakka/templates")
+templates_dir = os.path.join(os.path.dirname(piirakka.__file__), "templates")
+templates = Jinja2Templates(directory=templates_dir)
+static_dir = os.path.join(os.path.dirname(piirakka.__file__), "static")
 
 
 class Context:
@@ -302,7 +305,7 @@ app = Starlette(
         Route("/api/radio/volume", set_volume, methods=[HTTPMethod.PUT]),
         Route("/api/radio/shuffle", shuffle_station, methods=[HTTPMethod.PUT]),
         WebSocketRoute("/ws/subscribe", WebSocketConnection),
-        Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
+        Mount("/static", app=StaticFiles(directory=static_dir), name="static"),
     ]
 )
 
