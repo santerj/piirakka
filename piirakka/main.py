@@ -106,6 +106,7 @@ class Context:
             payload["events"].append(event.model_dump())
         return json.dumps(payload)
 
+
 preflight.run_migrations()
 context = Context()
 
@@ -173,7 +174,7 @@ async def index(request):
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
             "station_name": context.player.current_station.name if context.player.current_station else "",
-            "version": __version__
+            "version": __version__,
         },
     )
 
@@ -188,7 +189,7 @@ async def stations_page(request):
             "volume": context.player.get_volume(),
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
-            "station_name": context.player.current_station.name if context.player.current_station else ""
+            "station_name": context.player.current_station.name if context.player.current_station else "",
         },
     )
 
@@ -229,6 +230,7 @@ async def create_station_handler(request) -> JSONResponse:
 
     return JSONResponse({"message": "station created successfully"})
 
+
 async def update_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
     data = await request.json()
@@ -251,6 +253,7 @@ async def update_station_handler(request) -> JSONResponse:
 
     return JSONResponse({"message": "station updated successfully"})
 
+
 async def delete_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
 
@@ -266,6 +269,7 @@ async def delete_station_handler(request) -> JSONResponse:
     await context.push_stations()
 
     return JSONResponse({"message": "station deleted successfully"})
+
 
 async def sort_stations(request) -> JSONResponse:
     data = await request.json()
@@ -283,6 +287,7 @@ async def sort_stations(request) -> JSONResponse:
     await context.push_stations()
 
     return JSONResponse({"message": "stations sorted successfully"})
+
 
 app = Starlette(
     routes=[

@@ -18,11 +18,13 @@ DB_URL = f"sqlite:///{DB_PATH}"
 def generate_socket_path():
     return os.path.join(tempfile.gettempdir(), f"piirakka_{os.getpid()}.sock")
 
+
 def run_migrations():
     alembic_cfg = Config()
     alembic_cfg.set_main_option("script_location", "piirakka/migrations")
     alembic_cfg.set_main_option("sqlalchemy.url", DB_URL)
     command.upgrade(alembic_cfg, "head")
+
 
 LOGGING_CONFIG = {
     "version": 1,
