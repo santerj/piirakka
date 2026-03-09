@@ -23,51 +23,36 @@ if override := os.getenv("PIIRAKKA_DB"):
 
 BASE_DIR = Path(__file__).resolve().parent  # dir of main.py
 DB_NAME = "piirakka.db"
-#DB_PATH = BASE_DIR / f"{DB_NAME}"
+# DB_PATH = BASE_DIR / f"{DB_NAME}"
 DB_URL = f"sqlite:///{DB_PATH}"
 
 
 def generate_socket_path():
     return os.path.join(tempfile.gettempdir(), f"piirakka_{os.getpid()}.sock")
 
+
 def get_alembic_config():
-    alembic_ini = os.path.join(
-        os.path.dirname(piirakka.__file__),
-        "migrations",
-        "alembic.ini"
-    )
+    alembic_ini = os.path.join(os.path.dirname(piirakka.__file__), "migrations", "alembic.ini")
 
     cfg = Config(alembic_ini)
 
     # Point Alembic to the installed migrations
-    cfg.set_main_option(
-        "script_location",
-        os.path.join(os.path.dirname(piirakka.__file__), "migrations")
-    )
+    cfg.set_main_option("script_location", os.path.join(os.path.dirname(piirakka.__file__), "migrations"))
 
     # IMPORTANT: override the DB path
-    cfg.set_main_option(
-        "sqlalchemy.url",
-        f"{DB_URL}"
-    )
+    cfg.set_main_option("sqlalchemy.url", f"{DB_URL}")
 
     return cfg
 
+
 def run_migrations():
     # Path to alembic.ini inside the installed package
-    alembic_ini = os.path.join(
-        os.path.dirname(piirakka.__file__),
-        "migrations",
-        "alembic.ini"
-    )
+    alembic_ini = os.path.join(os.path.dirname(piirakka.__file__), "migrations", "alembic.ini")
 
     cfg = get_alembic_config()
 
     # Override script_location to point to the installed package
-    cfg.set_main_option(
-        "script_location",
-        os.path.join(os.path.dirname(piirakka.__file__), "migrations")
-    )
+    cfg.set_main_option("script_location", os.path.join(os.path.dirname(piirakka.__file__), "migrations"))
 
     command.upgrade(cfg, "head")
 

@@ -24,7 +24,7 @@ from piirakka.__version__ import __version__
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.sidebar_item import sidebar_items
-from piirakka.model.station import create_station, list_stations, order_stations, update_station, delete_station
+from piirakka.model.station import create_station, delete_station, list_stations, order_stations, update_station
 from piirakka.services.track_history import TrackHistoryManager
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
 
@@ -63,12 +63,6 @@ class Context:
                 default_index = 0
                 self.player.current_station_id = str(stations[default_index].station_id)
                 self.player.play_station_with_id(self.player.current_station_id)
-
-    async def push_player_bar(self) -> None:
-        # TODO: unused dead code, consider removing
-        player_bar_status = self.player.get_player_state()
-        message = events.PlayerBarUpdateEvent(content=player_bar_status)
-        await broadcast_message(message.model_dump_json())
 
     async def push_track(self, track: RecentTrack) -> None:
         # updates the in-memory track history
@@ -118,11 +112,6 @@ WebSocketConnection = create_websocket_connection(subscriber_state)
 async def broadcast_message(message: str) -> None:
     """Broadcast message to all WebSocket subscribers."""
     await subscriber_state.broadcast(message)
-
-
-def task(callback):
-    # placeholder
-    callback("task")
 
 
 async def observe_current_track(interval: int = 1) -> None:

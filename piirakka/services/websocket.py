@@ -32,7 +32,7 @@ class WebSocketSubscriberManager:
         # Broadcast a message to all connected subscribers.
         for subscriber in self.subscribers:
             await subscriber.send_text(message)
-    
+
     def __len__(self) -> int:
         return len(self.subscribers)
 

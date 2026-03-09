@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class TrackHistoryManager:
-
     def __init__(self, max_length: int = 50):
         self.history: deque[RecentTrack] = deque(maxlen=max_length)
         self.max_length = max_length
