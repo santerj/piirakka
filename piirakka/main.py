@@ -18,6 +18,7 @@ from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
+import piirakka
 import piirakka.model.event as events
 import piirakka.preflight as preflight
 from piirakka.__version__ import __version__
@@ -29,7 +30,9 @@ from piirakka.model.station import create_station, list_stations, order_stations
 setproctitle("piirakka")
 logger = logging.getLogger(__name__)
 
-templates = Jinja2Templates(directory="piirakka/templates")
+templates_dir = os.path.join(os.path.dirname(piirakka.__file__), "templates")
+templates = Jinja2Templates(directory=templates_dir)
+static_dir = os.path.join(os.path.dirname(piirakka.__file__), "static")
 
 
 class Context:
@@ -107,6 +110,7 @@ class Context:
         return json.dumps(payload)
 
 
+preflight.run_migrations()
 context = Context()
 
 
@@ -172,7 +176,8 @@ async def index(request):
             "volume": context.player.get_volume(),
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
-            "station_name": context.player.current_station.name,
+            "station_name": context.player.current_station.name if context.player.current_station else "",
+            "version": __version__,
         },
     )
 
@@ -187,7 +192,7 @@ async def stations_page(request):
             "volume": context.player.get_volume(),
             "playing": context.player.get_status(),
             "track_name": context.track_history[0].title if len(context.track_history) > 0 else "",
-            "station_name": context.player.current_station.name
+            "station_name": context.player.current_station.name if context.player.current_station else "",
         },
     )
 
@@ -228,6 +233,7 @@ async def create_station_handler(request) -> JSONResponse:
 
     return JSONResponse({"message": "station created successfully"})
 
+
 async def update_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
     data = await request.json()
@@ -250,6 +256,7 @@ async def update_station_handler(request) -> JSONResponse:
 
     return JSONResponse({"message": "station updated successfully"})
 
+
 async def delete_station_handler(request) -> JSONResponse:
     station_id = request.path_params["station_id"]
 
@@ -265,6 +272,7 @@ async def delete_station_handler(request) -> JSONResponse:
     await context.push_stations()
 
     return JSONResponse({"message": "station deleted successfully"})
+
 
 async def sort_stations(request) -> JSONResponse:
     data = await request.json()
@@ -283,6 +291,7 @@ async def sort_stations(request) -> JSONResponse:
 
     return JSONResponse({"message": "stations sorted successfully"})
 
+
 app = Starlette(
     routes=[
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
@@ -296,7 +305,7 @@ app = Starlette(
         Route("/api/radio/volume", set_volume, methods=[HTTPMethod.PUT]),
         Route("/api/radio/shuffle", shuffle_station, methods=[HTTPMethod.PUT]),
         WebSocketRoute("/ws/subscribe", WebSocketConnection),
-        Mount("/static", app=StaticFiles(directory="piirakka/static"), name="static"),
+        Mount("/static", app=StaticFiles(directory=static_dir), name="static"),
     ]
 )
 

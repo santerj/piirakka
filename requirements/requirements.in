@@ -2,6 +2,7 @@ alembic
 colorlog
 #human-readable
 jinja2
+platformdirs
 pydantic
 requests
 setproctitle

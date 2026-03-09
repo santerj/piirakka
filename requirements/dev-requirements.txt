@@ -96,8 +96,10 @@ pathspec==1.0.4
     # via djlint
 pip-tools==7.5.3
     # via -r requirements/dev-requirements.in
-platformdirs==4.3.6
-    # via virtualenv
+platformdirs==4.9.4
+    # via
+    #   -r requirements/requirements.txt
+    #   virtualenv
 pydantic==2.11.10
     # via -r requirements/requirements.txt
 pydantic-core==2.33.2

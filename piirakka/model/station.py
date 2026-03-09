@@ -26,7 +26,7 @@ class Station(Base):
             url=self.url,
             added_on=self.added_on,
             listen_time=self.listen_time,
-            sort_order=self.sort_order
+            sort_order=self.sort_order,
         )
 
 
@@ -93,5 +93,5 @@ class StationPydantic(BaseModel):
             url=self.url,
             added_on=self.added_on,
             listen_time=self.listen_time,
-            sort_order=self.sort_order
+            sort_order=self.sort_order,
         )

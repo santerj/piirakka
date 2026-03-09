@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dynamic = ["dependencies", "version"]
 
 [tool.setuptools.dynamic]
-dependencies = {file = ["piirakka/requirements.in"]}
+dependencies = {file = ["requirements/requirements.in"]}
 version = {attr = "piirakka.__version__.__version__"}
 
 [project.scripts]
@@ -20,7 +20,7 @@ piirakka = "piirakka.main:main"
 where = ["."]
 
 [tool.setuptools.package-data]
-"piirakka" = ["templates/*", "static/*", "migrations/alembic.ini"]
+"piirakka" = ["templates/**/*", "static/**/*", "migrations/alembic.ini"]
 
 [tool.bandit]
 skips = ["B104", "B404", "B311"]
