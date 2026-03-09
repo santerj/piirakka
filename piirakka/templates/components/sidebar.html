@@ -19,10 +19,11 @@
             <a href="#"
                class="flex items-center space-x-2 overflow-hidden text-ellipsis"
                onclick="add_station_modal.showModal()">
-                <img class="w-6 h-6 dark:invert"
-                     src="static/icons/add-line.svg"
-                     alt="Add Station Icon">
-                <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">add new station</span>
+                    <img class="w-6 h-6 dark:invert" src="static/icons/add-line.svg" alt="Add Station Icon">
+                    <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">add new station</span>
+                    {% if not stations or stations.length == 0 %}
+                        <span class="bg-center px-2.5 text-white text-sm whitespace-nowrap btn-circle bg-error animate-bounce">click me!</span>
+                    {% endif %}
             </a>
         </li>
         {% include 'components/add_station_modal.html' %}
