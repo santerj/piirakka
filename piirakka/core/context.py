@@ -58,7 +58,7 @@ class Context:
         anyio.from_thread.run(self._broadcast_message_fn, payload)
 
     async def push_track(self, track: RecentTrack) -> None:
-        """Update track history and broadcast track change event."""
+        # upate track history + broadcast track and player bar state to subscribers
         self._track_history_manager.add_track(track)
 
         track_update_message = events.TrackChangeEvent(content=track)
@@ -68,14 +68,14 @@ class Context:
         await self._broadcast_message_fn(message=message)
 
     async def refresh_stations(self) -> None:
-        """Refresh stations from database and update player."""
+        # refresh stations from db to context 
         with Session(self.db_engine) as session:
             stations = list_stations(session)
             stations_pydantic = [s.to_pydantic() for s in stations]
             self.player.update_stations(stations_pydantic)
 
     async def push_stations(self) -> None:
-        """Broadcast station list update to WebSocket subscribers."""
+        # broadcast complete station list to subscribers
         stations = self.player.stations
         station_update_message = events.StationListChangeEvent(content=stations)
         message = {"events": [station_update_message.model_dump()]}
