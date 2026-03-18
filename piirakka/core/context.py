@@ -68,7 +68,7 @@ class Context:
         await self._broadcast_message_fn(message=message)
 
     async def refresh_stations(self) -> None:
-        # refresh stations from db to context 
+        # refresh stations from db to context
         with Session(self.db_engine) as session:
             stations = list_stations(session)
             stations_pydantic = [s.to_pydantic() for s in stations]

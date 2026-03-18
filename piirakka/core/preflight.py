@@ -46,9 +46,6 @@ def get_alembic_config():
 
 
 def run_migrations():
-    # Path to alembic.ini inside the installed package
-    alembic_ini = os.path.join(os.path.dirname(piirakka.__file__), "migrations", "alembic.ini")
-
     cfg = get_alembic_config()
 
     # Override script_location to point to the installed package
