@@ -20,7 +20,7 @@ def create_routes(context):
         List of Route objects
     """
 
-    async def create_station_handler(request):
+    async def create_station_handler(request) -> JSONResponse:
         data = await request.json()
         name = data.get("station_name")
         url = data.get("station_url")
@@ -33,7 +33,7 @@ def create_routes(context):
 
         return JSONResponse({"message": "station created successfully"})
 
-    async def update_station_handler(request):
+    async def update_station_handler(request) -> JSONResponse:
         station_id = request.path_params["station_id"]
         data = await request.json()
         name = data.get("station_name")
@@ -57,7 +57,7 @@ def create_routes(context):
 
         return JSONResponse({"message": "station updated successfully"})
 
-    async def delete_station_handler(request):
+    async def delete_station_handler(request) -> JSONResponse:
         station_id = request.path_params["station_id"]
 
         with Session(context.db_engine) as session:
@@ -74,7 +74,7 @@ def create_routes(context):
 
         return JSONResponse({"message": "station deleted successfully"})
 
-    async def sort_stations(request):
+    async def sort_stations(request) -> JSONResponse:
         data = await request.json()
         station_ids = data.get("order")
 

@@ -18,22 +18,22 @@ def create_routes(context):
         List of Route objects
     """
 
-    async def set_station(request):
+    async def set_station(request) -> JSONResponse:
         station_id = request.path_params["station_id"]
         task = BackgroundTask(context.player.play_station_with_id, station_id)
         return JSONResponse({"message": "station change initiated"}, background=task)
 
-    async def toggle_playback(request):
+    async def toggle_playback(request) -> JSONResponse:
         task = BackgroundTask(context.player.toggle)
         return JSONResponse({"message": "toggle initiated"}, background=task)
 
-    async def set_volume(request):
+    async def set_volume(request) -> JSONResponse:
         data = await request.json()
         volume = int(data.get("volume"))
         task = BackgroundTask(context.player.set_volume, volume)
         return JSONResponse({"message": "volume change initiated"}, background=task)
 
-    async def shuffle_station(request):
+    async def shuffle_station(request) -> JSONResponse:
         task = BackgroundTask(context.player.shuffle)
         return JSONResponse({"message": "station shuffle initiated"}, background=task)
 

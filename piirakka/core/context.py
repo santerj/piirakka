@@ -51,7 +51,7 @@ class Context:
                 self.player.play_station_with_id(self.player.current_station_id)
 
     def player_callback(self, message) -> None:
-        """Callback from player subprocess via anyio."""
+        # the Player object can call this to broadcast events after state changes
         logging.info(f"Received event {type(message)} from player via callback")
         payload = self.serialize_events(message)
         logging.info(f"Broadcasting Websocket message {payload}")

@@ -22,7 +22,7 @@ def create_routes(templates: Jinja2Templates, context, track_history):
         List of Route objects
     """
 
-    async def index(request):
+    async def index(request) -> Jinja2Templates.TemplateResponse:
         return templates.TemplateResponse(
             "index.html",
             {
@@ -38,7 +38,7 @@ def create_routes(templates: Jinja2Templates, context, track_history):
             },
         )
 
-    async def stations_page(request):
+    async def stations_page(request) -> Jinja2Templates.TemplateResponse:
         return templates.TemplateResponse(
             "stations.html",
             {
