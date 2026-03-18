@@ -30,8 +30,9 @@ class Station(Base):
         )
 
 
-def create_station(session: Session, name: str, url: str) -> Station:
-    station = Station(name=name, url=url)
+def create_station(session: Session, name: str, url: str, sort_order: int = 100000) -> Station:
+    # magic number explanation: always set new station to bottom of list
+    station = Station(name=name, url=url, sort_order=sort_order)
     session.add(station)
     session.commit()
     session.refresh(station)
