@@ -28,8 +28,8 @@ def create_routes(context):
         with Session(context.db_engine) as session:
             create_station(session, name, url)
 
-        await context.on_refresh_stations()
-        await context.on_stations_changed()
+        await context.refresh_stations()
+        await context.push_stations()
 
         return JSONResponse({"message": "station created successfully"})
 
@@ -69,8 +69,8 @@ def create_routes(context):
             if not success:
                 return JSONResponse({"message": "station not deleted"}, status_code=500)
 
-        await context.on_refresh_stations()
-        await context.on_stations_changed()
+        await context.refresh_stations()
+        await context.push_stations()
 
         return JSONResponse({"message": "station deleted successfully"})
 
