@@ -46,7 +46,7 @@ def create_app():
     WebSocketConnection = create_websocket_connection(subscriber_state)
 
     @contextlib.asynccontextmanager
-    async def lifespan(app: Starlette) -> AsyncIterator[State]:
+    async def lifespan(app: Starlette) -> None:
         asyncio.create_task(observe_current_track(context, track_history))  # startup
         yield
         for subscriber in subscriber_state.subscribers:  # shutdown
