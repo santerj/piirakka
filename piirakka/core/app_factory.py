@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 import os
 
@@ -44,7 +45,15 @@ def create_app():
     # create endpoint with the bound state manager
     WebSocketConnection = create_websocket_connection(subscriber_state)
 
+    @contextlib.asynccontextmanager
+    async def lifespan(app: Starlette) -> None:
+        asyncio.create_task(observe_current_track(context, track_history))  # startup
+        yield
+        for subscriber in subscriber_state.subscribers:  # shutdown
+            await subscriber.close()
+
     app = Starlette(
+        lifespan=lifespan,
         routes=[
             *pages.create_routes(templates, context, track_history),
             *stations.create_routes(context),
@@ -53,14 +62,5 @@ def create_app():
             Mount("/static", app=StaticFiles(directory=static_dir), name="static"),
         ]
     )
-
-    @app.on_event("startup")
-    async def startup():
-        asyncio.create_task(observe_current_track(context, track_history))
-
-    @app.on_event("shutdown")
-    async def shutdown():
-        for subscriber in subscriber_state.subscribers:
-            await subscriber.close()
 
     return app, context, track_history, subscriber_state
