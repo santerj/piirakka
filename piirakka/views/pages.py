@@ -24,8 +24,9 @@ def create_routes(templates: Jinja2Templates, context, track_history):
 
     async def index(request) -> Jinja2Templates.TemplateResponse:
         return templates.TemplateResponse(
-            "index.html",
-            {
+            request=request,
+            name="index.html",
+            context={
                 "request": request,
                 "sidebar_items": sidebar_items,
                 "stations": context.player.stations,
@@ -40,8 +41,9 @@ def create_routes(templates: Jinja2Templates, context, track_history):
 
     async def stations_page(request) -> Jinja2Templates.TemplateResponse:
         return templates.TemplateResponse(
-            "stations.html",
-            {
+            request=request,
+            name="stations.html",
+            context={
                 "request": request,
                 "sidebar_items": sidebar_items,
                 "stations": context.player.stations,
