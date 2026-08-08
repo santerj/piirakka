@@ -1,0 +1,53 @@
+<div class="dropdown dropdown-top dropdown-end">
+    <div class="hover:cursor-pointer" tabindex="0" role="button">•••</div>
+    <ul tabindex="0"
+        class="dropdown-content menu bg-base-100 rounded-box z-1 w-64 shadow-lg text-xs">
+        <li>
+            <a href="music://music.apple.com/us/search?term={{ track.title }}">
+                <img class="w-5 h-5 dark:invert"
+                        src="static/icons/apple-line.svg"
+                        alt="Apple Music icon">
+                Search in Apple Music (desktop)
+            </a>
+        </li>
+        <li>
+            <a href="https://music.apple.com/fi/search?term={{ track.title }}">
+                <img class="w-5 h-5 dark:invert"
+                        src="static/icons/apple-line.svg"
+                        alt="Apple Music icon">
+                Search in Apple Music (web)
+            </a>
+        </li>
+        <li>
+            <a href="spotify://search/{{ track.title }}">
+                <img class="w-5 h-5 dark:invert"
+                        src="static/icons/spotify-line.svg"
+                        alt="Spotify icon">
+                Search in Spotify (desktop)
+            </a>
+        </li>
+        <li>
+            <a href="https://open.spotify.com/search/{{ track.title }}">
+                <img class="w-5 h-5 dark:invert"
+                        src="static/icons/spotify-line.svg"
+                        alt="Spotify icon">
+                Search in Spotify (web)
+            </a>
+        </li>
+        <li>
+            <a href="https://www.youtube.com/results?search_query={{ track.title }}">
+                <img class="w-5 h-5 dark:invert"
+                        src="static/icons/apple-line.svg"
+                        alt="Spotify icon">
+                Search in YouTube
+            </a>
+        </li>
+        <li>
+            <a href="https://bandcamp.com/search?q={{ track.title }}">
+                <img class="w-5 h-5 dark:invert"
+                        src="static/icons/apple-line.svg"
+                        alt="Bandcamp icon">
+                Search in Bandcamp
+            </a>
+    </ul>
+</div>

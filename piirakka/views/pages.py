@@ -53,8 +53,24 @@ def create_routes(templates: Jinja2Templates, context, track_history):
                 "station_name": context.player.current_station.name if context.player.current_station else "",
             },
         )
+    
+    async def settings_page(request) -> Jinja2Templates.TemplateResponse:
+        return templates.TemplateResponse(
+            request=request,
+            name="settings.html",
+            context={
+                "request": request,
+                "sidebar_items": sidebar_items,
+                "stations": context.player.stations,
+                "volume": context.player.get_volume(),
+                "playing": context.player.get_status(),
+                "track_name": track_history.most_recent().title if track_history else "",
+                "station_name": context.player.current_station.name if context.player.current_station else "",
+            },
+        )
 
     return [
         Route("/", endpoint=index, methods=[HTTPMethod.GET]),
         Route("/stations", endpoint=stations_page, methods=[HTTPMethod.GET]),
+        Route("/settings", endpoint=settings_page, methods=[HTTPMethod.GET]),
     ]
