@@ -14,7 +14,7 @@ from .context import Context
 from .background import observe_current_track
 from piirakka.services.track_history import TrackHistoryManager
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
-from piirakka.views import pages, playback, stations
+from piirakka.views import settings, pages, playback, stations
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,7 @@ def create_app():
             *pages.create_routes(templates, context, track_history),
             *stations.create_routes(context),
             *playback.create_routes(context),
+            *settings.create_routes(context),
             WebSocketRoute("/ws/subscribe", WebSocketConnection),
             Mount("/static", app=StaticFiles(directory=static_dir), name="static"),
         ]

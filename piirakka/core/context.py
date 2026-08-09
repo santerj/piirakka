@@ -13,6 +13,7 @@ from . import preflight
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.station import list_stations
+from piirakka.model.search_option import list_search_options
 
 logger = logging.getLogger(__name__)
 

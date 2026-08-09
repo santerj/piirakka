@@ -18,13 +18,15 @@ class SearchOption(Base):
         )
 
 def list_search_options(session: Session) -> list[SearchOption]:
-    return session.query(SearchOption).all()
+    search_option_data = session.query(SearchOption).all()
+    return {option.key: bool(option.is_enabled) for option in search_option_data}
 
-def update_search_option(session: Session, key: str, is_enabled: Optional[bool]) -> Optional[SearchOption]:
+def update_search_option(session: Session, key: str, is_enabled: bool) -> Optional[SearchOption]:
     search_option = session.get(SearchOption, key)
     if search_option:
         if is_enabled is not None:
-            search_option.is_enabled = is_enabled
+            # cast "true" or "false" into integer
+            search_option.is_enabled = int(is_enabled in [True, "true", "1", 1])
         session.commit()
         session.refresh(search_option)
         return search_option
