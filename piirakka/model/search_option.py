@@ -17,6 +17,9 @@ class SearchOption(Base):
             is_enabled=self.is_enabled,
         )
 
+def list_search_options(session: Session) -> list[SearchOption]:
+    return session.query(SearchOption).all()
+
 def update_search_option(session: Session, key: str, is_enabled: Optional[bool]) -> Optional[SearchOption]:
     search_option = session.get(SearchOption, key)
     if search_option:
@@ -26,7 +29,7 @@ def update_search_option(session: Session, key: str, is_enabled: Optional[bool])
         session.refresh(search_option)
         return search_option
     return None
-    
+
 class SearchOptionPydantic(BaseModel):
     key: str
     is_enabled: bool

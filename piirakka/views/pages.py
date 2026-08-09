@@ -53,7 +53,7 @@ def create_routes(templates: Jinja2Templates, context, track_history):
                 "station_name": context.player.current_station.name if context.player.current_station else "",
             },
         )
-    
+
     async def settings_page(request) -> Jinja2Templates.TemplateResponse:
         return templates.TemplateResponse(
             request=request,
