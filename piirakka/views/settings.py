@@ -1,7 +1,6 @@
 """Application settings and options routes."""
 
 from http import HTTPMethod
-import logging
 
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
