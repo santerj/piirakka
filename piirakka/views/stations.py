@@ -77,14 +77,13 @@ def is_valid_station_url(url: str) -> bool:
 
 
 def create_routes(context):
-    """
-    Factory function that creates station management route handlers with dependencies injected.
+    """Factory function that creates station management route handlers with dependencies injected.
 
     Args:
-        context: The application Context (for player control)
+    context: The application Context (for player control)
 
     Returns:
-        List of Route objects
+    List of Route objects
     """
 
     async def create_station_handler(request) -> JSONResponse:

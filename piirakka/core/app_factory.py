@@ -9,12 +9,14 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 import piirakka
-from . import preflight
-from .context import Context
-from .background import observe_current_track
 from piirakka.services.track_history import TrackHistoryManager
-from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
-from piirakka.views import settings, pages, playback, stations
+from piirakka.services.websocket import (WebSocketSubscriberManager,
+                                         create_websocket_connection)
+from piirakka.views import pages, playback, settings, stations
+
+from . import preflight
+from .background import observe_current_track
+from .context import Context
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ def create_app():
     Create and configure the Starlette application with all dependencies.
 
     Returns:
-        tuple: (app, context, track_history, subscriber_state)
+    tuple: (app, context, track_history, subscriber_state)
     """
 
     templates_dir = os.path.join(os.path.dirname(piirakka.__file__), "templates")
