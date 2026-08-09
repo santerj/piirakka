@@ -49,7 +49,7 @@ def update_station(session: Session, station_id: str, name: Optional[str], url: 
         session.commit()
         session.refresh(station)
         return station
-    return False
+    return None
 
 
 def delete_station(session: Session, station_id: str) -> bool:
