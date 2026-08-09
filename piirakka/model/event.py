@@ -1,13 +1,15 @@
 from pydantic import BaseModel
 
 from piirakka.model.station import StationPydantic
-from piirakka.model.player_state import PlayerState
-from piirakka.model.recent_track import RecentTrack
+#from piirakka.model.player_state import PlayerState
+#from piirakka.model.recent_track import RecentTrack
 
+# TODO: clean up of commented out code
 
 class PlayerBarUpdateEvent(BaseModel):
-    # any value in represented in player bar changed
-    content: PlayerState
+    """Any value represented in the player bar has changed - render entire player bar + push update"""
+    content: str  # accepts pre-rendered html
+    #content: PlayerState
     event_type: str = "player_bar_updated"
 
 

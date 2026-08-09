@@ -55,27 +55,23 @@ class Context:
         # the Player object can call this to broadcast events after state changes
         logging.info(f"Received event {type(message)} from player via callback")
         payload = self.serialize_events(message)
-        logging.info(f"Broadcasting Websocket message {payload}")
+        logging.info("Broadcasting Websocket message from player callback")
         anyio.from_thread.run(self._broadcast_message_fn, payload)
 
     async def push_track(self, track: RecentTrack) -> None:
         self._track_history_manager.add_track(track)
         search_options = await self.get_search_options()  # populate search dropdown based on app settings
-        print(search_options)
 
         history = self._track_history_manager.get_history()  # RecentTrack
         rendered_history = "\n".join([t.render_html(search_options=search_options) for t in history])  # html
 
-        print(rendered_history)
-
         track_update_message = events.TrackChangeEvent(content=rendered_history)
 
-        # TODO: disabled player bar update until track change event fixed
-        #player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state())
-        #message = self.serialize_events(track_update_message, player_bar_update_message)
-        #await self._broadcast_message_fn(message=message)
+        # send player bar update in the same event
+        player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state().render_html())
 
-        await self._broadcast_message_fn(message=self.serialize_events(track_update_message))
+        message = self.serialize_events(track_update_message, player_bar_update_message)
+        await self._broadcast_message_fn(message=message)
 
     async def refresh_stations(self) -> None:
         # refresh stations from db to context
