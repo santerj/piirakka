@@ -52,7 +52,7 @@ socket.addEventListener("error", function (event) {
 });
 
 /**
- * Refresh currently
+ * Refresh currently playing track (or station) in browser tab title
  */
 function updateTitle(track, station) {
   const playingMediaTitle = track !== "" ? track : station;

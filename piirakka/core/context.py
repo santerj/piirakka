@@ -81,6 +81,8 @@ class Context:
             self.player.update_stations(stations_pydantic)
 
     async def push_stations(self) -> None:
+        # TODO: event type unused and not understood by frontend
+        # TODO: should be migrated to broadcast prerendered html before referencing in frontend
         # broadcast complete station list to subscribers
         stations = self.player.stations
         station_update_message = events.StationListChangeEvent(content=stations)
