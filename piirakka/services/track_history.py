@@ -1,6 +1,5 @@
 import logging
 from collections import deque
-from typing import Optional
 
 from piirakka.model.recent_track import RecentTrack
 
@@ -19,7 +18,7 @@ class TrackHistoryManager:
     def get_history(self) -> list[RecentTrack]:
         return list(self.history)
 
-    def most_recent(self) -> Optional[RecentTrack]:
+    def most_recent(self) -> RecentTrack | None:
         return self.history[0] if self.history else None
 
     def __len__(self) -> int:

@@ -22,8 +22,7 @@ socket.addEventListener("message", function (event) {
 
         switch (eventItem.event_type) {
           case "player_bar_updated": {
-            const player_bar =
-            document.getElementById("ControlBar");
+            const player_bar = document.getElementById("ControlBar");
             player_bar.innerHTML = content;
             break;
           }
@@ -33,9 +32,8 @@ socket.addEventListener("message", function (event) {
             trackHistoryContainer.innerHTML = content;
             break;
           }
-          default: {
+          default:
             console.log("Event type unknown:", eventItem.event_type);
-          }
         }
       });
     } else {

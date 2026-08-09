@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, Integer, String
@@ -39,7 +38,7 @@ def create_station(session: Session, name: str, url: str, sort_order: int = 1000
     return station
 
 
-def update_station(session: Session, station_id: str, name: Optional[str], url: Optional[str]) -> Optional[Station]:
+def update_station(session: Session, station_id: str, name: str | None, url: str | None) -> Station | None:
     station = session.get(Station, uuid.UUID(station_id))
     if station:
         if name is not None:
@@ -70,7 +69,7 @@ def order_stations(session: Session, station_ids: list[str]) -> bool:
     return True
 
 
-def get_station(session: Session, station_id: str) -> Optional[Station]:
+def get_station(session: Session, station_id: str) -> Station | None:
     return session.get(Station, uuid.UUID(station_id))
 
 

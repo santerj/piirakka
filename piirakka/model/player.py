@@ -157,7 +157,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        return True if resp else False
+        return bool(resp)
 
     def play(self) -> bool:
         cmd = {"command": ["set_property", "pause", False]}
@@ -167,7 +167,7 @@ class Player:
         self.callback(
             PlayerBarUpdateEvent(content=self.get_player_state().render_html())
         )  # send rendered html directly over websocket to subscribers
-        return True if resp else False
+        return bool(resp)
 
     def pause(self) -> bool:
         cmd = {"command": ["set_property", "pause", True]}
@@ -177,7 +177,7 @@ class Player:
         self.callback(
             PlayerBarUpdateEvent(content=self.get_player_state().render_html())
         )  # send rendered html directly over websocket to subscribers
-        return True if resp else False
+        return bool(resp)
 
     def toggle(self) -> bool:
         if self.playing:

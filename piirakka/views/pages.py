@@ -5,21 +5,21 @@ from http import HTTPMethod
 from starlette.routing import Route
 from starlette.templating import Jinja2Templates
 
-from piirakka.model.sidebar_item import sidebar_items
 from piirakka.__version__ import __version__
+from piirakka.model.sidebar_item import sidebar_items
 
 
 def create_routes(templates: Jinja2Templates, context, track_history):
-    """
-    Factory function that creates page route handlers with dependencies injected.
+    """Factory function that creates page route handlers with dependencies injected.
 
     Args:
-        templates: Jinja2Templates instance for rendering
-        context: The application Context (for player state)
-        track_history: TrackHistoryManager instance
+    templates: Jinja2Templates instance for rendering
+    context: The application Context (for player state)
+    track_history: TrackHistoryManager instance
 
     Returns:
-        List of Route objects
+    List of Route objects.
+    
     """
 
     async def index(request) -> Jinja2Templates.TemplateResponse:

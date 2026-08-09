@@ -20,8 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class Context:
-    """
-    Application context managing player state and database.
+    """Application context managing player state and database.
 
     Requires broadcast_message_fn to be passed for WebSocket broadcasting from player callbacks.
     """

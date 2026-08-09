@@ -7,9 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class WebSocketSubscriberManager:
-    """
-    Manages active websocket connections and broadcasts messages to subscribers
-    """
+    """Manages active websocket connections and broadcasts messages to subscribers."""
 
     def __init__(self):
         self.subscribers: list[WebSocket] = []
