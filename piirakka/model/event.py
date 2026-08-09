@@ -1,4 +1,4 @@
-"""Definitions of events sent to subscribers over websocket"""
+"""Definitions of events sent to subscribers over websocket."""
 
 from pydantic import BaseModel
 
@@ -10,7 +10,7 @@ from piirakka.model.station import StationPydantic
 
 
 class PlayerBarUpdateEvent(BaseModel):
-    """Any value represented in the player bar has changed - render entire player bar + push update"""
+    """Any value represented in the player bar has changed - render entire player bar and broadcast."""
 
     content: str  # html
     # content: PlayerState
@@ -18,16 +18,17 @@ class PlayerBarUpdateEvent(BaseModel):
 
 
 class StationListChangeEvent(BaseModel):
-    """Station list has changed - render entire station list + push update"""
+    """Station list has changed - render entire station list and broadcast."""
 
     # TODO: event type unused and not understood by frontend
+    # TODO: should be refacored to send rendered html (consumed by station settings page)
     # content: str  # html
     content: list[StationPydantic]
     event_type: str = "stations_changed"
 
 
 class SidebarChangeEvent(BaseModel):
-    """Sidebar has changed - render entire sidebar + push update"""
+    """Sidebar has changed - render entire sidebar and broadcast."""
 
     # TODO: event type unused and not understood by frontend
     content: str  # html
@@ -35,7 +36,7 @@ class SidebarChangeEvent(BaseModel):
 
 
 class TrackChangeEvent(BaseModel):
-    """Currently playing track changed - render entire track history + push update"""
+    """Currently playing track changed - render entire track history and broadcast."""
 
     content: str  # html
     # content: RecentTrack

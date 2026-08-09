@@ -10,14 +10,13 @@ from piirakka.model.search_option import list_search_options, update_search_opti
 
 
 def create_routes(context):
-    """
-    Factory function that creates playback control route handlers with dependencies injected.
+    """Factory function that creates playback control route handlers with dependencies injected.
 
     Args:
-        context: The application Context (for player control)
+    context: The application Context (for player control).
 
     Returns:
-        List of Route objects
+    List of Route objects.
     """
 
     async def list_search_options_handler(request) -> JSONResponse:

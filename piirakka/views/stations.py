@@ -127,8 +127,12 @@ def create_routes(context):
             if station_id not in [str(s.station_id) for s in existing_stations]:
                 return JSONResponse({"message": "station not found"}, status_code=404)
 
-            station = update_station(session, station_id, name.strip() if isinstance(name, str) else None,
-                                     url.strip() if isinstance(url, str) else None)
+            station = update_station(
+                session,
+                station_id,
+                name.strip() if isinstance(name, str) else None,
+                url.strip() if isinstance(url, str) else None,
+            )
             if station is None:
                 return JSONResponse({"message": "station not updated"}, status_code=500)
 

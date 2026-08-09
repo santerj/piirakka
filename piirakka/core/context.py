@@ -9,11 +9,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 import piirakka.model.event as events
-from . import preflight
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
-from piirakka.model.station import list_stations
 from piirakka.model.search_option import list_search_options
+from piirakka.model.station import list_stations
+
+from . import preflight
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +54,9 @@ class Context:
 
     def player_callback(self, message) -> None:
         # the Player object can call this to broadcast events after state changes
-        logging.info(f"Received event {type(message)} from player via callback")
+        logger.info(f"Received event {type(message)} from player via callback")
         payload = self.serialize_events(message)
-        logging.info("Broadcasting Websocket message from player callback")
+        logger.info("Broadcasting Websocket message from player callback")
         anyio.from_thread.run(self._broadcast_message_fn, payload)
 
     async def push_track(self, track: RecentTrack) -> None:

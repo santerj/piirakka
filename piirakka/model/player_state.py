@@ -1,7 +1,6 @@
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel
-
-from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 env = Environment(loader=FileSystemLoader("piirakka/templates"), autoescape=select_autoescape())
 

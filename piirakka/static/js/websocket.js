@@ -21,16 +21,21 @@ socket.addEventListener("message", function (event) {
         const content = eventItem.content;
 
         switch (eventItem.event_type) {
-          case "player_bar_updated":
-            const player_bar = document.getElementById("ControlBar");
+          case "player_bar_updated": {
+            const player_bar =
+            document.getElementById("ControlBar");
             player_bar.innerHTML = content;
             break;
-          case "track_history_changed":
-            const trackHistoryContainer = document.getElementById("trackHistory");
+          }
+          case "track_history_changed": {
+            const trackHistoryContainer =
+            document.getElementById("trackHistory");
             trackHistoryContainer.innerHTML = content;
             break;
-          default:
+          }
+          default: {
             console.log("Event type unknown:", eventItem.event_type);
+          }
         }
       });
     } else {

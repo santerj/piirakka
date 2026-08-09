@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session
@@ -24,7 +22,7 @@ def list_search_options(session: Session) -> list[SearchOption]:
     return {option.key: bool(option.is_enabled) for option in search_option_data}
 
 
-def update_search_option(session: Session, key: str, is_enabled: bool) -> Optional[SearchOption]:
+def update_search_option(session: Session, key: str, is_enabled: bool) -> SearchOption | None:
     search_option = session.get(SearchOption, key)
     if search_option:
         if is_enabled is not None:
