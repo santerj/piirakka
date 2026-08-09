@@ -6,18 +6,26 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from piirakka.model.station import create_station, delete_station, list_stations, order_stations, update_station
+from piirakka.model.station import (
+    create_station,
+    delete_station,
+    list_stations,
+    order_stations,
+    update_station,
+    validate_station_name,
+    validate_station_url,
+)
 
 
 def create_routes(context):
-    """
-    Factory function that creates station management route handlers with dependencies injected.
+    """Factory function that creates station management route handlers with dependencies injected.
 
     Args:
-        context: The application Context (for player control)
+    context: The application Context (for player control)
 
     Returns:
-        List of Route objects
+    List of Route objects
+
     """
 
     async def create_station_handler(request) -> JSONResponse:
@@ -25,8 +33,14 @@ def create_routes(context):
         name = data.get("station_name")
         url = data.get("station_url")
 
+        if not validate_station_name(name):
+            return JSONResponse({"message": "station_name is invalid"}, status_code=400)
+
+        if not validate_station_url(url):
+            return JSONResponse({"message": "station_url is invalid"}, status_code=400)
+
         with Session(context.db_engine) as session:
-            create_station(session, name, url)
+            create_station(session, name.strip(), url.strip())
 
         await context.refresh_stations()
         await context.push_stations()
@@ -39,8 +53,14 @@ def create_routes(context):
         name = data.get("station_name")
         url = data.get("station_url")
 
-        if not name and not url:
+        if name is None and url is None:
             return JSONResponse({"message": "no update parameters provided"}, status_code=400)
+
+        if name is not None and not validate_station_name(name):
+            return JSONResponse({"message": "station_name is invalid"}, status_code=400)
+
+        if url is not None and not validate_station_url(url):
+            return JSONResponse({"message": "station_url is invalid"}, status_code=400)
 
         with Session(context.db_engine) as session:
             # Check if station exists before attempting update
@@ -48,12 +68,17 @@ def create_routes(context):
             if station_id not in [str(s.station_id) for s in existing_stations]:
                 return JSONResponse({"message": "station not found"}, status_code=404)
 
-            station = update_station(session, station_id, name, url)
+            station = update_station(
+                session,
+                station_id,
+                name.strip() if isinstance(name, str) else None,
+                url.strip() if isinstance(url, str) else None,
+            )
             if station is None:
                 return JSONResponse({"message": "station not updated"}, status_code=500)
 
-        await context.on_refresh_stations()
-        await context.on_stations_changed()
+        await context.refresh_stations()
+        await context.push_stations()
 
         return JSONResponse({"message": "station updated successfully"})
 
@@ -86,8 +111,8 @@ def create_routes(context):
             if not success:
                 return JSONResponse({"message": "stations not sorted"}, status_code=500)
 
-        await context.on_refresh_stations()
-        await context.on_stations_changed()
+        await context.refresh_stations()
+        await context.push_stations()
 
         return JSONResponse({"message": "stations sorted successfully"})
 

@@ -5,8 +5,8 @@ import logging
 import uvicorn
 from setproctitle import setproctitle
 
-import piirakka.core.preflight as preflight
 from piirakka.__version__ import __version__
+from piirakka.core import preflight
 from piirakka.core.app_factory import create_app
 
 setproctitle("piirakka")

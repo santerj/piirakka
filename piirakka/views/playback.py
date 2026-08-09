@@ -8,14 +8,14 @@ from starlette.routing import Route
 
 
 def create_routes(context):
-    """
-    Factory function that creates playback control route handlers with dependencies injected.
+    """Factory function that creates playback control route handlers with dependencies injected.
 
     Args:
-        context: The application Context (for player control)
+    context: The application Context (for player control)
 
     Returns:
-        List of Route objects
+    List of Route objects.
+
     """
 
     async def set_station(request) -> JSONResponse:

@@ -109,8 +109,8 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state())
-        )  # signal to controller to re-render control bar
+            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
+        )  # send rendered html directly over websocket to subscribers
         return self._ipc_success(resp)
 
     def get_bitrate(self) -> int:
@@ -157,7 +157,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.playing = True
-        return True if resp else False
+        return bool(resp)
 
     def play(self) -> bool:
         cmd = {"command": ["set_property", "pause", False]}
@@ -165,9 +165,9 @@ class Player:
         resp = self._ipc_command(cmd)
         self.playing = True
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state())
-        )  # signal to controller to re-render control bar
-        return True if resp else False
+            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
+        )  # send rendered html directly over websocket to subscribers
+        return bool(resp)
 
     def pause(self) -> bool:
         cmd = {"command": ["set_property", "pause", True]}
@@ -175,9 +175,9 @@ class Player:
         resp = self._ipc_command(cmd)
         self.playing = False
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state())
-        )  # signal to controller to re-render control bar
-        return True if resp else False
+            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
+        )  # send rendered html directly over websocket to subscribers
+        return bool(resp)
 
     def toggle(self) -> bool:
         if self.playing:
@@ -210,5 +210,5 @@ class Player:
         self.play_station_with_id(random_station.station_id)
         # TODO: add small wait to have a better chance of actually broadcasting an update here
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state())
-        )  # signal to controller to re-render control bar
+            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
+        )  # send rendered html directly over websocket to subscribers

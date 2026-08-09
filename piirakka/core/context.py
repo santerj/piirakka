@@ -9,17 +9,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 import piirakka.model.event as events
-from . import preflight
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
+from piirakka.model.search_option import list_search_options
 from piirakka.model.station import list_stations
+
+from . import preflight
 
 logger = logging.getLogger(__name__)
 
 
 class Context:
-    """
-    Application context managing player state and database.
+    """Application context managing player state and database.
 
     Requires broadcast_message_fn to be passed for WebSocket broadcasting from player callbacks.
     """
@@ -52,19 +53,24 @@ class Context:
 
     def player_callback(self, message) -> None:
         # the Player object can call this to broadcast events after state changes
-        logging.info(f"Received event {type(message)} from player via callback")
+        logger.info(f"Received event {type(message)} from player via callback")
         payload = self.serialize_events(message)
-        logging.info(f"Broadcasting Websocket message {payload}")
+        logger.info("Broadcasting Websocket message from player callback")
         anyio.from_thread.run(self._broadcast_message_fn, payload)
 
     async def push_track(self, track: RecentTrack) -> None:
-        # upate track history + broadcast track and player bar state to subscribers
         self._track_history_manager.add_track(track)
+        search_options = await self.get_search_options()  # populate search dropdown based on app settings
 
-        track_update_message = events.TrackChangeEvent(content=track)
-        player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state())
+        history = self._track_history_manager.get_history()  # RecentTrack
+        rendered_history = "\n".join([t.render_html(search_options=search_options) for t in history])  # html
+
+        track_update_message = events.TrackChangeEvent(content=rendered_history)
+
+        # send player bar update in the same event
+        player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state().render_html())
+
         message = self.serialize_events(track_update_message, player_bar_update_message)
-
         await self._broadcast_message_fn(message=message)
 
     async def refresh_stations(self) -> None:
@@ -75,11 +81,18 @@ class Context:
             self.player.update_stations(stations_pydantic)
 
     async def push_stations(self) -> None:
+        # TODO: event type unused and not understood by frontend
+        # TODO: should be migrated to broadcast prerendered html before referencing in frontend
         # broadcast complete station list to subscribers
         stations = self.player.stations
         station_update_message = events.StationListChangeEvent(content=stations)
         message = {"events": [station_update_message.model_dump()]}
         await self._broadcast_message_fn(message=json.dumps(message, default=str))
+
+    async def get_search_options(self) -> list:
+        # fetch search options from db
+        with Session(self.db_engine) as session:
+            return list_search_options(session)
 
     @staticmethod
     def serialize_events(*args) -> str:

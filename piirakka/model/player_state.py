@@ -1,5 +1,8 @@
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel
+
+env = Environment(loader=FileSystemLoader("piirakka/templates"), autoescape=select_autoescape())
 
 
 class PlayerState(BaseModel):
@@ -12,3 +15,13 @@ class PlayerState(BaseModel):
     class Config:
         alias_generator = to_camel
         populate_by_name = True
+
+    def render_html(self) -> str:
+        template = env.get_template("components/player.html")
+        return template.render(
+            player_state=self,
+            playing=self.playback_status,
+            volume=self.volume,
+            track_name=self.track_title,
+            station_name=self.current_station_name,
+        )

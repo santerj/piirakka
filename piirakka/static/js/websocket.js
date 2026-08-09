@@ -17,15 +17,21 @@ socket.addEventListener("message", function (event) {
     // Check if 'events' exists and is an array
     if (Array.isArray(data.events)) {
       data.events.forEach((eventItem) => {
+        console.log("Received event", eventItem.event_type);
         const content = eventItem.content;
 
         switch (eventItem.event_type) {
-          case "player_bar_updated":
-            updatePlayerBar(content);
+          case "player_bar_updated": {
+            const player_bar = document.getElementById("ControlBar");
+            player_bar.innerHTML = content;
             break;
-          case "track_changed":
-            insertNewTrack(content);
+          }
+          case "track_history_changed": {
+            const trackHistoryContainer =
+            document.getElementById("trackHistory");
+            trackHistoryContainer.innerHTML = content;
             break;
+          }
           default:
             console.log("Event type unknown:", eventItem.event_type);
         }
@@ -49,93 +55,7 @@ socket.addEventListener("error", function (event) {
 });
 
 /**
- * update text fields, icons and slider
- * in player bar to match actual app state
- */
-function updatePlayerBar(content) {
-  const player_track_title = content.track_title;
-  const player_station_name = content.current_station_name;
-  const volume = content.volume;
-  const playback = content.playback_status;
-
-  document.getElementById("player_bar_track_name").innerText = player_track_title;
-  document.getElementById("player_bar_station_name").innerText = player_station_name;
-  document.getElementById("volumeControl").value = volume;
-  if (!playback) {
-    document.getElementById("pauseIcon").classList.add("hidden");
-    document.getElementById("playIcon").classList.remove("hidden");
-  } else {
-    document.getElementById("pauseIcon").classList.remove("hidden");
-    document.getElementById("playIcon").classList.add("hidden");
-  }
-  if (volume === 0) {
-    document.getElementById("volumeUpIcon").classList.add("hidden");
-    document.getElementById("volumeMuteIcon").classList.remove("hidden");
-  } else {
-    document.getElementById("volumeUpIcon").classList.remove("hidden");
-    document.getElementById("volumeMuteIcon").classList.add("hidden");
-  }
-}
-
-/**
- * due to track component being a prerendered jinja template, we have to hack
- * a little and clone an existing row + replace contents manually
- */
-function insertNewTrack(content) {
-  // due to track component being a prerendered jinja template, we have to hack
-  // a bit and clone an existing row + replace contents manually
-  const history_track_title = content.title;
-  const history_station_name = content.station;
-  const history_timestamp = content.timestamp;
-
-  const tbody = document.querySelector("#trackHistory tbody");
-  if (!tbody || tbody.rows.length === 0) return;
-
-  // Clone the first row deeply
-  const newRow = tbody.rows[0].cloneNode(true);
-
-  // Update timestamp
-  const timestampCell = newRow.querySelector("#timeStamp");
-  if (timestampCell) timestampCell.innerText = history_timestamp;
-
-  // Update title
-  const titleCell = newRow.querySelector("th[title]");
-  if (titleCell) {
-    titleCell.innerText = history_track_title;
-    titleCell.setAttribute("title", history_track_title);
-  }
-
-  // Update station
-  const stationCell = newRow.querySelectorAll("th[title]")[1];
-  if (stationCell) {
-    stationCell.innerText = history_station_name;
-    stationCell.setAttribute("title", history_station_name);
-  }
-
-  // Update dropdown links
-  const appleLink = newRow.querySelector("a[href^='music://']");
-  if (appleLink) {
-    appleLink.href = `music://music.apple.com/us/search?term=${encodeURIComponent(history_track_title)}`;
-  }
-
-  const spotifyLink = newRow.querySelector("a[href^='spotify://']");
-  if (spotifyLink) {
-    spotifyLink.href = `spotify://search/${encodeURIComponent(history_track_title)}`;
-  }
-
-  // Insert at the top
-  tbody.prepend(newRow);
-
-  // Trim to 50 rows
-  while (tbody.rows.length > 50) {
-    tbody.deleteRow(tbody.rows.length - 1);
-  }
-
-  updateTitle(history_track_title, history_station_name);
-}
-
-/**
- * Refresh currently
+ * Refresh currently playing track (or station) in browser tab title
  */
 function updateTitle(track, station) {
   const playingMediaTitle = track !== "" ? track : station;
