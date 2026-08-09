@@ -59,14 +59,23 @@ class Context:
         anyio.from_thread.run(self._broadcast_message_fn, payload)
 
     async def push_track(self, track: RecentTrack) -> None:
-        # upate track history + broadcast track and player bar state to subscribers
         self._track_history_manager.add_track(track)
+        search_options = await self.get_search_options()  # populate search dropdown based on app settings
+        print(search_options)
 
-        track_update_message = events.TrackChangeEvent(content=track)
-        player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state())
-        message = self.serialize_events(track_update_message, player_bar_update_message)
+        history = self._track_history_manager.get_history()  # RecentTrack
+        rendered_history = "\n".join([t.render_html(search_options=search_options) for t in history])  # html
 
-        await self._broadcast_message_fn(message=message)
+        print(rendered_history)
+
+        track_update_message = events.TrackChangeEvent(content=rendered_history)
+
+        # TODO: disabled player bar update until track change event fixed
+        #player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state())
+        #message = self.serialize_events(track_update_message, player_bar_update_message)
+        #await self._broadcast_message_fn(message=message)
+
+        await self._broadcast_message_fn(message=self.serialize_events(track_update_message))
 
     async def refresh_stations(self) -> None:
         # refresh stations from db to context
@@ -81,6 +90,11 @@ class Context:
         station_update_message = events.StationListChangeEvent(content=stations)
         message = {"events": [station_update_message.model_dump()]}
         await self._broadcast_message_fn(message=json.dumps(message, default=str))
+
+    async def get_search_options(self) -> list:
+        # fetch search options from db
+        with Session(self.db_engine) as session:
+            return list_search_options(session)
 
     @staticmethod
     def serialize_events(*args) -> str:

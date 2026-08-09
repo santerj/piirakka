@@ -23,8 +23,12 @@ socket.addEventListener("message", function (event) {
           case "player_bar_updated":
             updatePlayerBar(content);
             break;
-          case "track_changed":
+          case "track_changed":  // deprecated, replaced by track_history_changed
             insertNewTrack(content);
+            break;
+          case "track_history_changed":
+            const trackHistoryContainer = document.getElementById("trackHistory");
+            trackHistoryContainer.innerHTML = content;
             break;
           default:
             console.log("Event type unknown:", eventItem.event_type);

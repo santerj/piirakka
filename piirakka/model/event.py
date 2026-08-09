@@ -18,6 +18,7 @@ class StationListChangeEvent(BaseModel):
 
 
 class TrackChangeEvent(BaseModel):
-    # track changed
-    content: RecentTrack
-    event_type: str = "track_changed"
+    """Currently playing track changed - render entire track history + push update"""
+    content: str  # accepts pre-rendered html
+    #content: RecentTrack
+    event_type: str = "track_history_changed"
