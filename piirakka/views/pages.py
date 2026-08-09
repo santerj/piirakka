@@ -19,7 +19,7 @@ def create_routes(templates: Jinja2Templates, context, track_history):
 
     Returns:
     List of Route objects.
-    
+
     """
 
     async def index(request) -> Jinja2Templates.TemplateResponse:

@@ -13,6 +13,7 @@ async def observe_current_track(context, track_history, interval: int = 1) -> No
     context: The application Context (for player access and pushing changes)
     track_history: TrackHistoryManager instance
     interval: Poll interval in seconds
+
     """
     while True:
         await asyncio.sleep(interval)

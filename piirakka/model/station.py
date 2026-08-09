@@ -1,12 +1,79 @@
+import ipaddress
+import re
 import uuid
 from datetime import datetime
+from urllib.parse import urlparse
 
+import validators
 from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Session
 
 from piirakka.model.base import Base
+
+MIN_STATION_NAME_LENGTH = 1
+MAX_STATION_NAME_LENGTH = 100
+
+
+def validate_station_name(name: str) -> bool:
+    if not isinstance(name, str):
+        return False
+
+    normalized_name = name.strip()
+    if len(normalized_name) < MIN_STATION_NAME_LENGTH or len(normalized_name) > MAX_STATION_NAME_LENGTH:
+        return False
+
+    if re.search(r"[<>]", normalized_name):
+        return False
+
+    if re.search(r"(?i)<\s*script", normalized_name):
+        return False
+
+    return True
+
+
+def validate_station_url(url: str) -> bool:
+    if not isinstance(url, str):
+        return False
+
+    normalized_url = url.strip()
+    if not normalized_url:
+        return False
+
+    parsed = urlparse(normalized_url)
+    scheme = parsed.scheme.lower()
+
+    def host_is_valid(hostname: str | None) -> bool:
+        if hostname is None:
+            return False
+        if hostname == "localhost":
+            return True
+        try:
+            ipaddress.ip_address(hostname)
+            return True
+        except ValueError:
+            return False
+
+    if scheme in {"http", "https"}:
+        if not parsed.netloc:
+            return False
+
+        hostname = parsed.hostname
+        if host_is_valid(hostname):
+            return True
+
+        return bool(validators.domain(hostname or ""))
+
+    if "://" in normalized_url:
+        return False
+
+    parsed_no_scheme = urlparse("//" + normalized_url)
+    if not parsed_no_scheme.netloc:
+        return False
+
+    hostname = parsed_no_scheme.hostname
+    return host_is_valid(hostname)
 
 
 class Station(Base):
@@ -31,7 +98,7 @@ class Station(Base):
 
 def create_station(session: Session, name: str, url: str, sort_order: int = 100000) -> Station:
     # magic number explanation: always set new station to bottom of list
-    station = Station(name=name, url=url, sort_order=sort_order)
+    station = Station(name=name.strip(), url=url.strip(), sort_order=sort_order)
     session.add(station)
     session.commit()
     session.refresh(station)

@@ -1,79 +1,20 @@
 """Station management view handlers."""
 
-import ipaddress
-import re
 from http import HTTPMethod
-from urllib.parse import urlparse
 
-import validators
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from piirakka.model.station import create_station, delete_station, list_stations, order_stations, update_station
-
-MIN_STATION_NAME_LENGTH = 1
-MAX_STATION_NAME_LENGTH = 100
-
-
-def is_valid_station_name(name: str) -> bool:
-    if not isinstance(name, str):
-        return False
-
-    normalized_name = name.strip()
-    if len(normalized_name) < MIN_STATION_NAME_LENGTH or len(normalized_name) > MAX_STATION_NAME_LENGTH:
-        return False
-
-    if re.search(r"[<>]", normalized_name):
-        return False
-
-    if re.search(r"(?i)<\s*script", normalized_name):
-        return False
-
-    return True
-
-
-def is_valid_station_url(url: str) -> bool:
-    if not isinstance(url, str):
-        return False
-
-    normalized_url = url.strip()
-    if not normalized_url:
-        return False
-
-    parsed = urlparse(normalized_url)
-    scheme = parsed.scheme.lower()
-
-    def host_is_valid(hostname: str | None) -> bool:
-        if hostname is None:
-            return False
-        if hostname == "localhost":
-            return True
-        try:
-            ipaddress.ip_address(hostname)
-            return True
-        except ValueError:
-            return False
-
-    if scheme in {"http", "https"}:
-        if not parsed.netloc:
-            return False
-
-        hostname = parsed.hostname
-        if host_is_valid(hostname):
-            return True
-
-        return bool(validators.domain(hostname or ""))
-
-    if "://" in normalized_url:
-        return False
-
-    parsed_no_scheme = urlparse("//" + normalized_url)
-    if not parsed_no_scheme.netloc:
-        return False
-
-    hostname = parsed_no_scheme.hostname
-    return host_is_valid(hostname)
+from piirakka.model.station import (
+    create_station,
+    delete_station,
+    list_stations,
+    order_stations,
+    update_station,
+    validate_station_name,
+    validate_station_url,
+)
 
 
 def create_routes(context):
@@ -84,7 +25,7 @@ def create_routes(context):
 
     Returns:
     List of Route objects
-    
+
     """
 
     async def create_station_handler(request) -> JSONResponse:
@@ -92,10 +33,10 @@ def create_routes(context):
         name = data.get("station_name")
         url = data.get("station_url")
 
-        if not is_valid_station_name(name):
+        if not validate_station_name(name):
             return JSONResponse({"message": "station_name is invalid"}, status_code=400)
 
-        if not is_valid_station_url(url):
+        if not validate_station_url(url):
             return JSONResponse({"message": "station_url is invalid"}, status_code=400)
 
         with Session(context.db_engine) as session:
@@ -115,10 +56,10 @@ def create_routes(context):
         if name is None and url is None:
             return JSONResponse({"message": "no update parameters provided"}, status_code=400)
 
-        if name is not None and not is_valid_station_name(name):
+        if name is not None and not validate_station_name(name):
             return JSONResponse({"message": "station_name is invalid"}, status_code=400)
 
-        if url is not None and not is_valid_station_url(url):
+        if url is not None and not validate_station_url(url):
             return JSONResponse({"message": "station_url is invalid"}, status_code=400)
 
         with Session(context.db_engine) as session:

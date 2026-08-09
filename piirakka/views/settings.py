@@ -17,7 +17,7 @@ def create_routes(context):
 
     Returns:
     List of Route objects.
-    
+
     """
 
     async def list_search_options_handler(request) -> JSONResponse:
