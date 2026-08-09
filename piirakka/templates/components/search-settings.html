@@ -2,14 +2,13 @@
     <h1 class="sticky top-0 text-3xl pt-3 pb-6 pl-3 font-nunito font-semibold bg-inherit">Settings</h1>
     <div class="sticky -mt-2 top-12 divider bg-inherit"></div>
     <h2 class="text-lg font-semibold py-3 pl-3">Search streaming services</h2>
-
     <div class="px-3 py-2 join join-vertical space-y-2">
-
         <label class="label pl-3 py-0.5" data-search-option-key="apple_music_web">
             <input type="checkbox" checked="checked" class="toggle" />
             Apple Music (web)
         </label>
-        <label class="label pl-3 py-0.5" data-search-option-key="apple_music_desktop">
+        <label class="label pl-3 py-0.5"
+               data-search-option-key="apple_music_desktop">
             <input type="checkbox" checked="checked" class="toggle" />
             Apple Music (desktop)
         </label>
@@ -30,7 +29,6 @@
             Bandcamp
         </label>
     </div>
-
 </div>
 <script>
     // fetch search options from the server and set checkboxes
@@ -45,7 +43,6 @@
             }
         });
 </script>
-
 <script>
     // add event listeners to all toggles
     document.querySelectorAll('.toggle').forEach(toggle => {
@@ -53,16 +50,16 @@
             const isEnabled = this.checked;
             const key = this.parentElement.getAttribute('data-search-option-key');
             fetch(`/api/settings/search_options/${key}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    is_enabled: isEnabled
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        is_enabled: isEnabled
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => console.log(data));
+                .then(response => response.json())
+                .then(data => console.log(data));
         });
     });
 </script>

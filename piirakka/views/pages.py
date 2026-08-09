@@ -36,6 +36,7 @@ def create_routes(templates: Jinja2Templates, context, track_history):
                 "track_name": track_history.most_recent().title if track_history else "",
                 "station_name": context.player.current_station.name if context.player.current_station else "",
                 "version": __version__,
+                "search_options": await context.get_search_options(),
             },
         )
 

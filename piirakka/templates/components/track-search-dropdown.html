@@ -2,66 +2,58 @@
     <div class="hover:cursor-pointer" tabindex="0" role="button">•••</div>
     <ul tabindex="0"
         class="dropdown-content menu bg-base-100 rounded-box z-1 w-64 shadow-lg text-xs">
-        <li data-search-option-key="apple_music_desktop">
+        <li data-search-option-key="apple_music_desktop"
+            class="{{ 'block' if search_options.apple_music_desktop else 'hidden' }}">
             <a href="music://music.apple.com/us/search?term={{ track.title }}">
                 <img class="w-5 h-5 dark:invert"
-                        src="static/icons/apple-line.svg"
-                        alt="Apple Music icon">
+                     src="static/icons/apple-line.svg"
+                     alt="Apple Music icon">
                 Search in Apple Music (desktop)
             </a>
         </li>
-        <li data-search-option-key="apple_music_web">
+        <li data-search-option-key="apple_music_web"
+            class="{{ 'block' if search_options.apple_music_web else 'hidden' }}">
             <a href="https://music.apple.com/fi/search?term={{ track.title }}">
                 <img class="w-5 h-5 dark:invert"
-                        src="static/icons/apple-line.svg"
-                        alt="Apple Music icon">
+                     src="static/icons/apple-line.svg"
+                     alt="Apple Music icon">
                 Search in Apple Music (web)
             </a>
         </li>
-        <li data-search-option-key="spotify_desktop">
+        <li data-search-option-key="spotify_desktop"
+            class="{{ 'block' if search_options.spotify_desktop else 'hidden' }}">
             <a href="spotify://search/{{ track.title }}">
                 <img class="w-5 h-5 dark:invert"
-                        src="static/icons/spotify-line.svg"
-                        alt="Spotify icon">
+                     src="static/icons/spotify-line.svg"
+                     alt="Spotify icon">
                 Search in Spotify (desktop)
             </a>
         </li>
-        <li data-search-option-key="spotify_web">
+        <li data-search-option-key="spotify_web"
+            class="{{ 'block' if search_options.spotify_web else 'hidden' }}">
             <a href="https://open.spotify.com/search/{{ track.title }}">
                 <img class="w-5 h-5 dark:invert"
-                        src="static/icons/spotify-line.svg"
-                        alt="Spotify icon">
+                     src="static/icons/spotify-line.svg"
+                     alt="Spotify icon">
                 Search in Spotify (web)
             </a>
         </li>
-        <li data-search-option-key="youtube">
+        <li data-search-option-key="youtube"
+            class="{{ 'block' if search_options.youtube else 'hidden' }}">
             <a href="https://www.youtube.com/results?search_query={{ track.title }}">
                 <img class="w-5 h-5 dark:invert"
-                        src="static/icons/apple-line.svg"
-                        alt="Spotify icon">
+                     src="static/icons/apple-line.svg"
+                     alt="Spotify icon">
                 Search in YouTube
             </a>
         </li>
-        <li data-search-option-key="bandcamp">
+        <li data-search-option-key="bandcamp"
+            class="{{ 'block' if search_options.bandcamp else 'hidden' }}">
             <a href="https://bandcamp.com/search?q={{ track.title }}">
                 <img class="w-5 h-5 dark:invert"
-                        src="static/icons/apple-line.svg"
-                        alt="Bandcamp icon">
+                     src="static/icons/apple-line.svg"
+                     alt="Bandcamp icon">
                 Search in Bandcamp
             </a>
-    </ul>
-</div>
-
-<script>
-    // fetch search options from the server and set visibility of dropdown items
-    fetch('/api/settings/search_options')
-        .then(response => response.json())
-        .then(data => {
-            for (const [key, isEnabled] of Object.entries(data)) {
-                const li = document.querySelector(`li[data-search-option-key="${key}"]`);
-                if (li) {
-                    li.style.display = isEnabled ? 'block' : 'none';
-                }
-            }
-        });
-</script>
+        </ul>
+    </div>

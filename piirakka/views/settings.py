@@ -23,7 +23,7 @@ def create_routes(context):
     async def list_search_options_handler(request) -> JSONResponse:
         with Session(context.db_engine) as session:
             return JSONResponse(list_search_options(session))
-        
+
     async def update_search_option_handler(request) -> JSONResponse:
         data = await request.json()
         key = request.path_params["key"]
