@@ -3,10 +3,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from piirakka.model.search_option import SearchOption
 
-env = Environment(
-    loader=FileSystemLoader("piirakka/templates"),
-    autoescape=select_autoescape()
-)
+env = Environment(loader=FileSystemLoader("piirakka/templates"), autoescape=select_autoescape())
+
 
 class RecentTrack(BaseModel):
     title: str

@@ -61,7 +61,7 @@ def create_app():
             *settings.create_routes(context),
             WebSocketRoute("/ws/subscribe", WebSocketConnection),
             Mount("/static", app=StaticFiles(directory=static_dir), name="static"),
-        ]
+        ],
     )
 
     return app, context, track_history, subscriber_state

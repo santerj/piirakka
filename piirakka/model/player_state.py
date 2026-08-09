@@ -3,10 +3,8 @@ from pydantic.alias_generators import to_camel
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-env = Environment(
-    loader=FileSystemLoader("piirakka/templates"),
-    autoescape=select_autoescape()
-)
+env = Environment(loader=FileSystemLoader("piirakka/templates"), autoescape=select_autoescape())
+
 
 class PlayerState(BaseModel):
     # representation of the player bar in json
