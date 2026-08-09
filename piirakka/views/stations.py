@@ -52,8 +52,8 @@ def create_routes(context):
             if station is None:
                 return JSONResponse({"message": "station not updated"}, status_code=500)
 
-        await context.on_refresh_stations()
-        await context.on_stations_changed()
+        await context.refresh_stations()
+        await context.push_stations()
 
         return JSONResponse({"message": "station updated successfully"})
 
@@ -86,8 +86,8 @@ def create_routes(context):
             if not success:
                 return JSONResponse({"message": "stations not sorted"}, status_code=500)
 
-        await context.on_refresh_stations()
-        await context.on_stations_changed()
+        await context.refresh_stations()
+        await context.push_stations()
 
         return JSONResponse({"message": "stations sorted successfully"})
 

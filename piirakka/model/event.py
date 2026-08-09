@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-# from piirakka.model.station import StationPydantic
+from piirakka.model.station import StationPydantic
 # from piirakka.model.player_state import PlayerState
 # from piirakka.model.recent_track import RecentTrack
 
@@ -21,8 +21,8 @@ class StationListChangeEvent(BaseModel):
     """Station list has changed - render entire station list + push update"""
 
     # TODO: event type unused and not understood by frontend
-    content: str  # html
-    # content: list[StationPydantic]
+    # content: str  # html
+    content: list[StationPydantic]
     event_type: str = "stations_changed"
 
 
