@@ -11,7 +11,7 @@ from starlette.templating import Jinja2Templates
 import piirakka
 from piirakka.services.track_history import TrackHistoryManager
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
-from piirakka.views import pages, playback, settings, stations
+from piirakka.views import devices, pages, playback, settings, stations
 
 from . import preflight
 from .background import observe_current_track
@@ -61,6 +61,7 @@ def create_app(spawn_mpv: bool = True):
         lifespan=lifespan,
         routes=[
             *pages.create_routes(templates, context, track_history),
+            *devices.create_routes(context),
             *stations.create_routes(context),
             *playback.create_routes(context),
             *settings.create_routes(context),

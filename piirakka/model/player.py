@@ -127,6 +127,22 @@ class Player:
         if self._ipc_success(resp):
             return resp["data"]
 
+    def get_device(self) -> str:
+        # currently used audio device
+        cmd = {"command": ["get_property", "audio-device"]}
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+                    return resp["data"]
+
+    def list_devices(self) -> str:
+        # all available audio devices
+        cmd = {"command": ["get_property", "audio-device-list"]}
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+                    return resp["data"]
+
     def update_stations(self, stations: list[StationPydantic]) -> None:
         # TODO: verify if is uuid4 or str
         current_station_id = None
