@@ -96,7 +96,8 @@ enabled. That task will have to be rerun manually by clicking on the task.
         --device /dev/snd \
         -p 8000:8000 \
         -v /run/user/$(id -u)/pulse/native:/tmp/pulse-socket \
+        -v ~/.local/share/piirakka/piirakka.db:/home/piirakka/.local/share/piirakka/piirakka.db \
         -e PULSE_SERVER=unix:/tmp/pulse-socket \
         -e XDG_RUNTIME_DIR=/tmp \
         --security-opt label=disable \
-        localhost/piirakka-test:latest
+        localhost/piirakka:latest
