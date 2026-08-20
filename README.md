@@ -130,5 +130,5 @@ Start standalone container
         -v $TMPDIR:/tmp/piirakka \
         -v ~/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z \
         -e MPV_SOCKET=/tmp/piirakka/piirakka.sock \
-        -security-opt label=disable \
+        --security-opt label=disable \
         localhost/piirakka:byom-latest
