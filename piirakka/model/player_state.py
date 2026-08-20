@@ -1,8 +1,11 @@
+from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel
 
-env = Environment(loader=FileSystemLoader("piirakka/templates"), autoescape=select_autoescape())
+TEMPLATE_DIR = Path(__file__).resolve().parents[1] / "templates"
+env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=select_autoescape())
 
 
 class PlayerState(BaseModel):

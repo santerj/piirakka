@@ -1,9 +1,12 @@
+from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel
 
 from piirakka.model.search_option import SearchOption
 
-env = Environment(loader=FileSystemLoader("piirakka/templates"), autoescape=select_autoescape())
+TEMPLATE_DIR = Path(__file__).resolve().parents[1] / "templates"
+env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=select_autoescape())
 
 
 class RecentTrack(BaseModel):
