@@ -92,8 +92,8 @@ enabled. That task will have to be rerun manually by clicking on the task.
 
 ### run with podman (bundled mpv)
 
-    Works with Linux and PulseAudio.
-    Make sure the local directory (`~/.local/share/piirakka`, `/etc/piirakka`, etc) has 755 permissions.
+Works with Linux and PulseAudio.
+Make sure the host data directory (`~/.local/share/piirakka`, `/etc/piirakka`, etc) has 755 permissions.
 
     podman run --rm -it \
         --userns=keep-id
@@ -105,3 +105,30 @@ enabled. That task will have to be rerun manually by clicking on the task.
         -e XDG_RUNTIME_DIR=/tmp \
         --security-opt label=disable \
         localhost/piirakka:latest
+
+### run with podman (standalone)
+
+Create a socket and start mpv
+
+    TMPDIR=$(mktemp -d)
+    chmod 777 $TMPDIR
+
+    mpv \
+      --idle \
+      --volume=50 \
+      --volume-max=130 \
+      --cache=no \
+      --really-quiet \
+      --input-ipc-server=$TMPDIR/piirakka.sock
+
+
+Start standalone container
+
+    podman run --rm -it \
+        --userns=keep-id \
+        -p 8000:8000 \
+        -v $TMPDIR:/tmp/piirakka \
+        -v ~/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z \
+        -e MPV_SOCKET=/tmp/piirakka/piirakka.sock \
+        -security-opt label=disable \
+        localhost/piirakka:byom-latest
