@@ -1,0 +1,15 @@
+.venv
+venv
+__pycache__
+*.pyc
+.git
+node_modules
+dist
+build
+*.egg-info
+.pytest_cache
+*cache
+*egg.info
+piirakka/static/css/output.css
+*.log
+piirakka.db
