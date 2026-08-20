@@ -92,11 +92,14 @@ enabled. That task will have to be rerun manually by clicking on the task.
 
 ### run with podman (bundled mpv)
 
+    Make sure the local directory (`~/.local/share/piirakka`, `/etc/piirakka`, etc) has 755 permissions.
+
     podman run --rm -it \
+        --userns=keep-id
         --device /dev/snd \
         -p 8000:8000 \
         -v /run/user/$(id -u)/pulse/native:/tmp/pulse-socket \
-        -v ~/.local/share/piirakka/piirakka.db:/home/piirakka/.local/share/piirakka/piirakka.db \
+        -v ~/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z \
         -e PULSE_SERVER=unix:/tmp/pulse-socket \
         -e XDG_RUNTIME_DIR=/tmp \
         --security-opt label=disable \
