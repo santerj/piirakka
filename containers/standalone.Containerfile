@@ -25,4 +25,4 @@ RUN microdnf install -y python pip shadow-utils && \
 
 USER piirakka
 
-ENTRYPOINT ["piirakka"]
+ENTRYPOINT ["piirakka", "--no-mpv"]

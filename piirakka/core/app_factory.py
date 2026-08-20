@@ -20,7 +20,7 @@ from .context import Context
 logger = logging.getLogger(__name__)
 
 
-def create_app():
+def create_app(spawn_mpv: bool = True):
     """
     Create and configure the Starlette application with all dependencies.
 
@@ -41,7 +41,11 @@ def create_app():
         await subscriber_state.broadcast(message)
 
     track_history = TrackHistoryManager()
-    context = Context(broadcast_message_fn=broadcast_message, track_history_manager=track_history)
+    context = Context(
+        broadcast_message_fn=broadcast_message,
+        track_history_manager=track_history,
+        spawn_mpv=spawn_mpv
+        )
 
     # create endpoint with the bound state manager
     WebSocketConnection = create_websocket_connection(subscriber_state)
