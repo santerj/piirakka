@@ -1,1 +1,1 @@
-Containerfile
+containers/standalone.Containerfile

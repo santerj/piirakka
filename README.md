@@ -88,10 +88,11 @@ enabled. That task will have to be rerun manually by clicking on the task.
 
 ### build with podman (bundled mpv)
 
-    podman build -t piirakka:latest .
+    podman build -f containers/bundled.Containerfile -t piirakka:latest .
 
 ### run with podman (bundled mpv)
 
+    Works with Linux and PulseAudio.
     Make sure the local directory (`~/.local/share/piirakka`, `/etc/piirakka`, etc) has 755 permissions.
 
     podman run --rm -it \
