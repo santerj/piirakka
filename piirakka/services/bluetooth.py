@@ -1,6 +1,6 @@
 import asyncio
 from dbus_fast.aio import MessageBus
-from dbus_fast import BusType
+from dbus_fast import BusType, Variant
 
 from piirakka.model.device import BluetoothDevice
 
@@ -62,24 +62,39 @@ class BluetoothDeviceManager:
         pass
 
     @staticmethod
-    async def connect(device: BluetoothDevice):
+    async def connect(device_: BluetoothDevice):
         bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
+    
+        # 1. Find device path dynamically from ObjectManager
+        om_intro = await bus.introspect("org.bluez", "/")
+        om_proxy = bus.get_proxy_object("org.bluez", "/", om_intro)
+        om = om_proxy.get_interface("org.freedesktop.DBus.ObjectManager")
         
-        # Introspect the BlueZ device object natively
-        introspection = await bus.introspect("org.bluez", device.path)
-        proxy = bus.get_proxy_object("org.bluez", device.path, introspection)
+        objects = await om.call_get_managed_objects()
+        target_mac = device_.address.upper()
+        target_path = None
+
+        for path, interfaces in objects.items():
+            if "org.bluez.Device1" in interfaces:
+                addr = interfaces["org.bluez.Device1"].get("Address")
+                if addr and addr.value.upper() == target_mac:
+                    target_path = path
+                    break
+
+        if not target_path:
+            raise ValueError(f"Device {device_.address} not found. Run scan first.")
+
+        # 2. Introspect only after verifying target_path exists
+        intro = await bus.introspect("org.bluez", target_path)
+        proxy = bus.get_proxy_object("org.bluez", target_path, intro)
         
-        device_interface = proxy.get_interface("org.bluez.Device1")
-        properties_interface = proxy.get_interface("org.freedesktop.DBus.Properties")
+        device = proxy.get_interface("org.bluez.Device1")
+        props = proxy.get_interface("org.freedesktop.DBus.Properties")
 
-        # Set 'Trusted' property to True (so it auto-reconnects in the future)
-        await properties_interface.call_set("org.bluez.Device1", "Trusted", True)
-
-        # Pair if not already paired
-        is_paired = await properties_interface.call_get("org.bluez.Device1", "Paired")
+        await props.call_set("org.bluez.Device1", "Trusted", Variant("b", True))
+        
+        is_paired = await props.call_get("org.bluez.Device1", "Paired")
         if not is_paired.value:
-            await device_interface.call_pair()
+            await device.call_pair()
 
-        # Connect audio profiles (A2DP / HFP)
-        await device_interface.call_connect()
-        print(f"Successfully connected to {device.path}")
+        await device.call_connect()
