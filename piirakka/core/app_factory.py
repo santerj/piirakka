@@ -14,7 +14,7 @@ from piirakka.services.websocket import WebSocketSubscriberManager, create_webso
 from piirakka.views import devices, pages, playback, settings, stations
 
 from . import preflight
-from .background import observe_current_track
+from .background import background_bluetooth_scan, observe_current_track
 from .context import Context
 
 logger = logging.getLogger(__name__)
@@ -53,6 +53,7 @@ def create_app(spawn_mpv: bool = True):
     @contextlib.asynccontextmanager
     async def lifespan(app: Starlette) -> None:
         asyncio.create_task(observe_current_track(context, track_history))  # startup
+        asyncio.create_task(background_bluetooth_scan(context))
         yield
         for subscriber in subscriber_state.subscribers:  # shutdown
             await subscriber.close()

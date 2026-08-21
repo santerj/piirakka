@@ -62,7 +62,7 @@ class BluetoothDeviceManager:
         pass
 
     @staticmethod
-    async def connect(device_: BluetoothDevice):
+    async def connect(mac_address: str):
         bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
     
         # 1. Find device path dynamically from ObjectManager
@@ -71,7 +71,7 @@ class BluetoothDeviceManager:
         om = om_proxy.get_interface("org.freedesktop.DBus.ObjectManager")
         
         objects = await om.call_get_managed_objects()
-        target_mac = device_.address.upper()
+        target_mac = mac_address.upper()
         target_path = None
 
         for path, interfaces in objects.items():
@@ -82,7 +82,7 @@ class BluetoothDeviceManager:
                     break
 
         if not target_path:
-            raise ValueError(f"Device {device_.address} not found. Run scan first.")
+            raise ValueError(f"Device {mac_address} not found. Run scan first.")
 
         # 2. Introspect only after verifying target_path exists
         intro = await bus.introspect("org.bluez", target_path)

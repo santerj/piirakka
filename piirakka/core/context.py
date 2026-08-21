@@ -13,6 +13,7 @@ from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.search_option import list_search_options
 from piirakka.model.station import list_stations
+from piirakka.services.bluetooth import BluetoothDeviceScanner
 
 from . import preflight
 
@@ -45,6 +46,7 @@ class Context:
         self._track_history_manager = track_history_manager
         self.player = Player(spawn_mpv, self.SOCKET, self.DATABASE, self.player_callback)
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
+        self.available_bluetooth_devices = []  # periodically refreshed in background
 
         with Session(self.db_engine) as session:
             stations = list_stations(session)

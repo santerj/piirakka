@@ -5,6 +5,7 @@ import subprocess
 import time
 from random import choice
 
+from piirakka.model.device import AudioDevice
 from piirakka.model.event import PlayerBarUpdateEvent
 from piirakka.model.player_state import PlayerState
 from piirakka.model.station import Station, StationPydantic
@@ -139,19 +140,20 @@ class Player:
         # select output device
         cmd = {"command": ["set_property", "audio-device", device]}
         cmd = self._dumps(cmd)
-        print(cmd)
         resp = self._ipc_command(cmd)
-        print(resp)
         if self._ipc_success(resp):
             return resp["data"]
 
-    def list_devices(self) -> str:
+    def list_devices(self) -> list[AudioDevice]:
         # all available audio devices
         cmd = {"command": ["get_property", "audio-device-list"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return resp["data"]
+            devices = []
+            for dev in resp["data"]:
+                devices.append(AudioDevice(name=dev["name"], description=dev["description"]))
+            return devices
 
     def update_stations(self, stations: list[StationPydantic]) -> None:
         # TODO: verify if is uuid4 or str
