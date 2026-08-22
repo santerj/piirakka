@@ -1,6 +1,7 @@
 .DS_STORE
 *.db
 .ruff_cache/
+piirakka/static/css/output.css
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

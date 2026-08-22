@@ -42,3 +42,9 @@ class TrackChangeEvent(BaseModel):
     content: str  # html
     # content: RecentTrack
     event_type: str = "track_history_changed"
+
+class BluetoothListChangeEvent(BaseModel):
+    """Any value in the bluetooth device list changed - render entire list and broadcast."""
+
+    content: str  # html
+    event_type: str = "bluetooth_list_changed"

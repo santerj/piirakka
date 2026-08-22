@@ -5,6 +5,7 @@ import subprocess
 import time
 from random import choice
 
+from piirakka.model.device import AudioDevice
 from piirakka.model.event import PlayerBarUpdateEvent
 from piirakka.model.player_state import PlayerState
 from piirakka.model.station import Station, StationPydantic
@@ -93,14 +94,14 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return not resp["data"] if resp else False
+            return not resp.get("data") if resp else False
 
     def get_volume(self) -> int:
         cmd = {"command": ["get_property", "volume"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return round(resp["data"])
+            return round(resp.get("data"))
 
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
@@ -118,14 +119,41 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return int(resp["data"])
+            return int(resp.get("data"))
 
     def get_codec(self) -> str:
         cmd = {"command": ["get_property", "audio-codec-name"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return resp["data"]
+            return resp.get("data")
+
+    def get_device(self) -> str:
+        # currently used audio device
+        cmd = {"command": ["get_property", "audio-device"]}
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            return resp.get("data")
+
+    def set_device(self, device: str) -> str:
+        # select output device
+        cmd = {"command": ["set_property", "audio-device", device]}
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            return resp.get("error")
+
+    def list_devices(self) -> list[AudioDevice]:
+        # all available audio devices
+        cmd = {"command": ["get_property", "audio-device-list"]}
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            devices = []
+            for dev in resp["data"]:
+                devices.append(AudioDevice(name=dev["name"], description=dev["description"]))
+            return devices
 
     def update_stations(self, stations: list[StationPydantic]) -> None:
         # TODO: verify if is uuid4 or str
