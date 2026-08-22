@@ -13,7 +13,6 @@ from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.search_option import list_search_options
 from piirakka.model.station import list_stations
-from piirakka.services.bluetooth import BluetoothDeviceScanner
 
 from . import preflight
 

@@ -33,7 +33,8 @@ async def observe_current_track(context, track_history, interval: int = 1) -> No
         if not track_history or track_history.most_recent().title != current_track_title:
             await context.push_track(current_track)
 
-async def background_bluetooth_scan(context, interval: int = 30) -> list[BluetoothDevice]:
+
+async def background_bluetooth_scan(context, interval: int = 10) -> list[BluetoothDevice]:
     """Scan bluetooth devices periodically to have a list of options ready for the users.
 
     Args:
@@ -44,6 +45,6 @@ async def background_bluetooth_scan(context, interval: int = 30) -> list[Bluetoo
     scanner = BluetoothDeviceScanner()
 
     while True:
-        devices = await scanner.scan(timeout_seconds=10)
+        devices = await scanner.scan(timeout_seconds=5)
         context.available_bluetooth_devices = devices
         await asyncio.sleep(interval)

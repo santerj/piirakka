@@ -94,14 +94,14 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return not resp["data"] if resp else False
+            return not resp.get("data") if resp else False
 
     def get_volume(self) -> int:
         cmd = {"command": ["get_property", "volume"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return round(resp["data"])
+            return round(resp.get("data"))
 
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
@@ -119,14 +119,14 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return int(resp["data"])
+            return int(resp.get("data"))
 
     def get_codec(self) -> str:
         cmd = {"command": ["get_property", "audio-codec-name"]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return resp["data"]
+            return resp.get("data")
 
     def get_device(self) -> str:
         # currently used audio device
@@ -134,7 +134,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return resp["data"]
+            return resp.get("data")
 
     def set_device(self, device: str) -> str:
         # select output device
@@ -142,7 +142,7 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
-            return resp["data"]
+            return resp.get("error")
 
     def list_devices(self) -> list[AudioDevice]:
         # all available audio devices
