@@ -55,7 +55,9 @@ def create_routes(context):
         return JSONResponse({"message": [dev.model_dump() for dev in devices]})
 
     async def scan_bluetooth_devices(request) -> JSONResponse:
+        # TODO: set timeout from queryparam
         devices = await BluetoothDeviceScanner().scan()
+        context.available_bluetooth_devices = devices  # refresh cache in context
         return JSONResponse({"message": [dev.model_dump() for dev in devices]})
 
     async def lazy_list_bluetooth_devices(request) -> JSONResponse:
