@@ -6,11 +6,11 @@
 
             <div class="text-sm w-27.5">
                 {% if device.paired %}
-                    <span class="text-green-500 hover:underline" id="unpair">
+                    <span class="text-green-500 hover:underline" id="unpair" onclick="unpairBluetoothDevice(this)">
                         paired
                     </span>
                 {% else %}
-                    <span class="text-red-500 hover:underline" id="pair">
+                    <span class="text-red-500 hover:underline" id="pair" onclick="pairBluetoothDevice(this)">
                         not paired
                     </span>
                 {% endif %}
@@ -18,18 +18,49 @@
 
             <div class="text-sm w-30">
                 {% if device.connected %}
-                    <span class="text-green-500 hover:underline" id="disconnect">
+                    <span class="text-green-500 hover:underline" id="disconnect" onclick="disconnectBluetoothDevice(this)">
                         connected
                     </span>
                 {% else %}
-                    <span class="text-red-500 hover:underline" id="connect">
+                    <span class="text-red-500 hover:underline" id="connect" onclick="connectBluetoothDevice(this)">
                         not connected
                     </span>
                 {% endif %}
-
                 
             </div>
 
         </li>
     {% endfor %}
 </ul>
+
+<script>
+    async function bluetoothDeviceAction(element, action) {
+        const macAddress = element.closest("li").dataset.macAddress;
+        const response = await fetch(
+            `/api/devices/bluetooth/${encodeURIComponent(macAddress)}/${action}`,
+            { method: "PUT" },
+        );
+
+        if (!response.ok) {
+            throw new Error(`Bluetooth ${action} failed: ${response.status}`);
+        }
+
+        window.location.reload();
+    }
+
+    function pairBluetoothDevice(element) {
+        return bluetoothDeviceAction(element, "pair");
+    }
+
+    function unpairBluetoothDevice(element) {
+        return bluetoothDeviceAction(element, "unpair");
+    }
+
+    function connectBluetoothDevice(element) {
+        return bluetoothDeviceAction(element, "connect");
+    }
+
+    function disconnectBluetoothDevice(element) {
+        return bluetoothDeviceAction(element, "disconnect");
+    }
+</script>
