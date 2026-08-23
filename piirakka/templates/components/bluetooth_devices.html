@@ -2,24 +2,29 @@
     {% for device in devices %}
         <li class="grid grid-cols-[1fr_110px_120px] items-center gap-2 px-4 py-3 border-b border-base-200 last:border-none" data-mac-address="{{ device.address }}">
             
-            <!-- Column 1: Device Name (Takes all extra width) -->
             <div class="font-semibold truncate pr-4">{{ device.name }}</div>
 
-            <!-- Column 2: Paired Status (Fixed width, right-aligned or left-aligned cleanly) -->
             <div class="text-sm w-27.5">
                 {% if device.paired %}
-                    <span class="text-green-500">paired</span>
+                    <span class="text-green-500 hover:underline" id="unpair">
+                        paired
+                    </span>
                 {% else %}
-                    <span class="text-red-500">not paired</span>
+                    <span class="text-red-500 hover:underline" id="pair">
+                        not paired
+                    </span>
                 {% endif %}
             </div>
 
-            <!-- Column 3: Connected Status (Fixed width) -->
             <div class="text-sm w-30">
                 {% if device.connected %}
-                    <span class="text-green-500">connected</span>
+                    <span class="text-green-500 hover:underline" id="disconnect">
+                        connected
+                    </span>
                 {% else %}
-                    <span class="text-red-500">not connected</span>
+                    <span class="text-red-500 hover:underline" id="connect">
+                        not connected
+                    </span>
                 {% endif %}
 
                 

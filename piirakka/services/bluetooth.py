@@ -99,6 +99,25 @@ class BluetoothDeviceManager:
             await device.call_pair()
 
     @classmethod
+    async def unpair(cls, mac_address: str):
+        """Removes the paired bond and forgets the device from BlueZ."""
+        bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
+        
+        # 1. Get the target device's object path
+        device_path, _ = await cls._get_device_proxy(bus, mac_address)
+
+        # 2. Introspect the Bluetooth Adapter (usually hci0)
+        # We can extract the adapter path directly from the device path: /org/bluez/hci0/dev_XX_XX...
+        adapter_path = "/".join(device_path.split("/")[:-1])
+        
+        adapter_intro = await bus.introspect("org.bluez", adapter_path)
+        adapter_proxy = bus.get_proxy_object("org.bluez", adapter_path, adapter_intro)
+        adapter = adapter_proxy.get_interface("org.bluez.Adapter1")
+
+        # 3. Call RemoveDevice on the adapter interface with the device's object path
+        await adapter.call_remove_device(device_path)
+
+    @classmethod
     async def connect(cls, mac_address: str):
         """Connects an already paired device."""
         bus = await MessageBus(bus_type=BusType.SYSTEM).connect()

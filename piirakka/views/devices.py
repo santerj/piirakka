@@ -1,5 +1,6 @@
 """Device control view handlers."""
 
+import asyncio
 from http import HTTPMethod
 
 from starlette.responses import JSONResponse
@@ -53,7 +54,7 @@ def create_routes(context):
         devices = context.player.list_devices()
         return JSONResponse({"message": [dev.model_dump() for dev in devices]})
 
-    async def list_bluetooth_devices(request) -> JSONResponse:
+    async def scan_bluetooth_devices(request) -> JSONResponse:
         devices = await BluetoothDeviceScanner().scan()
         return JSONResponse({"message": [dev.model_dump() for dev in devices]})
 
@@ -73,7 +74,15 @@ def create_routes(context):
 
     async def pair_bluetooth_device(request) -> JSONResponse:
         device_mac = request.path_params["device_mac"].replace("%3A", ":")
-        await BluetoothDeviceManager.pair(device_mac)
+        try:
+            await BluetoothDeviceManager.pair(device_mac)
+        except ValueError:
+            return JSONResponse({"message": "Device not found"}, status_code=404)
+        return JSONResponse({"message": "ok"})
+
+    async def unpair_bluetooth_device(request) -> JSONResponse:
+        device_mac = request.path_params["device_mac"].replace("%3A", ":")
+        await BluetoothDeviceManager.unpair(device_mac)
         return JSONResponse({"message": "ok"})
 
     async def connect_bluetooth_device(request) -> JSONResponse:
@@ -90,6 +99,7 @@ def create_routes(context):
         """Convenience endpoint - pair, connect and set the output device."""
         device_mac = request.path_params["device_mac"].replace("%3A", ":")
         await BluetoothDeviceManager.pair_and_connect(device_mac)
+        await asyncio.sleep(1.5)  # wait for device to become available in mpv
         output_device = await match_devices(context, device_mac)
         context.player.set_device(output_device.name)
 
@@ -97,14 +107,18 @@ def create_routes(context):
 
     route_prefix = "/api/devices/"
 
+    # TODO: check whether PUT and DELETE methods work as idempotent
+    # TODO: add previously used mac to db and try to auto-connect after reboot
+
     return [
         Route(route_prefix + "audio/all", list_devices, methods=[HTTPMethod.GET]),
         Route(route_prefix + "audio/current", get_device, methods=[HTTPMethod.GET]),
         Route(route_prefix + "audio/{device_name:path}", set_device, methods=[HTTPMethod.PUT]),
-        Route(route_prefix + "bluetooth/all", list_bluetooth_devices, methods=[HTTPMethod.GET]),
-        Route(route_prefix + "bluetooth/all_lazy", lazy_list_bluetooth_devices, methods=[HTTPMethod.GET]),
+        Route(route_prefix + "bluetooth/scan", scan_bluetooth_devices, methods=[HTTPMethod.GET]),
+        Route(route_prefix + "bluetooth/lazy", lazy_list_bluetooth_devices, methods=[HTTPMethod.GET]),
         Route(route_prefix + "bluetooth/{device_mac}/match", find_bt_audio_match, methods=[HTTPMethod.GET]),
         Route(route_prefix + "bluetooth/{device_mac}/pair", pair_bluetooth_device, methods=[HTTPMethod.PUT]),
+        Route(route_prefix + "bluetooth/{device_mac}/unpair", unpair_bluetooth_device, methods=[HTTPMethod.PUT]),
         Route(route_prefix + "bluetooth/{device_mac}/connect", connect_bluetooth_device, methods=[HTTPMethod.PUT]),
         Route(route_prefix + "bluetooth/{device_mac}/disconnect", disconnect_bluetooth_device, methods=[HTTPMethod.PUT]),
         Route(route_prefix + "bluetooth/{device_mac}/setup", setup_bluetooth_device, methods=[HTTPMethod.PUT]),
