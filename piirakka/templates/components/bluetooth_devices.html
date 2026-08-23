@@ -1,37 +1,52 @@
-<ul class="list bg-base-100 rounded-box shadow-md w-180">
-    {% for device in devices %}
-        <li class="grid grid-cols-[1fr_110px_120px] items-center gap-2 px-4 py-3 border-b border-base-200 last:border-none" data-mac-address="{{ device.address }}">
-            
-            <div class="font-semibold truncate pr-4">{{ device.name }}</div>
+{% set my_devices = devices | selectattr("paired", "equalto", true) | list %}
+{% set available_devices = devices | selectattr("paired", "equalto", false) | list %}
 
-            <div class="text-sm w-27.5">
-                {% if device.paired %}
-                    <span class="text-green-500 hover:underline" id="unpair" onclick="unpairBluetoothDevice(this)">
-                        paired
-                    </span>
-                {% else %}
-                    <span class="text-red-500 hover:underline" id="pair" onclick="pairBluetoothDevice(this)">
-                        not paired
-                    </span>
-                {% endif %}
-            </div>
+{% macro device_list(device_list, list_name="default") %}
+    <ul class="list bg-base-100 rounded-box shadow-md w-180">
 
-            <div class="text-sm w-30">
-                {% if device.connected %}
-                    <span class="text-green-500 hover:underline" id="disconnect" onclick="disconnectBluetoothDevice(this)">
-                        connected
-                    </span>
-                {% else %}
-                    <span class="text-red-500 hover:underline" id="connect" onclick="connectBluetoothDevice(this)">
-                        not connected
-                    </span>
-                {% endif %}
-                
-            </div>
+        {% if list_name == 'my_devices' %}
+            <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">My devices</li>
+        {% elif list_name == 'available_devices' %}
+            <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Available devices</li>
+        {% endif %}
 
-        </li>
-    {% endfor %}
-</ul>
+        {% for device in device_list %}
+            <li class="grid grid-cols-[1fr_110px_120px] items-center gap-2 px-4 py-3 border-b border-base-200 last:border-none" data-mac-address="{{ device.address }}">
+                <div class="font-semibold truncate pr-4">{{ device.name }}</div>
+
+                <div class="text-sm w-27.5">
+                    {% if device.paired %}
+                        <span class="text-green-500 hover:underline" id="unpair" onclick="unpairBluetoothDevice(this)">
+                            paired
+                        </span>
+                    {% else %}
+                        <span class="text-red-500 hover:underline" id="pair" onclick="pairBluetoothDevice(this)">
+                            not paired
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="text-sm w-30">
+                    {% if device.connected %}
+                        <span class="text-green-500 hover:underline" id="disconnect" onclick="disconnectBluetoothDevice(this)">
+                            connected
+                        </span>
+                    {% else %}
+                        <span class="text-red-500 hover:underline" id="connect" onclick="connectBluetoothDevice(this)">
+                            not connected
+                        </span>
+                    {% endif %}
+                </div>
+            </li>
+        {% else %}
+            <li class="px-4 py-3 text-sm text-base-content/60">No devices found.</li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{{ device_list(my_devices, list_name="my_devices") }}
+<p class="my-3"></p>
+{{ device_list(available_devices, list_name="available_devices") }}
 
 <script>
     async function bluetoothDeviceAction(element, action) {
