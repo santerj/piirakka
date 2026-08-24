@@ -1,3 +1,4 @@
+<script src="static/js/station_settings.js"></script>
 <div class="overflow-y relative">
     <h1 class="sticky top-0 text-3xl pt-3 pb-6 pl-3 font-nunito font-semibold bg-inherit">Stations</h1>
     <div class="sticky -mt-2 top-12 divider bg-inherit"></div>
@@ -20,17 +21,3 @@
     </ul>
 </div>
 {% include 'components/edit_station_modal.html' %}
-<script>
-    // open edit dialog with station data
-    document.querySelectorAll('.menu li[data-station-id]').forEach(li => {
-        li.addEventListener('click', function() {
-            const id = this.dataset.stationId;
-            const name = this.dataset.stationName;
-            const url = this.dataset.stationUrl;
-            document.getElementById('edit_station_id').value = id;
-            document.getElementById('edit_station_name').value = name;
-            document.getElementById('edit_station_url').value = url;
-            edit_station_modal.showModal();
-        });
-    });
-</script>

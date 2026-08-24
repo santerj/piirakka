@@ -106,16 +106,23 @@ class Context:
 
     async def push_stations(self) -> None:
         stations = self.player.stations
-        rendered_sidebar = render(
-            component="components/sidebar.html",
-            stations=stations,
-            sidebar_items=sidebar_items,
-        )
+
         sidebar_stations_update_event = BroadcastEvent(
             event_type=EventType.SIDEBAR_CHANGED,
-            content=rendered_sidebar
+            content=render(
+                component="components/sidebar.html",
+                stations=stations,
+                sidebar_items=sidebar_items,
+            )
         )
-        message = self.serialize_events(sidebar_stations_update_event)
+        station_settings_update_event = BroadcastEvent(
+            event_type=EventType.STATIONS_CHANGED,
+            content=render(
+                component="components/station_settings.html",
+                stations=stations
+            )
+        )
+        message = self.serialize_events(sidebar_stations_update_event, station_settings_update_event)
         await self._broadcast_message_fn(message=message)
 
 
