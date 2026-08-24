@@ -35,10 +35,11 @@ async def observe_current_track(context, track_history, interval: int = 1) -> No
 
 
 async def background_bluetooth_scan(context, interval: int = 10) -> list[BluetoothDevice]:
-    """Scan bluetooth devices periodically to have a list of options ready for the users.
+    """
+    Scan bluetooth devices periodically to have a list of options ready for the users.
 
-    Args:
-    -------
+    Args
+    ----
     context: The application context for storing state
     interval: the period for running a background scan
 

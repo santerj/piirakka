@@ -13,13 +13,13 @@ from piirakka.model.station import (create_station, delete_station,
 
 
 def create_routes(context):
-    """
-    Factory function that creates station management route handlers with dependencies injected.
+    """Factory function that creates station management route handlers with dependencies injected.
 
-    Args:
+    Args
+    ----
     context: The application Context (for player control)
 
-    Returns:
+    Returns
     -------
     List of Route objects
 

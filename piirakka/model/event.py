@@ -7,8 +7,7 @@ from pydantic import BaseModel
 
 
 class EventType(str, Enum):
-    """
-    Definitions of server-originated events that are broadcasted via websocket.
+    """Definitions of server-originated events that are broadcasted via websocket.
 
     Match the event value in client side websocket code.
     """

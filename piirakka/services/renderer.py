@@ -10,8 +10,8 @@ def render(component: str, **kwargs) -> str:
     """
     Render a Jinja component into html.
 
-    Args:
-    -------
+    Args
+    ----
     component: path to component, from the base directory piirakka/templates/
     data: the relevant data needed for component.
 

@@ -6,6 +6,7 @@ from piirakka.services.renderer import render as renderer
 
 class PlayerState(BaseModel):
     """Representation of the player's current status."""
+
     playback_status: bool  # True: playing | False: paused
     volume: int
     current_station_name: str | None  # index in stations
@@ -13,6 +14,7 @@ class PlayerState(BaseModel):
 
     class Config:
         """Config for pydantic."""
+
         alias_generator = to_camel
         populate_by_name = True
 

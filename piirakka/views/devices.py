@@ -23,7 +23,7 @@ async def device_exists(context: Context, device_name: str) -> bool:
 
 
 async def match_devices(context: Context, mac_address) -> AudioDevice | None:
-    """For a given bluetooth device's MAC address, find a matching output device in bluez"""
+    """For a given bluetooth device's MAC address, find a matching output device in bluez."""
     available_audio_devices = context.player.list_devices()
     for dev in available_audio_devices:
         if dev.name.find(mac_address.replace(":", "_")) != -1:
@@ -32,13 +32,14 @@ async def match_devices(context: Context, mac_address) -> AudioDevice | None:
 
 
 def create_routes(context):
-    """Factory function that creates device control route handlers with dependencies injected.
+    """
+    Factory function that creates device control route handlers with dependencies injected.
 
-    Args:
-    -------
+    Args
+    ----
     context: The application Context (for player control)
 
-    Returns:
+    Returns
     -------
     List of Route objects.
 
