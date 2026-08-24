@@ -16,7 +16,7 @@
         </li>
         <li data-search-option-key="apple_music_web"
             class="{{ 'block' if search_options.apple_music_web else 'hidden' }}">
-            <a href="https://music.apple.com/en/search?term={{ track.title }}">
+            <a href="https://music.apple.com/en/search?term={{ track.title }}" target="_blank">
                 <img class="w-5 h-5 dark:invert"
                      src="static/icons/apple-line.svg"
                      alt="Apple Music icon">
@@ -25,7 +25,7 @@
         </li>
         <li data-search-option-key="spotify_desktop"
             class="{{ 'block' if search_options.spotify_desktop else 'hidden' }}">
-            <a href="spotify://search/{{ track.title }}">
+            <a href="spotify://search/{{ track.title }}" target="_blank">
                 <img class="w-5 h-5 dark:invert"
                      src="static/icons/spotify-line.svg"
                      alt="Spotify icon">
@@ -34,7 +34,7 @@
         </li>
         <li data-search-option-key="spotify_web"
             class="{{ 'block' if search_options.spotify_web else 'hidden' }}">
-            <a href="https://open.spotify.com/search/{{ track.title }}">
+            <a href="https://open.spotify.com/search/{{ track.title }}" target="_blank">
                 <img class="w-5 h-5 dark:invert"
                      src="static/icons/spotify-line.svg"
                      alt="Spotify icon">
@@ -43,7 +43,7 @@
         </li>
         <li data-search-option-key="youtube"
             class="{{ 'block' if search_options.youtube else 'hidden' }}">
-            <a href="https://www.youtube.com/results?search_query={{ track.title }}">
+            <a href="https://www.youtube.com/results?search_query={{ track.title }}" target="_blank">
                 <img class="w-5 h-5 dark:invert"
                      src="static/icons/youtube-line.svg"
                      alt="Spotify icon">
@@ -52,7 +52,7 @@
         </li>
         <li data-search-option-key="bandcamp"
             class="{{ 'block' if search_options.bandcamp else 'hidden' }}">
-            <a href="https://bandcamp.com/search?q={{ track.title }}">
+            <a href="https://bandcamp.com/search?q={{ track.title }}" target="_blank">
                 <img class="w-5 h-5 dark:invert"
                      src="static/icons/music-line.svg"
                      alt="Bandcamp icon">
