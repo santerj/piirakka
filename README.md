@@ -103,7 +103,9 @@ Make sure the host data directory (`~/.local/share/piirakka`, `/etc/piirakka`, e
     podman run --rm -it \
         --userns=keep-id \
         --device /dev/snd \
+        --device /dev/rfkill \
         -p 8000:8000 \
+        -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro \
         -v /run/user/$(id -u)/pulse/native:/tmp/pulse-socket \
         -v ~/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z \
         -e PULSE_SERVER=unix:/tmp/pulse-socket \
@@ -131,8 +133,10 @@ Start standalone container
 
     podman run --rm -it \
         --userns=keep-id \
+        --device /dev/rfkill \
         -p 8000:8000 \
         -v $TMPDIR:/tmp/piirakka \
+        -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro \
         -v ~/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z \
         -e MPV_SOCKET=/tmp/piirakka/piirakka.sock \
         --security-opt label=disable \

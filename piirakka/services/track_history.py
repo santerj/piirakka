@@ -18,6 +18,12 @@ class TrackHistoryManager:
     def get_history(self) -> list[RecentTrack]:
         return list(self.history)
 
+    def load_history(self, tracks: list[RecentTrack]) -> None:
+        if not isinstance(tracks, list):
+            return
+        valid_tracks = [track for track in tracks if isinstance(track, RecentTrack)]
+        self.history = deque(valid_tracks, maxlen=self.max_length)
+
     def most_recent(self) -> RecentTrack | None:
         return self.history[0] if self.history else None
 

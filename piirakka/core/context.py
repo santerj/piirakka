@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import asyncio
 
 import anyio
 from sqlalchemy import create_engine
@@ -15,6 +16,8 @@ from piirakka.model.search_option import list_search_options
 from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these into template
 from piirakka.model.station import list_stations
 from piirakka.services.renderer import render
+from piirakka.services.persistence import save_state
+from piirakka.services.bluetooth import BluetoothDeviceManager
 
 from . import preflight
 
@@ -29,7 +32,7 @@ class Context:
 
     DATABASE = preflight.DB_PATH
 
-    def __init__(self, broadcast_message_fn, track_history_manager, spawn_mpv) -> None:
+    def __init__(self, broadcast_message_fn, track_history_manager, spawn_mpv, persisted_state=None) -> None:
         """Initialize Context with player and database.
 
         Args:
@@ -46,7 +49,12 @@ class Context:
 
         self._broadcast_message_fn = broadcast_message_fn
         self._track_history_manager = track_history_manager
+        self._persisted_state = persisted_state or {}
+        self.state_path = preflight.STATE_PATH
         self.player = Player(spawn_mpv, self.SOCKET, self.DATABASE, self.player_callback)
+        self.player.audio_device_name = self._persisted_state.get("audio_device_name")
+        self.player.bluetooth_device_name = self._persisted_state.get("bluetooth_device_name")
+        self.player.bluetooth_device_address = self._persisted_state.get("bluetooth_device_address")
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
         self.available_bluetooth_devices = []  # periodically refreshed in background
 
@@ -59,12 +67,62 @@ class Context:
                 self.player.current_station_id = str(stations[default_index].station_id)
                 self.player.play_station_with_id(self.player.current_station_id)
 
+    async def restore_audio_device(self) -> None:
+        address = self.player.bluetooth_device_address
+        logger.info("Attempting to restore audio device: %s", address or self.player.audio_device_name or "none")
+        try:
+            if address:
+                logger.info("Reconnecting Bluetooth device %s", self.player.bluetooth_device_name or address)
+                await BluetoothDeviceManager.connect(address)
+                for _ in range(10):
+                    output_device = next(
+                        (device for device in self.player.list_devices() if address.replace(":", "_") in device.name),
+                        None,
+                    )
+                    if output_device:
+                        logger.info("Restoring Bluetooth audio output %s", output_device.name)
+                        await self.player.set_device(
+                            output_device.name,
+                            bluetooth_device_name=self.player.bluetooth_device_name,
+                            bluetooth_device_address=address,
+                        )
+                        return
+                    await anyio.sleep(1)
+            elif self.player.audio_device_name:
+                logger.info("Restoring audio output %s", self.player.audio_device_name)
+                output_device = next(
+                    (device for device in self.player.list_devices() if device.name == self.player.audio_device_name),
+                    None,
+                )
+                if output_device:
+                    await self.player.set_device(output_device.name)
+                    return
+            logger.info("No persisted audio device was available to restore")
+        except Exception:
+            logger.warning("Unable to restore audio device %s", address or self.player.audio_device_name, exc_info=True)
+
+    def save_state(self) -> None:
+        save_state(
+            self.state_path,
+            {
+                "track_history": self._track_history_manager.get_history(),
+                "audio_device_name": self.player.audio_device_name,
+                "bluetooth_device_name": self.player.bluetooth_device_name,
+                "bluetooth_device_address": self.player.bluetooth_device_address,
+            },
+        )
+
     def player_callback(self, event: EventType) -> None:
         # the Player object can call this to broadcast events after state changes
         logger.info(f"Received event {event.event_type} from player via callback")
         payload = self.serialize_events(event)
         logger.info("Broadcasting Websocket message from player callback")
-        anyio.from_thread.run(self._broadcast_message_fn, payload)
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            anyio.from_thread.run(self._broadcast_message_fn, payload)
+        else:
+            loop.create_task(self._broadcast_message_fn(payload))
 
     async def push_track(self, track: RecentTrack) -> None:
         """Render track history + player bar and push to subscribers."""

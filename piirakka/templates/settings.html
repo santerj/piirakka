@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{{ player_state.track_title or player_state.current_station_name or 'piirakka' }}{% if player_state.track_title or player_state.current_station_name %} | piirakka{% endif %}</title>
+        <title>{{ player_state.track_title or player_state.current_station_name or 'piirakka' }}
+            {% if player_state.track_title or player_state.current_station_name %}| piirakka{% endif %}
+        </title>
         <script src="static/js/websocket.js"></script>
         <script src="static/js/bluetooth_devices.js"></script>
         {% include 'components/head.html' %}
@@ -20,7 +22,10 @@
                              alt="">
                         Menu
                     </label>
-                    <h1 class="sticky -top-4 z-10 bg-white text-3xl pt-3 pb-6 pl-3 font-nunito font-semibold dark:bg-neutral-900">Settings</h1>
+                    <h1 class="sticky -top-4 z-10 bg-white text-3xl pt-3 pb-2 pl-3 font-nunito font-semibold dark:bg-neutral-900">
+                        Settings
+                    </h1>
+                    <div class="pl-3 pb-4 text-xs opacity-50">piirakka v{{ version }}</div>
                     <div class="sticky -mt-2 top-12 z-10 divider bg-white dark:bg-neutral-900"></div>
                     <h2 class="text-lg font-semibold py-3 pl-3">Bluetooth</h2>
                     {% include 'components/bluetooth_devices.html' %}

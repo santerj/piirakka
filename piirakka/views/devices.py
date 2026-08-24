@@ -119,17 +119,23 @@ def create_routes(context):
             output_device = await match_devices(context, device_mac)
             if not output_device:
                 logger.debug("Output device not in mpv, sleeping...")
-                await asyncio.sleep(1) # sleep for a bit until device becomes available in mpv
+                await asyncio.sleep(1)  # sleep for a bit until device becomes available in mpv
             else:
                 break
-        context.player.set_device(output_device.name)
+        bluetooth_device = next(
+            (device for device in context.available_bluetooth_devices if device.address == device_mac), None
+        )
+        await context.player.set_device(
+            output_device.name,
+            bluetooth_device_name=bluetooth_device.name if bluetooth_device else None,
+            bluetooth_device_address=device_mac,
+        )
 
         return JSONResponse({"message": "ok"})
 
     route_prefix = "/api/devices/"
 
     # TODO: check whether PUT and DELETE methods work as idempotent
-    # TODO: add previously used mac to db and try to auto-connect after reboot
 
     return [
         Route(route_prefix + "audio/all", list_devices, methods=[HTTPMethod.GET]),

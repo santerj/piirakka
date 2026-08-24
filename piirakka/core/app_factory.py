@@ -10,6 +10,7 @@ from starlette.templating import Jinja2Templates
 
 import piirakka
 from piirakka.services.track_history import TrackHistoryManager
+from piirakka.services.persistence import load_state
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
 from piirakka.views import devices, pages, playback, settings, stations
 
@@ -41,8 +42,16 @@ def create_app(spawn_mpv: bool = True):
         """Broadcast message to all WebSocket subscribers."""
         await subscriber_state.broadcast(message)
 
+    persisted_state = load_state(preflight.STATE_PATH)
     track_history = TrackHistoryManager()
-    context = Context(broadcast_message_fn=broadcast_message, track_history_manager=track_history, spawn_mpv=spawn_mpv)
+    track_history.load_history(persisted_state.get("track_history", []))
+    logger.info("Restored %d tracks from persisted state", len(track_history))
+    context = Context(
+        broadcast_message_fn=broadcast_message,
+        track_history_manager=track_history,
+        spawn_mpv=spawn_mpv,
+        persisted_state=persisted_state,
+    )
 
     # create endpoint with the bound state manager
     WebSocketConnection = create_websocket_connection(subscriber_state)
@@ -51,9 +60,11 @@ def create_app(spawn_mpv: bool = True):
     async def lifespan(app: Starlette) -> None:
         asyncio.create_task(observe_current_track(context, track_history))  # startup
         asyncio.create_task(background_bluetooth_scan(context))
+        await context.restore_audio_device()
         yield
         for subscriber in subscriber_state.subscribers:  # shutdown
             await subscriber.close()
+        context.save_state()
         context.player.close()
 
     app = Starlette(
