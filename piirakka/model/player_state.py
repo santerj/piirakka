@@ -3,6 +3,7 @@ from pydantic.alias_generators import to_camel
 
 from piirakka.services.renderer import render as renderer
 
+
 class PlayerState(BaseModel):
     # representation of the player bar in json
     playback_status: bool  # True: playing | False: paused

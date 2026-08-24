@@ -111,10 +111,7 @@ class Player:
         resp = self._ipc_command(cmd)
         self.callback(
             # send rendered html directly over websocket to subscribers
-            BroadcastEvent(
-                event_type=EventType.PLAYER_BAR_UPDATED,
-                content=self.get_player_state().render()
-            )
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
         )
         return self._ipc_success(resp)
 
@@ -198,10 +195,7 @@ class Player:
         self.playing = True
         self.callback(
             # send rendered html directly over websocket to subscribers
-            BroadcastEvent(
-                event_type=EventType.PLAYER_BAR_UPDATED,
-                content=self.get_player_state().render()
-            )
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
         )
         return bool(resp)
 
@@ -212,10 +206,7 @@ class Player:
         self.playing = False
         self.callback(
             # send rendered html directly over websocket to subscribers
-            BroadcastEvent(
-                event_type=EventType.PLAYER_BAR_UPDATED,
-                content=self.get_player_state().render()
-            )
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
         )
         return bool(resp)
 
@@ -251,8 +242,5 @@ class Player:
         # TODO: add small wait to have a better chance of actually broadcasting an update here
         self.callback(
             # send rendered html directly over websocket to subscribers
-            BroadcastEvent(
-                event_type=EventType.PLAYER_BAR_UPDATED,
-                content=self.get_player_state().render()
-            )
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
         )

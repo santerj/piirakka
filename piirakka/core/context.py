@@ -73,25 +73,16 @@ class Context:
         history = self._track_history_manager.get_history()  # RecentTrack
         # TODO: entire history doesn't exist as component,
         # so here it is hacked together from individual lines
-        rendered_history = "\n".join([
-            render("components/recent_track.html",
-                   track=t,
-                   search_options=search_options
-                   )
-                for t in history
-            ]
+        rendered_history = "\n".join(
+            [render("components/recent_track.html", track=t, search_options=search_options) for t in history]
         )
 
         # pack both track history and new player bar state into events
 
-        track_update_event = BroadcastEvent(
-            event_type=EventType.TRACK_HISTORY_CHANGED,
-            content=rendered_history
-        )
+        track_update_event = BroadcastEvent(event_type=EventType.TRACK_HISTORY_CHANGED, content=rendered_history)
 
         player_bar_update_event = BroadcastEvent(
-            event_type=EventType.PLAYER_BAR_UPDATED,
-            content=self.player.get_player_state().render()
+            event_type=EventType.PLAYER_BAR_UPDATED, content=self.player.get_player_state().render()
         )
 
         message = self.serialize_events(track_update_event, player_bar_update_event)
@@ -105,6 +96,7 @@ class Context:
             self.player.update_stations(stations_pydantic)
 
     async def push_stations(self) -> None:
+        """Render both sidebar and station management page content + broadcast via websocket."""
         stations = self.player.stations
 
         sidebar_stations_update_event = BroadcastEvent(
@@ -113,18 +105,18 @@ class Context:
                 component="components/sidebar.html",
                 stations=stations,
                 sidebar_items=sidebar_items,
-            )
+            ),
         )
         station_settings_update_event = BroadcastEvent(
             event_type=EventType.STATIONS_CHANGED,
-            content=render(
-                component="components/station_settings.html",
-                stations=stations
-            )
+            content=render(component="components/station_settings.html", stations=stations),
         )
         message = self.serialize_events(sidebar_stations_update_event, station_settings_update_event)
         await self._broadcast_message_fn(message=message)
 
+    async def push_devices(self) -> None:
+        """Render the device component and broadcast via websocket."""
+        pass
 
     async def get_search_options(self) -> list:
         # fetch search options from db

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 class EventType(str, Enum):
     """Match the event name in client side websocket code"""
+
     PLAYER_BAR_UPDATED = "player_bar_updated"
     STATIONS_CHANGED = "stations_changed"
     SIDEBAR_CHANGED = "sidebar_changed"
@@ -17,7 +18,7 @@ class EventType(str, Enum):
 
 T = TypeVar("T", bound=object)
 
+
 class BroadcastEvent(BaseModel, Generic[T]):
     event_type: EventType
     content: T  # rendered html
-

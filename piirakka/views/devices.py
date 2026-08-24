@@ -13,11 +13,13 @@ from piirakka.services.bluetooth import BluetoothDeviceManager, BluetoothDeviceS
 # TODO: use urllib parsing / something from starlette to parse special
 # TODO: characters in path_params
 
+
 async def device_exists(context: Context, device_name: str) -> bool:
     """Checks whether a given audio device is available for mpv."""
     available_audio_devices = context.player.list_devices()
     device_exists = any(device.name == device_name for device in available_audio_devices)
     return device_exists
+
 
 async def match_devices(context: Context, mac_address) -> AudioDevice | None:
     """For a given bluetooth device's MAC address, find a matching output device in bluez"""
@@ -26,6 +28,7 @@ async def match_devices(context: Context, mac_address) -> AudioDevice | None:
         if dev.name.find(mac_address.replace(":", "_")) != -1:
             return dev
     return None
+
 
 def create_routes(context):
     """Factory function that creates device control route handlers with dependencies injected.
@@ -122,6 +125,8 @@ def create_routes(context):
         Route(route_prefix + "bluetooth/{device_mac}/pair", pair_bluetooth_device, methods=[HTTPMethod.PUT]),
         Route(route_prefix + "bluetooth/{device_mac}/unpair", unpair_bluetooth_device, methods=[HTTPMethod.PUT]),
         Route(route_prefix + "bluetooth/{device_mac}/connect", connect_bluetooth_device, methods=[HTTPMethod.PUT]),
-        Route(route_prefix + "bluetooth/{device_mac}/disconnect", disconnect_bluetooth_device, methods=[HTTPMethod.PUT]),
+        Route(
+            route_prefix + "bluetooth/{device_mac}/disconnect", disconnect_bluetooth_device, methods=[HTTPMethod.PUT]
+        ),
         Route(route_prefix + "bluetooth/{device_mac}/setup", setup_bluetooth_device, methods=[HTTPMethod.PUT]),
     ]

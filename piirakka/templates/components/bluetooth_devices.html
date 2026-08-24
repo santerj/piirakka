@@ -1,22 +1,18 @@
 {% set my_devices = devices | selectattr("paired", "equalto", true) | list %}
 {% set available_devices = devices | selectattr("paired", "equalto", false) | list %}
-
 {% macro device_list(device_list, list_name="default") %}
     <ul class="list bg-base-100 rounded-box shadow-md w-180">
-
         {% if list_name == 'my_devices' %}
             <li class="p-4 pb-2 text-xs opacity-60 tracking-wide font-semibold">My devices</li>
         {% elif list_name == 'available_devices' %}
             <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Available devices</li>
         {% endif %}
-
         {% for device in device_list %}
-            <li class=" gap-2 px-4 py-3 border-b border-base-200 last:border-none list-row" data-mac-address="{{ device.address }}">
+            <li class=" gap-2 px-4 py-3 border-b border-base-200 last:border-none list-row"
+                data-mac-address="{{ device.address }}">
                 <div class="font-semibold truncate pr-4">{{ device.name }}</div>
                 <div class=""></div>
-
                 <!-- TODO: current audio device not displayed here -->
-
                 <!-- TODO: add actions for each status -->
                 <div class="text-sm">
                     {% if device.paired and device.connected %}
@@ -27,53 +23,51 @@
                         <span class="badge badge-md badge-outline badge-info">pair</span>
                     {% endif %}
                 </div>
-
                 <!-- TODO: figure out what settings go here -->
                 <div class="dropdown dropdown-bottom dropdown-end">
-                    <div class="hover:cursor-pointer mx-2 text-gray-500" tabindex="0" role="button">•••</div>
-                    <div class="dropdown-content menu bg-base-100 rounded-box z-1 w-36 shadow-lg text-sm">
-                        Forget
-                    </div>
+                    <div class="hover:cursor-pointer mx-2 text-gray-500"
+                         tabindex="0"
+                         role="button">•••</div>
+                    <div class="dropdown-content menu bg-base-100 rounded-box z-1 w-36 shadow-lg text-sm">Forget</div>
                 </div>
-        {% else %}
-            <li class="px-4 py-3 text-sm text-base-content/60">No devices found.</li>
-        {% endfor %}
-    </ul>
-{% endmacro %}
+            {% else %}
+                <li class="px-4 py-3 text-sm text-base-content/60">No devices found.</li>
+            {% endfor %}
+        </ul>
+    {% endmacro %}
+    {{ device_list(my_devices, list_name="my_devices") }}
+    <p class="my-3"></p>
+    {{ device_list(available_devices, list_name="available_devices") }}
+    <script>
+        // TODO: outdated code
+        async function bluetoothDeviceAction(element, action) {
+            const macAddress = element.closest("li").dataset.macAddress;
+            const response = await fetch(
+                `/api/devices/bluetooth/${encodeURIComponent(macAddress)}/${action}`, {
+                    method: "PUT"
+                },
+            );
 
-{{ device_list(my_devices, list_name="my_devices") }}
-<p class="my-3"></p>
-{{ device_list(available_devices, list_name="available_devices") }}
+            if (!response.ok) {
+                throw new Error(`Bluetooth ${action} failed: ${response.status}`);
+            }
 
-<script>
-    // TODO: outdated code
-    async function bluetoothDeviceAction(element, action) {
-        const macAddress = element.closest("li").dataset.macAddress;
-        const response = await fetch(
-            `/api/devices/bluetooth/${encodeURIComponent(macAddress)}/${action}`,
-            { method: "PUT" },
-        );
-
-        if (!response.ok) {
-            throw new Error(`Bluetooth ${action} failed: ${response.status}`);
+            window.location.reload();
         }
 
-        window.location.reload();
-    }
+        function pairBluetoothDevice(element) {
+            return bluetoothDeviceAction(element, "pair");
+        }
 
-    function pairBluetoothDevice(element) {
-        return bluetoothDeviceAction(element, "pair");
-    }
+        function unpairBluetoothDevice(element) {
+            return bluetoothDeviceAction(element, "unpair");
+        }
 
-    function unpairBluetoothDevice(element) {
-        return bluetoothDeviceAction(element, "unpair");
-    }
+        function connectBluetoothDevice(element) {
+            return bluetoothDeviceAction(element, "connect");
+        }
 
-    function connectBluetoothDevice(element) {
-        return bluetoothDeviceAction(element, "connect");
-    }
-
-    function disconnectBluetoothDevice(element) {
-        return bluetoothDeviceAction(element, "disconnect");
-    }
-</script>
+        function disconnectBluetoothDevice(element) {
+            return bluetoothDeviceAction(element, "disconnect");
+        }
+    </script>
