@@ -1,6 +1,7 @@
 """Device control view handlers."""
 
 import asyncio
+import logging
 from http import HTTPMethod
 
 from starlette.responses import JSONResponse
@@ -9,6 +10,8 @@ from starlette.routing import Route
 from piirakka.core.context import Context
 from piirakka.model.device import AudioDevice
 from piirakka.services.bluetooth import BluetoothDeviceManager, BluetoothDeviceScanner
+
+logger = logging.getLogger(__name__)
 
 # TODO: use urllib parsing / something from starlette to parse special
 # TODO: characters in path_params
@@ -106,8 +109,13 @@ def create_routes(context):
         """Convenience endpoint - pair, connect and set the output device."""
         device_mac = request.path_params["device_mac"].replace("%3A", ":")
         await BluetoothDeviceManager.pair_and_connect(device_mac)
-        await asyncio.sleep(1.5)  # wait for device to become available in mpv
-        output_device = await match_devices(context, device_mac)
+        while True:
+            output_device = await match_devices(context, device_mac)
+            if not output_device:
+                logger.debug("Output device not in mpv, sleeping...")
+                await asyncio.sleep(1) # sleep for a bit until device becomes available in mpv
+            else:
+                break
         context.player.set_device(output_device.name)
 
         return JSONResponse({"message": "ok"})

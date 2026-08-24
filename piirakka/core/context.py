@@ -117,7 +117,16 @@ class Context:
 
     async def push_devices(self) -> None:
         """Render the device component and broadcast via websocket."""
-        pass
+        bt_devices_update_event = BroadcastEvent(
+            event_type=EventType.BLUETOOTH_LIST_CHANGED,
+            content=render(
+                component="components/bluetooth_devices.html",
+                devices=self.available_bluetooth_devices,
+                current_audio_device=self.player.get_device(),
+            ),
+        )
+        message = self.serialize_events(bt_devices_update_event)
+        await self._broadcast_message_fn(message=message)
 
     async def get_search_options(self) -> list:
         # fetch search options from db

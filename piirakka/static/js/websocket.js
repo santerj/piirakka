@@ -52,6 +52,19 @@ socket.addEventListener("message", function (event) {
             );
             break;
           }
+          case "bluetooth_list_changed": {
+            const settings = document.getElementById("Settings");
+            if (!settings) {
+              break;
+            }
+            const bluetoothDevices = settings.querySelector("#bluetoothDevices");
+            if (!bluetoothDevices) {
+              break;
+            }
+            bluetoothDevices.outerHTML = content;
+            settings.dispatchEvent(new CustomEvent("bluetooth-devices:updated"));
+            break;
+          }
           default:
             console.log("Event type unknown:", eventItem.event_type);
         }

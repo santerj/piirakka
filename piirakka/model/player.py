@@ -137,12 +137,20 @@ class Player:
         if self._ipc_success(resp):
             return resp.get("data")
 
+    def ao_reload(self) -> str:
+        cmd = {"command": ["ao-reload"]}
+        cmd = self._dumps(cmd)
+        resp = self._ipc_command(cmd)
+        if self._ipc_success(resp):
+            return resp.get("error")
+
     def set_device(self, device: str) -> str:
         # select output device
         cmd = {"command": ["set_property", "audio-device", device]}
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         if self._ipc_success(resp):
+            self.ao_reload()  # reload immediately after setting device
             return resp.get("error")
 
     def list_devices(self) -> list[AudioDevice]:

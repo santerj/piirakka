@@ -61,6 +61,7 @@ def create_routes(templates: Jinja2Templates, context, track_history):
                 "stations": context.player.stations,
                 "player_state": context.player.get_player_state(),
                 "devices": context.available_bluetooth_devices,
+                "current_audio_device": context.player.get_device(),
             },
         )
 
