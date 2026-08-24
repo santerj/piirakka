@@ -28,6 +28,7 @@
     pointer-events: auto !important;
     position: fixed !important;
     top: 0 !important;
+    transition: none !important;
     visibility: visible !important;
     width: clamp(15rem, 16.666667vw, 20rem) !important;
   }
@@ -39,6 +40,7 @@
   .desktop-drawer .drawer-side > aside {
     translate: 0 0 !important;
     transform: translateX(0) !important;
+    transition: none !important;
     width: 100% !important;
   }
 
