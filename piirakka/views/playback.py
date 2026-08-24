@@ -35,6 +35,10 @@ def create_routes(context):
         task = BackgroundTask(context.player.set_volume, volume)
         return JSONResponse({"message": "volume change initiated"}, background=task)
 
+    async def toggle_mute(request) -> JSONResponse:
+        task = BackgroundTask(context.player.toggle_mute)
+        return JSONResponse({"message": "mute toggled"}, background=task)
+
     async def shuffle_station(request) -> JSONResponse:
         task = BackgroundTask(context.player.shuffle)
         return JSONResponse({"message": "station shuffle initiated"}, background=task)
@@ -43,5 +47,6 @@ def create_routes(context):
         Route("/api/radio/station/{station_id}", set_station, methods=[HTTPMethod.PUT]),
         Route("/api/radio/toggle", toggle_playback, methods=[HTTPMethod.PUT]),
         Route("/api/radio/volume", set_volume, methods=[HTTPMethod.PUT]),
+        Route("/api/radio/mute", toggle_mute, methods=[HTTPMethod.PUT]),
         Route("/api/radio/shuffle", shuffle_station, methods=[HTTPMethod.PUT]),
     ]

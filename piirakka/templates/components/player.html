@@ -36,8 +36,9 @@
             <img class="h-6 w-6 dark:invert"
                  id="volumeUpIcon"
                  src="static/icons/volume-up-line.svg"
-                 alt="Mute">
-            <img class="h-6 w-6 hidden dark:invert"
+                  alt="Mute"
+                  {% if player_state.volume == 0 %}hidden{% endif %}>
+              <img class="h-6 w-6 dark:invert {% if player_state.volume != 0 %}hidden{% endif %}"
                  id="volumeMuteIcon"
                  src="static/icons/volume-mute-line.svg"
                  alt="Unmute">
@@ -73,21 +74,9 @@
 
     // JavaScript to handle volume toggle button
     function handleVolumeToggle() {
-        const volumeControl = document.getElementById('volumeControl');
-        const volumeUpIcon = document.getElementById('volumeUpIcon');
-        const volumeMuteIcon = document.getElementById('volumeMuteIcon');
-
-        if (volumeUpIcon.classList.contains('hidden')) {
-            volumeUpIcon.classList.remove('hidden');
-            volumeMuteIcon.classList.add('hidden');
-            volumeControl.value = 50; // Reset to some default volume when unmuted
-        } else {
-            volumeUpIcon.classList.add('hidden');
-            volumeMuteIcon.classList.remove('hidden');
-            volumeControl.value = 0; // Mute
-        }
-
-        handleVolumeChange(volumeControl.value); // Update volume on toggle
+        fetch('/api/radio/mute', {
+            method: 'PUT'
+        });
     }
 
     // JavaScript to handle volume change

@@ -32,6 +32,7 @@ class Player:
             self.proc = self._init_mpv()  # mpv process
 
         self.volume = self.get_volume()
+        self.volume_before_mute = self.volume or VOLUME_INIT
         self.playing = self.get_status()
         self.stations: list[StationPydantic] = []
         self.current_station: StationPydantic = None
@@ -149,12 +150,23 @@ class Player:
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
             return False
+        if vol > 0:
+            self.volume_before_mute = vol
         resp = self._mpv_command("set_property", "volume", str(vol))
+        if self._ipc_success(resp):
+            self.volume = vol
         self.callback(
             # send rendered html directly over websocket to subscribers
             BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
         )
         return self._ipc_success(resp)
+
+    def toggle_mute(self) -> bool:
+        current_volume = self.get_volume()
+        if current_volume:
+            self.volume_before_mute = current_volume
+            return self.set_volume(0)
+        return self.set_volume(self.volume_before_mute)
 
     def get_bitrate(self) -> int:
         resp = self._mpv_command("get_property", "audio-bitrate")
