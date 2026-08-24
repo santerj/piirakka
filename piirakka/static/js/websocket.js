@@ -32,7 +32,7 @@ socket.addEventListener("message", function (event) {
             trackHistoryContainer.innerHTML = content;
             break;
           }
-          case "sidebar_changed":
+          case "sidebar_changed": {
             const sidebar = document.getElementById("sidebar");
             if (!sidebar) {
               break;
@@ -40,16 +40,18 @@ socket.addEventListener("message", function (event) {
             sidebar.innerHTML = content;
             sidebar.dispatchEvent(new CustomEvent("sidebar:updated"));
             break;
-          case "stations_changed":
+          }
+          case "stations_changed": {
             const stationSettings = document.getElementById("StationSettings");
             if (!stationSettings) {
               break;
             }
             stationSettings.innerHTML = content;
             stationSettings.dispatchEvent(
-              new CustomEvent("station-settings:updated")
+              new CustomEvent("station-settings:updated"),
             );
             break;
+          }
           default:
             console.log("Event type unknown:", eventItem.event_type);
         }
