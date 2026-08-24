@@ -6,7 +6,7 @@
             {% if list_name == 'my_devices' %}
                 <li class="p-4 pb-2 text-xs opacity-60 tracking-wide font-semibold">My devices</li>
             {% elif list_name == 'available_devices' %}
-                <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Available devices</li>
+                <li class="p-4 pb-2 text-xs opacity-60 tracking-wide font-semibold">Available devices</li>
             {% endif %}
             {% for device in device_list %}
                 {% set audio_selected = current_audio_device and device.address.replace(':', '_') in current_audio_device %}

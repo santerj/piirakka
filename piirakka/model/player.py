@@ -177,11 +177,22 @@ class Player:
         if self._ipc_success(resp):
             return resp.get("error")
 
-    def set_device(self, device: str) -> str:
-        # select output device
+    async def set_device(self, device: str) -> str:
+        """Try to give bluetooth/pipewire some time to negotiate before switching output device.
+
+        - Pause audio
+        - Set device
+        - Reload AO
+        - Sleep
+        - Unpause
+
+        """
+        self._mpv_command("set_property", "pause", True)
         resp = self._mpv_command("set_property", "audio-device", device)
+        self.ao_reload()  # reload immediately after setting device
+        time.sleep(1)
+        self._mpv_command("set_property", "pause", False)
         if self._ipc_success(resp):
-            self.ao_reload()  # reload immediately after setting device
             return resp.get("error")
 
     def list_devices(self) -> list[AudioDevice]:

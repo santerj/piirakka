@@ -53,7 +53,7 @@ def create_routes(context):
     async def set_device(request) -> JSONResponse:
         device_name = request.path_params["device_name"].replace("%2F", "/")
         if await device_exists(context, device_name):
-            context.player.set_device(device_name)
+            await context.player.set_device(device_name)
             return JSONResponse({"message": "Audio device selected"})
         else:
             return JSONResponse({"message": "Audio device not found"}, status_code=404)
