@@ -23,12 +23,19 @@ socket.addEventListener("message", function (event) {
         switch (eventItem.event_type) {
           case "player_bar_updated": {
             const player_bar = document.getElementById("ControlBar");
+            if (!player_bar) {
+              break;
+            }
             player_bar.innerHTML = content;
+            updateTitleFromPlayerBar(player_bar);
             break;
           }
           case "track_history_changed": {
             const trackHistoryContainer =
             document.getElementById("trackHistory");
+            if (!trackHistoryContainer) {
+              break;
+            }
             trackHistoryContainer.innerHTML = content;
             break;
           }
@@ -91,6 +98,14 @@ socket.addEventListener("error", function (event) {
  * Refresh currently playing track (or station) in browser tab title
  */
 function updateTitle(track, station) {
-  const playingMediaTitle = track !== "" ? track : station;
-  document.title = `${playingMediaTitle} | piirakka`;
+  const playingMediaTitle = track || station || "piirakka";
+  document.title = playingMediaTitle === "piirakka"
+    ? playingMediaTitle
+    : `${playingMediaTitle} | piirakka`;
+}
+
+function updateTitleFromPlayerBar(playerBar) {
+  const track = playerBar.querySelector("#player_bar_track_name")?.textContent.trim();
+  const station = playerBar.querySelector("#player_bar_station_name")?.textContent.trim();
+  updateTitle(track, station);
 }

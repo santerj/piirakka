@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>settings | piirakka</title>
+        <title>{{ player_state.track_title or player_state.current_station_name or 'piirakka' }}{% if player_state.track_title or player_state.current_station_name %} | piirakka{% endif %}</title>
         <script src="static/js/websocket.js"></script>
         <script src="static/js/bluetooth_devices.js"></script>
         {% include 'components/head.html' %}

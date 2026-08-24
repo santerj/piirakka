@@ -1,13 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>
-            {% if track_name %}
-                {{ track_name }} | piirakka
-            {% else %}
-                {{ station_name }} | piirakka
-            {% endif %}
-        </title>
+        <title>{{ player_state.track_title or player_state.current_station_name or 'piirakka' }}{% if player_state.track_title or player_state.current_station_name %} | piirakka{% endif %}</title>
         <script src="static/js/websocket.js"></script>
         {% include 'components/head.html' %}
     </head>
