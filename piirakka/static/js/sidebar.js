@@ -22,7 +22,7 @@ function initializeStationList(sidebar) {
 
 function initializeSidebar() {
   const sidebar =
-  document.getElementById("sidebar") || document.querySelector("aside");
+    document.getElementById("sidebar") || document.querySelector("aside");
   if (!sidebar || sidebar.sidebarInitialized) {
     return;
   }

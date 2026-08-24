@@ -33,7 +33,7 @@ class Context:
         """Initialize Context with player and database.
 
         Args:
-        -------
+        ----
         broadcast_message_fn: Async callable(message: str) for broadcasting WebSocket updates
         track_history_manager: TrackHistoryManager instance for track history
         spawn_mpv: Bool to indicate if mpv should be spawned as subprocess

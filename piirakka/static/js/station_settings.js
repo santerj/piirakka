@@ -8,11 +8,11 @@ function initializeStationSettings() {
     const station = event.target.closest("li[data-station-id]");
     if (station && stationSettings.contains(station)) {
       document.getElementById("edit_station_id").value =
-      station.dataset.stationId;
+        station.dataset.stationId;
       document.getElementById("edit_station_name").value =
-      station.dataset.stationName;
+        station.dataset.stationName;
       document.getElementById("edit_station_url").value =
-      station.dataset.stationUrl;
+        station.dataset.stationUrl;
       document.getElementById("edit_station_modal").showModal();
       return;
     }
@@ -74,7 +74,7 @@ async function deleteStation() {
     if (response.ok) {
       document.getElementById("edit_station_modal").close();
     } else {
-      alert("Failed to delete station: " + await response.text());
+      alert("Failed to delete station: " + (await response.text()));
     }
   } catch (error) {
     console.error("Error:", error);

@@ -1,3 +1,4 @@
+---
 exclude_paths:
   - "piirakka/static/css/*"
   - "piirakka/migrations/*"
