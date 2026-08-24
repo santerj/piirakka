@@ -69,11 +69,10 @@ class Player:
         self._ipc_request_id += 1
         return self._ipc_request_id
 
-    def _ipc_command(self, cmd: str) -> dict:
-        request = json.loads(cmd)
+    def _ipc_command(self, command: list) -> dict:
         with self._ipc_lock:
             request_id = self._next_request_id()
-            request["request_id"] = request_id
+            request = {"command": command, "request_id": request_id}
             connection = self._connect_ipc()
             try:
                 connection.sendall(self._dumps(request).encode())
@@ -97,6 +96,9 @@ class Player:
                 self._close_ipc_connection()
                 logger.error(e, exc_info=True)
                 raise
+
+    def _mpv_command(self, *arguments) -> dict:
+        return self._ipc_command(list(arguments))
 
     def get_player_state(self) -> PlayerState:
         # for creation of callback events - sent into websocket
@@ -135,25 +137,19 @@ class Player:
     def get_status(self) -> bool:
         # true: playing
         # false: paused
-        cmd = {"command": ["get_property", "pause"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "pause")
         if self._ipc_success(resp):
             return not resp.get("data") if resp else False
 
     def get_volume(self) -> int:
-        cmd = {"command": ["get_property", "volume"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "volume")
         if self._ipc_success(resp):
             return round(resp.get("data"))
 
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
             return False
-        cmd = {"command": ["set_property", "volume", str(vol)]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("set_property", "volume", str(vol))
         self.callback(
             # send rendered html directly over websocket to subscribers
             BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
@@ -161,48 +157,36 @@ class Player:
         return self._ipc_success(resp)
 
     def get_bitrate(self) -> int:
-        cmd = {"command": ["get_property", "audio-bitrate"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "audio-bitrate")
         if self._ipc_success(resp):
             return int(resp.get("data"))
 
     def get_codec(self) -> str:
-        cmd = {"command": ["get_property", "audio-codec-name"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "audio-codec-name")
         if self._ipc_success(resp):
             return resp.get("data")
 
     def get_device(self) -> str:
         # currently used audio device
-        cmd = {"command": ["get_property", "audio-device"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "audio-device")
         if self._ipc_success(resp):
             return resp.get("data")
 
     def ao_reload(self) -> str:
-        cmd = {"command": ["ao-reload"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("ao-reload")
         if self._ipc_success(resp):
             return resp.get("error")
 
     def set_device(self, device: str) -> str:
         # select output device
-        cmd = {"command": ["set_property", "audio-device", device]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("set_property", "audio-device", device)
         if self._ipc_success(resp):
             self.ao_reload()  # reload immediately after setting device
             return resp.get("error")
 
     def list_devices(self) -> list[AudioDevice]:
         # all available audio devices
-        cmd = {"command": ["get_property", "audio-device-list"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "audio-device-list")
         if self._ipc_success(resp):
             devices = []
             for dev in resp["data"]:
@@ -235,16 +219,12 @@ class Player:
 
     def _set_station(self, url: str):
         # TODO: rework to accept StationPydantic
-        cmd = {"command": ["loadfile", f"{url}", "replace"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("loadfile", url, "replace")
         self.playing = True
         return bool(resp)
 
     def play(self) -> bool:
-        cmd = {"command": ["set_property", "pause", False]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("set_property", "pause", False)
         self.playing = True
         self.callback(
             # send rendered html directly over websocket to subscribers
@@ -253,9 +233,7 @@ class Player:
         return bool(resp)
 
     def pause(self) -> bool:
-        cmd = {"command": ["set_property", "pause", True]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("set_property", "pause", True)
         self.playing = False
         self.callback(
             # send rendered html directly over websocket to subscribers
@@ -275,9 +253,7 @@ class Player:
         # other interesting fields
         # genre: resp["data"]["icy-genre"]
         # desc: resp["data"]["icy-name"]
-        cmd = {"command": ["get_property", "metadata"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "metadata")
         if self._ipc_success(resp):
             try:
                 return resp["data"]["icy-title"]
