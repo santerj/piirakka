@@ -1,4 +1,5 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="static/js/sidebar.js"></script>
 <nav class="h-full p-1">
     <h1 class="font-nunito font-semibold ml-6 text-2xl select-none flex items-center">
         <img class="w-9 h-9 mr-3" src="static/icons/android-chrome-512x512.png">
@@ -6,6 +7,7 @@
         {% if version %}<span class="ml-4 text-xs font-mono opacity-30">v{{ version }}</span>{% endif %}
     </h1>
     <ul class="menu w-full mt-2">
+
         {% for item in sidebar_items %}
             <li class="mb-2">
                 <a href="{{ item.url }}"
@@ -17,6 +19,7 @@
                 </a>
             </li>
         {% endfor %}
+
         <li class="mb-2">
             <a href="#"
                class="flex items-center space-x-2 overflow-hidden text-ellipsis"
@@ -30,7 +33,9 @@
                 {% endif %}
             </a>
         </li>
+
         {% include 'components/add_station_modal.html' %}
+
         <div class="divider pt-4 text-xs opacity-60">stations</div>
         <div class="p-3">
             <input id="stationSearch"
@@ -38,67 +43,11 @@
                    placeholder="🔎 Search"
                    class="input input-sm input-bordered" />
         </div>
-        <ul id="stationList">
-            {% for station in stations %}
-                <li class="">
-                    <p data-stationId="{{ station.station_id }}">{{ station.name }}</p>
-                </li>
-            {% endfor %}
-        </ul>
+
+        {% include 'components/sidebar_station_list.html' %}
+
     </ul>
-</nav>
-<script>
-    // make all stations clickable - upon click, send PUT request to select the station
-    document.querySelectorAll('li p[data-stationId]').forEach(item => {
-        item.addEventListener('click', function() {
-            const stationId = this.getAttribute('data-stationId');
-
-            fetch(`/api/radio/station/${stationId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        stationId: stationId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.error('Error:', error));
-        });
-    });
-</script>
-<script>
-    document.getElementById("stationSearch").addEventListener("input", function() {
-        const query = this.value.toLowerCase();
-        const items = document.querySelectorAll("li p[data-stationId]");
-
-        items.forEach(p => {
-            const name = p.textContent.toLowerCase();
-            p.parentElement.style.display = name.includes(query) ? "" : "none";
-        });
-    });
-</script>
-<script>
-    const el = document.getElementById('stationList');
-
-    Sortable.create(el, {
-        animation: 150,
-        onEnd: async function() {
-            const order = [...el.querySelectorAll('li')].map(li =>
-                li.querySelector('p').dataset.stationid
-            );
+    </nav>
 
 
-            await fetch('/api/stations/reorder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    order
-                })
-            });
-        }
-    });
-</script>
+

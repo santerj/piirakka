@@ -1,0 +1,7 @@
+<ul id="stationList">
+    {% for station in stations %}
+        <li class="">
+            <p class="text-ellipsis" data-stationId="{{ station.station_id }}">{{ station.name }}</p>
+        </li>
+    {% endfor %}
+</ul>

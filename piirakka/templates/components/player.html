@@ -10,11 +10,11 @@
         <button id="playPauseButton"
                 class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
                 onclick="togglePlayPause()">
-            <img class="h-6 w-6 dark:invert {% if not playing %}hidden{% endif %}"
+            <img class="h-6 w-6 dark:invert {% if not player_state.playback_status %}hidden{% endif %}"
                  id="pauseIcon"
                  src="static/icons/pause-line.svg"
                  alt="Pause">
-            <img class="h-6 w-6 dark:invert {% if playing %}hidden{% endif %}"
+            <img class="h-6 w-6 dark:invert {% if player_state.playback_status %}hidden{% endif %}"
                  id="playIcon"
                  src="static/icons/play-fill.svg"
                  alt="Play">
@@ -47,7 +47,7 @@
         <!-- Volume Control -->
         <i class="fa fa-volume-up"></i>
         <input type="range"
-               value="{{ volume }}"
+               value="{{ player_state.volume }}"
                min="0"
                max="100"
                step="1"

@@ -1,12 +1,7 @@
-from pathlib import Path
-
-from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel
 from pydantic.alias_generators import to_camel
 
-TEMPLATE_DIR = Path(__file__).resolve().parents[1] / "templates"
-env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=select_autoescape())
-
+from piirakka.services.renderer import render as renderer
 
 class PlayerState(BaseModel):
     # representation of the player bar in json
@@ -19,12 +14,6 @@ class PlayerState(BaseModel):
         alias_generator = to_camel
         populate_by_name = True
 
-    def render_html(self) -> str:
-        template = env.get_template("components/player.html")
-        return template.render(
-            player_state=self,
-            playing=self.playback_status,
-            volume=self.volume,
-            track_name=self.track_title,
-            station_name=self.current_station_name,
-        )
+    def render(self) -> str:
+        template = "components/player.html"
+        return renderer(template, player_state=self.model_dump())

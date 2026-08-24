@@ -6,7 +6,7 @@ import time
 from random import choice
 
 from piirakka.model.device import AudioDevice
-from piirakka.model.event import PlayerBarUpdateEvent
+from piirakka.model.event import EventType, BroadcastEvent
 from piirakka.model.player_state import PlayerState
 from piirakka.model.station import Station, StationPydantic
 
@@ -110,8 +110,12 @@ class Player:
         cmd = self._dumps(cmd)
         resp = self._ipc_command(cmd)
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(
+                event_type=EventType.PLAYER_BAR_UPDATED,
+                content=self.get_player_state().render()
+            )
+        )
         return self._ipc_success(resp)
 
     def get_bitrate(self) -> int:
@@ -193,8 +197,12 @@ class Player:
         resp = self._ipc_command(cmd)
         self.playing = True
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(
+                event_type=EventType.PLAYER_BAR_UPDATED,
+                content=self.get_player_state().render()
+            )
+        )
         return bool(resp)
 
     def pause(self) -> bool:
@@ -203,8 +211,12 @@ class Player:
         resp = self._ipc_command(cmd)
         self.playing = False
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(
+                event_type=EventType.PLAYER_BAR_UPDATED,
+                content=self.get_player_state().render()
+            )
+        )
         return bool(resp)
 
     def toggle(self) -> bool:
@@ -238,5 +250,9 @@ class Player:
         self.play_station_with_id(random_station.station_id)
         # TODO: add small wait to have a better chance of actually broadcasting an update here
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(
+                event_type=EventType.PLAYER_BAR_UPDATED,
+                content=self.get_player_state().render()
+            )
+        )

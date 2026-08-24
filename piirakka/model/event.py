@@ -15,27 +15,9 @@ class EventType(str, Enum):
     BLUETOOTH_LIST_CHANGED = "bluetooth_list_changed"
 
 
-class PlayerBarUpdateEvent(BaseModel):
-    """Any value represented in the player bar has changed - render entire player bar and broadcast."""
-    content: str  # html
-    event_type: EventType.PLAYER_BAR_UPDATED
+T = TypeVar("T", bound=object)
 
-class StationListChangeEvent(BaseModel):
-    """Station list has changed - render entire station list and broadcast."""
-    content: str  # html
-    event_type: str = EventType.STATIONS_CHANGED
+class BroadcastEvent(BaseModel, Generic[T]):
+    event_type: EventType
+    content: T  # rendered html
 
-class SidebarChangeEvent(BaseModel):
-    """Sidebar has changed - render entire sidebar and broadcast."""
-    content: str  # html
-    event_type: str = EventType.SIDEBAR_CHANGED
-
-class TrackChangeEvent(BaseModel):
-    """Currently playing track changed - render entire track history and broadcast."""
-    content: str  # html
-    event_type: str = EventType.TRACK_HISTORY_CHANGED
-
-class BluetoothListChangeEvent(BaseModel):
-    """Any value in the bluetooth device list changed - render entire list and broadcast."""
-    content: str  # html
-    event_type: str = EventType.BLUETOOTH_LIST_CHANGED
