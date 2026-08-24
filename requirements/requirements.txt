@@ -18,6 +18,8 @@ click==8.1.7
     # via uvicorn
 colorlog==6.10.1
     # via -r requirements.in
+dbus-fast==5.0.22
+    # via -r requirements.in
 h11==0.16.0
     # via uvicorn
 idna==3.10

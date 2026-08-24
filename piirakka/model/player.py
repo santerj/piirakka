@@ -112,6 +112,7 @@ class Player:
             current_station_name=self.current_station.name if self.current_station else None,
             track_title=self.current_track(),
             bluetooth_device_name=self.bluetooth_device_name,
+            audio_device_name=self.audio_device_name,
         )
 
     def _init_mpv(self):

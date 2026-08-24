@@ -51,6 +51,7 @@ class Context:
         self._track_history_manager = track_history_manager
         self._persisted_state = persisted_state or {}
         self.state_path = preflight.STATE_PATH
+        self._callbacks_ready = False
         self.player = Player(spawn_mpv, self.SOCKET, self.DATABASE, self.player_callback)
         self.player.audio_device_name = self._persisted_state.get("audio_device_name")
         self.player.bluetooth_device_name = self._persisted_state.get("bluetooth_device_name")
@@ -66,6 +67,7 @@ class Context:
                 default_index = 0
                 self.player.current_station_id = str(stations[default_index].station_id)
                 self.player.play_station_with_id(self.player.current_station_id)
+            self._callbacks_ready = True
 
     async def restore_audio_device(self) -> None:
         address = self.player.bluetooth_device_address
@@ -115,6 +117,9 @@ class Context:
     def player_callback(self, event: EventType) -> None:
         # the Player object can call this to broadcast events after state changes
         logger.info(f"Received event {event.event_type} from player via callback")
+        if not self._callbacks_ready:
+            logger.debug("Skipping player callback before application startup")
+            return
         payload = self.serialize_events(event)
         logger.info("Broadcasting Websocket message from player callback")
         try:

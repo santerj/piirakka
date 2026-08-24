@@ -12,6 +12,7 @@ class PlayerState(BaseModel):
     current_station_name: str | None  # index in stations
     track_title: str | None  # usually from Icy-Title
     bluetooth_device_name: str | None
+    audio_device_name: str | None
 
     class Config:
         """Config for pydantic."""

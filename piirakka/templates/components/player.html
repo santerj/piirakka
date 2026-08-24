@@ -44,7 +44,11 @@
                  alt="Unmute">
         </button>
     </div>
-    <div class="navbar-end min-w-0 max-sm:col-start-2 max-sm:row-start-2 max-sm:w-auto">
+    <div class="navbar-end min-w-0 gap-2 max-sm:col-start-2 max-sm:row-start-2 max-sm:w-auto">
+        {% if player_state.bluetooth_device_name %}
+            <span class="hidden min-w-0 max-w-48 truncate text-xs font-light sm:inline"
+                  title="{{ player_state.bluetooth_device_name }}">{{ player_state.bluetooth_device_name }}</span>
+        {% endif %}
         <!-- Volume Control -->
         <i class="fa fa-volume-up"></i>
         <input type="range"

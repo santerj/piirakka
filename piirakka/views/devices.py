@@ -125,6 +125,14 @@ def create_routes(context):
         bluetooth_device = next(
             (device for device in context.available_bluetooth_devices if device.address == device_mac), None
         )
+        if bluetooth_device is None:
+            logger.info("Bluetooth name for %s is not cached; scanning for device identity", device_mac)
+            scanned_devices = await BluetoothDeviceScanner().scan(timeout_seconds=1)
+            bluetooth_device = next((device for device in scanned_devices if device.address == device_mac), None)
+        if bluetooth_device is None:
+            logger.warning("Could not resolve Bluetooth name for %s", device_mac)
+        else:
+            logger.info("Resolved Bluetooth device %s as %s", device_mac, bluetooth_device.name)
         await context.player.set_device(
             output_device.name,
             bluetooth_device_name=bluetooth_device.name if bluetooth_device else None,
