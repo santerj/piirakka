@@ -3,6 +3,7 @@ import logging
 import os
 import socket
 import subprocess
+import threading
 import time
 from random import choice
 
@@ -23,6 +24,10 @@ class Player:
         self.ipc_socket = ipc_socket
         self.database = database
         self.callback = callback
+        self._ipc_connection: socket.socket | None = None
+        self._ipc_buffer = b""
+        self._ipc_request_id = 0
+        self._ipc_lock = threading.Lock()
         if self.use_mpv:
             self.proc = self._init_mpv()  # mpv process
 
@@ -33,9 +38,65 @@ class Player:
         # initial station set by context
 
     def __del__(self) -> None:
-        if self.use_mpv and hasattr(self, "proc"):
+        self.close()
+
+    def close(self) -> None:
+        connection = getattr(self, "_ipc_connection", None)
+        if connection is not None:
+            connection.close()
+            self._ipc_connection = None
+        if getattr(self, "use_mpv", False) and hasattr(self, "proc"):
             self.proc.terminate()
+        ipc_socket = getattr(self, "ipc_socket", None)
+        if getattr(self, "use_mpv", False) and ipc_socket and os.path.exists(ipc_socket):
             os.remove(self.ipc_socket)
+
+    def _connect_ipc(self) -> socket.socket:
+        if self._ipc_connection is None:
+            connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            connection.settimeout(10)
+            connection.connect(self.ipc_socket)
+            self._ipc_connection = connection
+        return self._ipc_connection
+
+    def _close_ipc_connection(self) -> None:
+        if self._ipc_connection is not None:
+            self._ipc_connection.close()
+            self._ipc_connection = None
+        self._ipc_buffer = b""
+
+    def _next_request_id(self) -> int:
+        self._ipc_request_id += 1
+        return self._ipc_request_id
+
+    def _ipc_command(self, cmd: str) -> dict:
+        request = json.loads(cmd)
+        with self._ipc_lock:
+            request_id = self._next_request_id()
+            request["request_id"] = request_id
+            connection = self._connect_ipc()
+            try:
+                connection.sendall(self._dumps(request).encode())
+                while True:
+                    newline_index = self._ipc_buffer.find(b"\n")
+                    if newline_index == -1:
+                        data = connection.recv(4096)
+                        if not data:
+                            raise ConnectionError("mpv IPC connection closed")
+                        self._ipc_buffer += data
+                        continue
+
+                    raw_response = self._ipc_buffer[:newline_index]
+                    self._ipc_buffer = self._ipc_buffer[newline_index + 1 :]
+                    if not raw_response:
+                        continue
+                    response = json.loads(raw_response)
+                    if response.get("request_id") == request_id:
+                        return response
+            except Exception as e:
+                self._close_ipc_connection()
+                logger.error(e, exc_info=True)
+                raise
 
     def get_player_state(self) -> PlayerState:
         # for creation of callback events - sent into websocket
@@ -60,25 +121,6 @@ class Player:
         proc = subprocess.Popen(cmd)
         time.sleep(4)  # wait for mpv to start
         return proc
-
-    def _ipc_command(self, cmd: str) -> dict:
-        try:
-            # Create a Unix domain socket
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-                # Connect to the MPV IPC socket
-                sock.connect(self.ipc_socket)
-
-                # Send the command
-                sock.sendall(cmd.encode())
-
-                # Receive the response
-                response = sock.recv(4096).decode()
-                sock.close()
-                return json.loads(response)
-
-        except Exception as e:
-            logger.error(e, exc_info=True)
-            raise e
 
     @staticmethod
     def _ipc_success(resp: dict) -> bool:

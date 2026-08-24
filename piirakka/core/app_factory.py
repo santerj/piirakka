@@ -54,6 +54,7 @@ def create_app(spawn_mpv: bool = True):
         yield
         for subscriber in subscriber_state.subscribers:  # shutdown
             await subscriber.close()
+        context.player.close()
 
     app = Starlette(
         lifespan=lifespan,
