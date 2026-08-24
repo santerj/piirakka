@@ -1,14 +1,14 @@
-<div class="navbar w-full">
-    <div class="navbar-start">
+<div class="navbar h-full w-full max-sm:grid max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:grid-rows-2 max-sm:content-center max-sm:px-2">
+    <div class="navbar-start min-w-0 max-sm:col-span-2 max-sm:row-start-1 max-sm:w-full">
         <!-- <h2 class="font-nunito ml-2" id="nowPlaying">now playing: <span id="currentStation"></span></h2>> -->
         {% include 'components/now_playing_display.html' %}
     </div>
     <!-- middle button controls  -->
-    <div class="navbar-center flex space-x-4">
+    <div class="navbar-center flex space-x-4 max-sm:col-start-1 max-sm:row-start-2 max-sm:gap-1 max-sm:space-x-0">
         <!-- Play/Pause Button -->
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
         <button id="playPauseButton"
-                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
+                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black max-sm:h-10 max-sm:w-12"
                 onclick="togglePlayPause()">
             <img class="h-6 w-6 dark:invert {% if not player_state.playback_status %}hidden{% endif %}"
                  id="pauseIcon"
@@ -21,7 +21,7 @@
         </button>
         <!-- Shuffle Button -->
         <button id="shuffleButton"
-                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
+                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black max-sm:h-10 max-sm:w-12"
                 onclick="handleShuffle()">
             <img class="h-6 w-6 dark:invert"
                  src="static/icons/shuffle-line.svg"
@@ -31,7 +31,7 @@
         <!-- TODO: replace js with swap component https://daisyui.com/components/swap/ -->
         <!-- TODO: needs to reflect websocket events -->
         <button id="volumeButton"
-                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black"
+                class="btn btn-circle h-10 w-16 no-animation border shadow hover:shadow-inner bg-white hover:bg-white dark:bg-neutral-950 dark:hover:bg-black max-sm:h-10 max-sm:w-12"
                 onclick="handleVolumeToggle()">
             <img class="h-6 w-6 dark:invert"
                  id="volumeUpIcon"
@@ -43,7 +43,7 @@
                  alt="Unmute">
         </button>
     </div>
-    <div class="navbar-end">
+    <div class="navbar-end min-w-0 max-sm:col-start-2 max-sm:row-start-2 max-sm:w-auto">
         <!-- Volume Control -->
         <i class="fa fa-volume-up"></i>
         <input type="range"
@@ -51,7 +51,7 @@
                min="0"
                max="100"
                step="1"
-               class="range range-xs mr-2"
+               class="range range-xs mr-2 max-sm:w-36"
                style="max-width: 180px"
                id="volumeControl"
                onchange="handleVolumeChange(this.value)">

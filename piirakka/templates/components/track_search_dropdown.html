@@ -1,7 +1,10 @@
-<div class="dropdown dropdown-bottom dropdown-end">
-    <div class="hover:cursor-pointer" tabindex="0" role="button">•••</div>
+<div class="dropdown dropdown-top dropdown-end z-50">
+    <button type="button"
+            class="hover:cursor-pointer max-sm:btn max-sm:btn-ghost max-sm:btn-sm max-sm:btn-square"
+            tabindex="0"
+            aria-label="Track actions">•••</button>
     <ul tabindex="0"
-        class="dropdown-content menu bg-base-100 rounded-box z-1 w-64 shadow-lg text-xs">
+        class="dropdown-content menu bg-base-100 rounded-box z-50 w-64 max-h-[min(70vh,24rem)] overflow-y-auto shadow-lg text-xs">
         <li data-search-option-key="apple_music_desktop"
             class="{{ 'block' if search_options.apple_music_desktop else 'hidden' }}">
             <a href="music://music.apple.com/us/search?term={{ track.title }}">
