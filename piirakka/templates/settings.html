@@ -3,6 +3,7 @@
     <head>
         <title>settings | piirakka</title>
         <script src="static/js/websocket.js"></script>
+        <script src="static/js/bluetooth_devices.js"></script>
         {% include 'components/head.html' %}
     </head>
     <body class="h-screen overflow-hidden m-0 dark:text-neutral-300">
@@ -15,6 +16,11 @@
             <main id="Settings"
                   style="height: calc(100vh - 4rem)"
                   class="col-span-10 p-4 overflow-auto bg-white dark:bg-neutral-900">
+                <h1 class="sticky top-0 text-3xl pt-3 pb-6 pl-3 font-nunito font-semibold bg-inherit">Settings</h1>
+                <div class="sticky -mt-2 top-12 divider bg-inherit"></div>
+                <h2 class="text-lg font-semibold py-3 pl-3">Bluetooth</h2>
+                {% include 'components/bluetooth_devices.html' %}
+                <h2 class="text-lg font-semibold py-3 pl-3">Search in streaming services</h2>
                 {% include 'components/search-settings.html' %}
             </main>
         </div>

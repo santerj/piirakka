@@ -57,6 +57,9 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "lf"
 
+[tool.ruff.lint]
+ignore = ["D213"]
+
 [tool.djlint]
 profile="jinja"
 format_js=true

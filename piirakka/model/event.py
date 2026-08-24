@@ -1,44 +1,27 @@
 """Definitions of events sent to subscribers over websocket."""
 
+from enum import Enum
+from typing import Generic, TypeVar
+
 from pydantic import BaseModel
 
-from piirakka.model.station import StationPydantic
 
-# from piirakka.model.player_state import PlayerState
-# from piirakka.model.recent_track import RecentTrack
+class EventType(str, Enum):
+    """Definitions of server-originated events that are broadcasted via websocket.
 
-# TODO: clean up of commented out code
+    Match the event value in client side websocket code.
+    """
 
-
-class PlayerBarUpdateEvent(BaseModel):
-    """Any value represented in the player bar has changed - render entire player bar and broadcast."""
-
-    content: str  # html
-    # content: PlayerState
-    event_type: str = "player_bar_updated"
+    PLAYER_BAR_UPDATED = "player_bar_updated"
+    STATIONS_CHANGED = "stations_changed"
+    SIDEBAR_CHANGED = "sidebar_changed"
+    TRACK_HISTORY_CHANGED = "track_history_changed"
+    BLUETOOTH_LIST_CHANGED = "bluetooth_list_changed"
 
 
-class StationListChangeEvent(BaseModel):
-    """Station list has changed - render entire station list and broadcast."""
-
-    # TODO: event type unused and not understood by frontend
-    # TODO: should be refacored to send rendered html (consumed by station settings page)
-    # content: str  # html
-    content: list[StationPydantic]
-    event_type: str = "stations_changed"
+T = TypeVar("T", bound=object)
 
 
-class SidebarChangeEvent(BaseModel):
-    """Sidebar has changed - render entire sidebar and broadcast."""
-
-    # TODO: event type unused and not understood by frontend
-    content: str  # html
-    event_type: str = "sidebar_changed"
-
-
-class TrackChangeEvent(BaseModel):
-    """Currently playing track changed - render entire track history and broadcast."""
-
-    content: str  # html
-    # content: RecentTrack
-    event_type: str = "track_history_changed"
+class BroadcastEvent(BaseModel, Generic[T]):
+    event_type: EventType
+    content: T  # rendered html

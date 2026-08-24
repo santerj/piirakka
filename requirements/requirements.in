@@ -1,6 +1,7 @@
 alembic
 colorlog
 #human-readable
+dbus-fast
 jinja2
 platformdirs
 pydantic

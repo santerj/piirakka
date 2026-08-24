@@ -22,8 +22,9 @@ class TrackHistoryManager:
         return self.history[0] if self.history else None
 
     def __len__(self) -> int:
+        """Amount of tracks in current history."""
         return len(self.history)
 
     def __bool__(self) -> bool:
-        # True if history is not empty
+        """True if history is not empty."""
         return bool(self.history)

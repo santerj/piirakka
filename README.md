@@ -86,6 +86,11 @@ enabled. That task will have to be rerun manually by clicking on the task.
     djlint piirakka/templates/ --check
     djlint piirakka/templates/ --reformat
 
+### run isort
+
+    isort piirakka/ --check
+    isort piirakka/
+
 ### build with podman (bundled mpv)
 
     podman build -f containers/bundled.Containerfile -t piirakka:latest .
@@ -96,7 +101,7 @@ Works with Linux and PulseAudio.
 Make sure the host data directory (`~/.local/share/piirakka`, `/etc/piirakka`, etc) has 755 permissions.
 
     podman run --rm -it \
-        --userns=keep-id
+        --userns=keep-id \
         --device /dev/snd \
         -p 8000:8000 \
         -v /run/user/$(id -u)/pulse/native:/tmp/pulse-socket \
@@ -104,7 +109,7 @@ Make sure the host data directory (`~/.local/share/piirakka`, `/etc/piirakka`, e
         -e PULSE_SERVER=unix:/tmp/pulse-socket \
         -e XDG_RUNTIME_DIR=/tmp \
         --security-opt label=disable \
-        localhost/piirakka:latest
+        localhost/piirakka:bundled-latest
 
 ### run with podman (standalone)
 

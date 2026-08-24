@@ -1,16 +1,21 @@
 import json
+import logging
 import os
 import socket
 import subprocess
+import threading
 import time
 from random import choice
 
-from piirakka.model.event import PlayerBarUpdateEvent
+from piirakka.model.device import AudioDevice
+from piirakka.model.event import BroadcastEvent, EventType
 from piirakka.model.player_state import PlayerState
 from piirakka.model.station import Station, StationPydantic
 
 VOLUME_INIT = 50
 VOLUME_MAX = 130
+
+logger = logging.getLogger(__name__)
 
 
 class Player:
@@ -19,6 +24,10 @@ class Player:
         self.ipc_socket = ipc_socket
         self.database = database
         self.callback = callback
+        self._ipc_connection: socket.socket | None = None
+        self._ipc_buffer = b""
+        self._ipc_request_id = 0
+        self._ipc_lock = threading.Lock()
         if self.use_mpv:
             self.proc = self._init_mpv()  # mpv process
 
@@ -29,9 +38,67 @@ class Player:
         # initial station set by context
 
     def __del__(self) -> None:
-        if self.use_mpv and hasattr(self, "proc"):
+        self.close()
+
+    def close(self) -> None:
+        connection = getattr(self, "_ipc_connection", None)
+        if connection is not None:
+            connection.close()
+            self._ipc_connection = None
+        if getattr(self, "use_mpv", False) and hasattr(self, "proc"):
             self.proc.terminate()
+        ipc_socket = getattr(self, "ipc_socket", None)
+        if getattr(self, "use_mpv", False) and ipc_socket and os.path.exists(ipc_socket):
             os.remove(self.ipc_socket)
+
+    def _connect_ipc(self) -> socket.socket:
+        if self._ipc_connection is None:
+            connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            connection.settimeout(10)
+            connection.connect(self.ipc_socket)
+            self._ipc_connection = connection
+        return self._ipc_connection
+
+    def _close_ipc_connection(self) -> None:
+        if self._ipc_connection is not None:
+            self._ipc_connection.close()
+            self._ipc_connection = None
+        self._ipc_buffer = b""
+
+    def _next_request_id(self) -> int:
+        self._ipc_request_id += 1
+        return self._ipc_request_id
+
+    def _ipc_command(self, command: list) -> dict:
+        with self._ipc_lock:
+            request_id = self._next_request_id()
+            request = {"command": command, "request_id": request_id}
+            connection = self._connect_ipc()
+            try:
+                connection.sendall(self._dumps(request).encode())
+                while True:
+                    newline_index = self._ipc_buffer.find(b"\n")
+                    if newline_index == -1:
+                        data = connection.recv(4096)
+                        if not data:
+                            raise ConnectionError("mpv IPC connection closed")
+                        self._ipc_buffer += data
+                        continue
+
+                    raw_response = self._ipc_buffer[:newline_index]
+                    self._ipc_buffer = self._ipc_buffer[newline_index + 1 :]
+                    if not raw_response:
+                        continue
+                    response = json.loads(raw_response)
+                    if response.get("request_id") == request_id:
+                        return response
+            except Exception as e:
+                self._close_ipc_connection()
+                logger.error(e, exc_info=True)
+                raise
+
+    def _mpv_command(self, *arguments) -> dict:
+        return self._ipc_command(list(arguments))
 
     def get_player_state(self) -> PlayerState:
         # for creation of callback events - sent into websocket
@@ -57,25 +124,6 @@ class Player:
         time.sleep(4)  # wait for mpv to start
         return proc
 
-    def _ipc_command(self, cmd: str) -> dict:
-        try:
-            # Create a Unix domain socket
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-                # Connect to the MPV IPC socket
-                sock.connect(self.ipc_socket)
-
-                # Send the command
-                sock.sendall(cmd.encode())
-
-                # Receive the response
-                response = sock.recv(4096).decode()
-                sock.close()
-                return json.loads(response)
-
-        except Exception as e:
-            print(f"Error: {e}")
-            return None
-
     @staticmethod
     def _ipc_success(resp: dict) -> bool:
         if resp and "error" in resp.keys():
@@ -89,43 +137,61 @@ class Player:
     def get_status(self) -> bool:
         # true: playing
         # false: paused
-        cmd = {"command": ["get_property", "pause"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "pause")
         if self._ipc_success(resp):
-            return not resp["data"] if resp else False
+            return not resp.get("data") if resp else False
 
     def get_volume(self) -> int:
-        cmd = {"command": ["get_property", "volume"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "volume")
         if self._ipc_success(resp):
-            return round(resp["data"])
+            return round(resp.get("data"))
 
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
             return False
-        cmd = {"command": ["set_property", "volume", str(vol)]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("set_property", "volume", str(vol))
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
+        )
         return self._ipc_success(resp)
 
     def get_bitrate(self) -> int:
-        cmd = {"command": ["get_property", "audio-bitrate"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "audio-bitrate")
         if self._ipc_success(resp):
-            return int(resp["data"])
+            return int(resp.get("data"))
 
     def get_codec(self) -> str:
-        cmd = {"command": ["get_property", "audio-codec-name"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "audio-codec-name")
         if self._ipc_success(resp):
-            return resp["data"]
+            return resp.get("data")
+
+    def get_device(self) -> str:
+        # currently used audio device
+        resp = self._mpv_command("get_property", "audio-device")
+        if self._ipc_success(resp):
+            return resp.get("data")
+
+    def ao_reload(self) -> str:
+        resp = self._mpv_command("ao-reload")
+        if self._ipc_success(resp):
+            return resp.get("error")
+
+    def set_device(self, device: str) -> str:
+        # select output device
+        resp = self._mpv_command("set_property", "audio-device", device)
+        if self._ipc_success(resp):
+            self.ao_reload()  # reload immediately after setting device
+            return resp.get("error")
+
+    def list_devices(self) -> list[AudioDevice]:
+        # all available audio devices
+        resp = self._mpv_command("get_property", "audio-device-list")
+        if self._ipc_success(resp):
+            devices = []
+            for dev in resp["data"]:
+                devices.append(AudioDevice(name=dev["name"], description=dev["description"]))
+            return devices
 
     def update_stations(self, stations: list[StationPydantic]) -> None:
         # TODO: verify if is uuid4 or str
@@ -153,30 +219,26 @@ class Player:
 
     def _set_station(self, url: str):
         # TODO: rework to accept StationPydantic
-        cmd = {"command": ["loadfile", f"{url}", "replace"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("loadfile", url, "replace")
         self.playing = True
         return bool(resp)
 
     def play(self) -> bool:
-        cmd = {"command": ["set_property", "pause", False]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("set_property", "pause", False)
         self.playing = True
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
+        )
         return bool(resp)
 
     def pause(self) -> bool:
-        cmd = {"command": ["set_property", "pause", True]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("set_property", "pause", True)
         self.playing = False
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
+        )
         return bool(resp)
 
     def toggle(self) -> bool:
@@ -191,9 +253,7 @@ class Player:
         # other interesting fields
         # genre: resp["data"]["icy-genre"]
         # desc: resp["data"]["icy-name"]
-        cmd = {"command": ["get_property", "metadata"]}
-        cmd = self._dumps(cmd)
-        resp = self._ipc_command(cmd)
+        resp = self._mpv_command("get_property", "metadata")
         if self._ipc_success(resp):
             try:
                 return resp["data"]["icy-title"]
@@ -210,5 +270,6 @@ class Player:
         self.play_station_with_id(random_station.station_id)
         # TODO: add small wait to have a better chance of actually broadcasting an update here
         self.callback(
-            PlayerBarUpdateEvent(content=self.get_player_state().render_html())
-        )  # send rendered html directly over websocket to subscribers
+            # send rendered html directly over websocket to subscribers
+            BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
+        )

@@ -8,11 +8,13 @@ import anyio
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-import piirakka.model.event as events
+from piirakka.model.event import BroadcastEvent, EventType
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.search_option import list_search_options
+from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these into template
 from piirakka.model.station import list_stations
+from piirakka.services.renderer import render
 
 from . import preflight
 
@@ -28,13 +30,14 @@ class Context:
     DATABASE = preflight.DB_PATH
 
     def __init__(self, broadcast_message_fn, track_history_manager, spawn_mpv) -> None:
-        """
-        Initialize Context with player and database.
+        """Initialize Context with player and database.
 
         Args:
-            broadcast_message_fn: Async callable(message: str) for broadcasting WebSocket updates
-            track_history_manager: TrackHistoryManager instance for track history
-            spawn_mpv: Bool to indicate if mpv should be spawned as subprocess
+        ----
+        broadcast_message_fn: Async callable(message: str) for broadcasting WebSocket updates
+        track_history_manager: TrackHistoryManager instance for track history
+        spawn_mpv: Bool to indicate if mpv should be spawned as subprocess
+
         """
         if spawn_mpv:
             self.SOCKET = preflight.generate_socket_path()
@@ -45,6 +48,7 @@ class Context:
         self._track_history_manager = track_history_manager
         self.player = Player(spawn_mpv, self.SOCKET, self.DATABASE, self.player_callback)
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
+        self.available_bluetooth_devices = []  # periodically refreshed in background
 
         with Session(self.db_engine) as session:
             stations = list_stations(session)
@@ -55,26 +59,34 @@ class Context:
                 self.player.current_station_id = str(stations[default_index].station_id)
                 self.player.play_station_with_id(self.player.current_station_id)
 
-    def player_callback(self, message) -> None:
+    def player_callback(self, event: EventType) -> None:
         # the Player object can call this to broadcast events after state changes
-        logger.info(f"Received event {type(message)} from player via callback")
-        payload = self.serialize_events(message)
+        logger.info(f"Received event {event.event_type} from player via callback")
+        payload = self.serialize_events(event)
         logger.info("Broadcasting Websocket message from player callback")
         anyio.from_thread.run(self._broadcast_message_fn, payload)
 
     async def push_track(self, track: RecentTrack) -> None:
+        """Render track history + player bar and push to subscribers."""
         self._track_history_manager.add_track(track)
         search_options = await self.get_search_options()  # populate search dropdown based on app settings
 
         history = self._track_history_manager.get_history()  # RecentTrack
-        rendered_history = "\n".join([t.render_html(search_options=search_options) for t in history])  # html
+        # TODO: entire history doesn't exist as component,
+        # so here it is hacked together from individual lines
+        rendered_history = "\n".join(
+            [render("components/recent_track.html", track=t, search_options=search_options) for t in history]
+        )
 
-        track_update_message = events.TrackChangeEvent(content=rendered_history)
+        # pack both track history and new player bar state into events
 
-        # send player bar update in the same event
-        player_bar_update_message = events.PlayerBarUpdateEvent(content=self.player.get_player_state().render_html())
+        track_update_event = BroadcastEvent(event_type=EventType.TRACK_HISTORY_CHANGED, content=rendered_history)
 
-        message = self.serialize_events(track_update_message, player_bar_update_message)
+        player_bar_update_event = BroadcastEvent(
+            event_type=EventType.PLAYER_BAR_UPDATED, content=self.player.get_player_state().render()
+        )
+
+        message = self.serialize_events(track_update_event, player_bar_update_event)
         await self._broadcast_message_fn(message=message)
 
     async def refresh_stations(self) -> None:
@@ -85,13 +97,36 @@ class Context:
             self.player.update_stations(stations_pydantic)
 
     async def push_stations(self) -> None:
-        # TODO: event type unused and not understood by frontend
-        # TODO: should be migrated to broadcast prerendered html before referencing in frontend
-        # broadcast complete station list to subscribers
+        """Render both sidebar and station management page content + broadcast via websocket."""
         stations = self.player.stations
-        station_update_message = events.StationListChangeEvent(content=stations)
-        message = {"events": [station_update_message.model_dump()]}
-        await self._broadcast_message_fn(message=json.dumps(message, default=str))
+
+        sidebar_stations_update_event = BroadcastEvent(
+            event_type=EventType.SIDEBAR_CHANGED,
+            content=render(
+                component="components/sidebar.html",
+                stations=stations,
+                sidebar_items=sidebar_items,
+            ),
+        )
+        station_settings_update_event = BroadcastEvent(
+            event_type=EventType.STATIONS_CHANGED,
+            content=render(component="components/station_settings.html", stations=stations),
+        )
+        message = self.serialize_events(sidebar_stations_update_event, station_settings_update_event)
+        await self._broadcast_message_fn(message=message)
+
+    async def push_devices(self) -> None:
+        """Render the device component and broadcast via websocket."""
+        bt_devices_update_event = BroadcastEvent(
+            event_type=EventType.BLUETOOTH_LIST_CHANGED,
+            content=render(
+                component="components/bluetooth_devices.html",
+                devices=self.available_bluetooth_devices,
+                current_audio_device=self.player.get_device(),
+            ),
+        )
+        message = self.serialize_events(bt_devices_update_event)
+        await self._broadcast_message_fn(message=message)
 
     async def get_search_options(self) -> list:
         # fetch search options from db

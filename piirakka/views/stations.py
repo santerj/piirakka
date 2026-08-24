@@ -20,10 +20,12 @@ from piirakka.model.station import (
 def create_routes(context):
     """Factory function that creates station management route handlers with dependencies injected.
 
-    Args:
+    Args
+    ----
     context: The application Context (for player control)
 
-    Returns:
+    Returns
+    -------
     List of Route objects
 
     """
