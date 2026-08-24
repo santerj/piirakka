@@ -17,6 +17,9 @@ function initializeBluetoothDevices() {
 
     const action = actionButton.dataset.deviceAction;
     const macAddress = encodeURIComponent(device.dataset.macAddress);
+    const originalLabel = actionButton.textContent;
+    actionButton.disabled = true;
+    actionButton.innerHTML = '<span class="loading loading-spinner loading-xs" aria-label="Loading"></span>';
     try {
       let response;
       if (action === "select-audio") {
@@ -31,9 +34,14 @@ function initializeBluetoothDevices() {
       if (!response.ok) {
         throw new Error(`Bluetooth ${action} failed: ${response.status}`);
       }
-      window.location.reload();
+      const scanResponse = await fetch("/api/devices/bluetooth/scan?timeout=1");
+      if (!scanResponse.ok) {
+        throw new Error(`Bluetooth scan failed: ${scanResponse.status}`);
+      }
     } catch (error) {
       console.error("Bluetooth device action failed:", error);
+      actionButton.disabled = false;
+      actionButton.textContent = originalLabel;
     }
   });
 

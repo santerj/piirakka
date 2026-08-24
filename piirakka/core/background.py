@@ -47,6 +47,9 @@ async def background_bluetooth_scan(context, interval: int = 10) -> list[Bluetoo
 
     while True:
         devices = await scanner.scan(timeout_seconds=5)
+        if devices == context.available_bluetooth_devices:
+            # don't push unnecessary updates
+            continue
         context.available_bluetooth_devices = devices
         await context.push_devices()
         await asyncio.sleep(interval)

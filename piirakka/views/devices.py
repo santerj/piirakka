@@ -63,9 +63,15 @@ def create_routes(context):
         return JSONResponse({"message": [dev.model_dump() for dev in devices]})
 
     async def scan_bluetooth_devices(request) -> JSONResponse:
-        # TODO: set timeout from queryparam
-        devices = await BluetoothDeviceScanner().scan()
+        timeout_seconds = request.query_params.get("timeout", "5")
+        try:
+            timeout_seconds = max(1, min(int(timeout_seconds), 10))
+        except ValueError:
+            return JSONResponse({"message": "timeout must be an integer"}, status_code=400)
+
+        devices = await BluetoothDeviceScanner().scan(timeout_seconds=timeout_seconds)
         context.available_bluetooth_devices = devices  # refresh cache in context
+        await context.push_devices()
         return JSONResponse({"message": [dev.model_dump() for dev in devices]})
 
     async def lazy_list_bluetooth_devices(request) -> JSONResponse:

@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import socket
 import subprocess
@@ -12,6 +13,8 @@ from piirakka.model.station import Station, StationPydantic
 
 VOLUME_INIT = 50
 VOLUME_MAX = 130
+
+logger = logging.getLogger(__name__)
 
 
 class Player:
@@ -74,8 +77,8 @@ class Player:
                 return json.loads(response)
 
         except Exception as e:
-            print(f"Error: {e}")
-            return None
+            logger.error(e, exc_info=True)
+            raise e
 
     @staticmethod
     def _ipc_success(resp: dict) -> bool:
