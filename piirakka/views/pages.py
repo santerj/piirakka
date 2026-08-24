@@ -34,7 +34,6 @@ def create_routes(templates: Jinja2Templates, context, track_history):
                 "stations": context.player.stations,
                 "recent_tracks": track_history.get_history(),
                 "player_state": context.player.get_player_state(),
-                "version": __version__,
                 "search_options": await context.get_search_options(),
             },
         )
@@ -60,6 +59,7 @@ def create_routes(templates: Jinja2Templates, context, track_history):
                 "sidebar_items": sidebar_items,
                 "stations": context.player.stations,
                 "player_state": context.player.get_player_state(),
+                "version": __version__,
                 "devices": context.available_bluetooth_devices,
                 "current_audio_device": context.player.get_device(),
             },

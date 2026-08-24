@@ -1,0 +1,28 @@
+# Install as /etc/containers/systemd/piirakka.container for rootful Quadlet.
+# Start with: sudo systemctl daemon-reload && sudo systemctl enable --now piirakka.service
+# The image tag must match the version in piirakka/__version__.py.
+# Replace UID 1000 and /home/your-user with the desktop user's values.
+
+[Unit]
+Description=Piirakka internet radio
+After=pipewire.service
+Wants=pipewire.service
+
+[Container]
+Image=ghcr.io/santerj/piirakka-bundled:0.5.0-bundled
+ContainerName=piirakka
+PublishPort=8000:8000
+Device=/dev/snd
+Device=/dev/rfkill
+Volume=/run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro
+Volume=/run/user/1000/pulse/native:/tmp/pulse-socket
+Volume=/home/your-user/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z
+Environment=PULSE_SERVER=unix:/tmp/pulse-socket
+Environment=XDG_RUNTIME_DIR=/tmp
+SecurityLabelDisable=true
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

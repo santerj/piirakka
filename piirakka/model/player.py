@@ -32,7 +32,11 @@ class Player:
             self.proc = self._init_mpv()  # mpv process
 
         self.volume = self.get_volume()
+        self.volume_before_mute = self.volume or VOLUME_INIT
         self.playing = self.get_status()
+        self.audio_device_name: str | None = None
+        self.bluetooth_device_name: str | None = None
+        self.bluetooth_device_address: str | None = None
         self.stations: list[StationPydantic] = []
         self.current_station: StationPydantic = None
         # initial station set by context
@@ -105,8 +109,10 @@ class Player:
         return PlayerState(
             playback_status=self.get_status(),
             volume=self.get_volume(),
-            current_station_name=self.current_station.name,
+            current_station_name=self.current_station.name if self.current_station else None,
             track_title=self.current_track(),
+            bluetooth_device_name=self.bluetooth_device_name,
+            audio_device_name=self.audio_device_name,
         )
 
     def _init_mpv(self):
@@ -144,17 +150,31 @@ class Player:
     def get_volume(self) -> int:
         resp = self._mpv_command("get_property", "volume")
         if self._ipc_success(resp):
-            return round(resp.get("data"))
+            volume = resp.get("data")
+            if isinstance(volume, (int, float)):
+                return round(volume)
+        return self.volume if hasattr(self, "volume") else VOLUME_INIT
 
     def set_volume(self, vol: int) -> bool:
         if not 0 <= vol <= VOLUME_MAX:
             return False
+        if vol > 0:
+            self.volume_before_mute = vol
         resp = self._mpv_command("set_property", "volume", str(vol))
+        if self._ipc_success(resp):
+            self.volume = vol
         self.callback(
             # send rendered html directly over websocket to subscribers
             BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
         )
         return self._ipc_success(resp)
+
+    def toggle_mute(self) -> bool:
+        current_volume = self.get_volume()
+        if current_volume:
+            self.volume_before_mute = current_volume
+            return self.set_volume(0)
+        return self.set_volume(self.volume_before_mute)
 
     def get_bitrate(self) -> int:
         resp = self._mpv_command("get_property", "audio-bitrate")
@@ -177,11 +197,30 @@ class Player:
         if self._ipc_success(resp):
             return resp.get("error")
 
-    def set_device(self, device: str) -> str:
-        # select output device
+    async def set_device(
+        self, device: str, bluetooth_device_name: str | None = None, bluetooth_device_address: str | None = None
+    ) -> str:
+        """Try to give bluetooth/pipewire some time to negotiate before switching output device.
+
+        - Pause audio
+        - Set device
+        - Reload AO
+        - Sleep
+        - Unpause
+
+        """
+        self._mpv_command("set_property", "pause", True)
         resp = self._mpv_command("set_property", "audio-device", device)
+        self.ao_reload()  # reload immediately after setting device
+        time.sleep(1)
+        self._mpv_command("set_property", "pause", False)
         if self._ipc_success(resp):
-            self.ao_reload()  # reload immediately after setting device
+            self.audio_device_name = device
+            self.bluetooth_device_name = bluetooth_device_name
+            self.bluetooth_device_address = bluetooth_device_address
+            self.callback(
+                BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render())
+            )
             return resp.get("error")
 
     def list_devices(self) -> list[AudioDevice]:
@@ -212,16 +251,23 @@ class Player:
 
     def play_station_with_id(self, station_id: str):
         # TODO: verify if is uuid4 or str
-        matching_station = next((s for s in self.stations if s.station_id == station_id))
-        if matching_station:
-            self._set_station(url=matching_station.url)
-            self.current_station = matching_station
+        matching_station = next((s for s in self.stations if s.station_id == station_id), None)
+        if not matching_station:
+            logger.warning("Unable to switch station: station %s was not found", station_id)
+            return False
+        if not self._set_station(url=matching_station.url):
+            logger.warning("Unable to load station %s (%s)", matching_station.name, matching_station.url)
+            return False
+        self.current_station = matching_station
+        logger.info("Switched to station %s", matching_station.name)
+        self.callback(BroadcastEvent(event_type=EventType.PLAYER_BAR_UPDATED, content=self.get_player_state().render()))
+        return True
 
     def _set_station(self, url: str):
         # TODO: rework to accept StationPydantic
         resp = self._mpv_command("loadfile", url, "replace")
         self.playing = True
-        return bool(resp)
+        return self._ipc_success(resp)
 
     def play(self) -> bool:
         resp = self._mpv_command("set_property", "pause", False)
@@ -255,10 +301,11 @@ class Player:
         # desc: resp["data"]["icy-name"]
         resp = self._mpv_command("get_property", "metadata")
         if self._ipc_success(resp):
-            try:
-                return resp["data"]["icy-title"]
-            except KeyError:
-                pass
+            metadata = resp.get("data")
+            if isinstance(metadata, dict):
+                track_title = metadata.get("icy-title")
+                if isinstance(track_title, str) and track_title.strip():
+                    return track_title.strip()
         return None
 
     def shuffle(self) -> None:

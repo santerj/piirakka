@@ -53,7 +53,7 @@ def create_routes(context):
     async def set_device(request) -> JSONResponse:
         device_name = request.path_params["device_name"].replace("%2F", "/")
         if await device_exists(context, device_name):
-            context.player.set_device(device_name)
+            await context.player.set_device(device_name)
             return JSONResponse({"message": "Audio device selected"})
         else:
             return JSONResponse({"message": "Audio device not found"}, status_code=404)
@@ -119,17 +119,31 @@ def create_routes(context):
             output_device = await match_devices(context, device_mac)
             if not output_device:
                 logger.debug("Output device not in mpv, sleeping...")
-                await asyncio.sleep(1) # sleep for a bit until device becomes available in mpv
+                await asyncio.sleep(1)  # sleep for a bit until device becomes available in mpv
             else:
                 break
-        context.player.set_device(output_device.name)
+        bluetooth_device = next(
+            (device for device in context.available_bluetooth_devices if device.address == device_mac), None
+        )
+        if bluetooth_device is None:
+            logger.info("Bluetooth name for %s is not cached; scanning for device identity", device_mac)
+            scanned_devices = await BluetoothDeviceScanner().scan(timeout_seconds=1)
+            bluetooth_device = next((device for device in scanned_devices if device.address == device_mac), None)
+        if bluetooth_device is None:
+            logger.warning("Could not resolve Bluetooth name for %s", device_mac)
+        else:
+            logger.info("Resolved Bluetooth device %s as %s", device_mac, bluetooth_device.name)
+        await context.player.set_device(
+            output_device.name,
+            bluetooth_device_name=bluetooth_device.name if bluetooth_device else None,
+            bluetooth_device_address=device_mac,
+        )
 
         return JSONResponse({"message": "ok"})
 
     route_prefix = "/api/devices/"
 
     # TODO: check whether PUT and DELETE methods work as idempotent
-    # TODO: add previously used mac to db and try to auto-connect after reboot
 
     return [
         Route(route_prefix + "audio/all", list_devices, methods=[HTTPMethod.GET]),

@@ -20,12 +20,13 @@ async def observe_current_track(context, track_history, interval: int = 1) -> No
     while True:
         await asyncio.sleep(interval)
         current_track_title = context.player.current_track()
-        if current_track_title is None:
+        current_station = context.player.current_station
+        if current_track_title is None or current_station is None:
             continue
 
         current_track = RecentTrack(
             title=current_track_title,
-            station=context.player.current_station.name,
+            station=current_station.name,
             timestamp=datetime.now().strftime("%H:%M"),
         )
 

@@ -1,6 +1,6 @@
 function initializeStationList(sidebar) {
   const stationList = sidebar.querySelector("#stationList");
-  if (!stationList || stationList.sortable) {
+  if (!stationList || stationList.sortable || typeof Sortable === "undefined") {
     return;
   }
 
@@ -34,6 +34,10 @@ function initializeSidebar() {
     }
 
     const stationId = station.dataset.stationid;
+    const drawer = document.getElementById("sidebar-toggle");
+    if (drawer) {
+      drawer.checked = false;
+    }
     fetch(`/api/radio/station/${stationId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -61,6 +65,10 @@ function initializeSidebar() {
   });
 
   sidebar.sidebarInitialized = true;
+  if (window.matchMedia("(min-width: 640px)").matches) {
+    sidebar.style.translate = "0 0";
+    sidebar.style.transform = "none";
+  }
   initializeStationList(sidebar);
 }
 

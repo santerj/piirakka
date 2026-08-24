@@ -2,9 +2,57 @@
 @import 'tailwindcss';
 
 @config '../../../tailwind.config.js';
+@source '../../templates';
 
 /* DaisyUI components */
 @plugin "daisyui";
+
+@media (min-width: 640px) {
+  .desktop-drawer {
+    display: block !important;
+  }
+
+  .desktop-drawer .drawer-content {
+    display: block !important;
+    margin-left: clamp(15rem, 16.666667vw, 20rem);
+    width: calc(100vw - clamp(15rem, 16.666667vw, 20rem));
+  }
+
+  .desktop-drawer .drawer-side {
+    display: block !important;
+    bottom: 0 !important;
+    height: auto !important;
+    inset-inline-start: 0 !important;
+    opacity: 1 !important;
+    overflow-y: auto !important;
+    pointer-events: auto !important;
+    position: fixed !important;
+    top: 0 !important;
+    transition: none !important;
+    visibility: visible !important;
+    width: clamp(15rem, 16.666667vw, 20rem) !important;
+  }
+
+  .desktop-drawer .drawer-side > .drawer-overlay {
+    display: none !important;
+  }
+
+  .desktop-drawer .drawer-side > aside {
+    translate: 0 0 !important;
+    transform: translateX(0) !important;
+    transition: none !important;
+    width: 100% !important;
+  }
+
+  .desktop-drawer .mobile-menu-button {
+    display: none !important;
+  }
+
+  .desktop-player {
+    left: clamp(15rem, 16.666667vw, 20rem) !important;
+    width: calc(100vw - clamp(15rem, 16.666667vw, 20rem)) !important;
+  }
+}
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
