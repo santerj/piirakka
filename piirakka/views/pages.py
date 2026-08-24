@@ -10,8 +10,7 @@ from piirakka.model.sidebar_item import sidebar_items
 
 
 def create_routes(templates: Jinja2Templates, context, track_history):
-    """
-    Factory function that creates page route handlers with dependencies injected.
+    """Factory function that creates page route handlers with dependencies injected.
 
     Args:
     -------

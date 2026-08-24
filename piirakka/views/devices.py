@@ -8,8 +8,7 @@ from starlette.routing import Route
 
 from piirakka.core.context import Context
 from piirakka.model.device import AudioDevice
-from piirakka.services.bluetooth import (BluetoothDeviceManager,
-                                         BluetoothDeviceScanner)
+from piirakka.services.bluetooth import BluetoothDeviceManager, BluetoothDeviceScanner
 
 # TODO: use urllib parsing / something from starlette to parse special
 # TODO: characters in path_params
@@ -32,10 +31,9 @@ async def match_devices(context: Context, mac_address) -> AudioDevice | None:
 
 
 def create_routes(context):
-    """
-    Factory function that creates device control route handlers with dependencies injected.
+    """Factory function that creates device control route handlers with dependencies injected.
 
-    Args
+    Args:
     ----
     context: The application Context (for player control)
 

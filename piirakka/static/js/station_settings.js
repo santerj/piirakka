@@ -7,9 +7,12 @@ function initializeStationSettings() {
   stationSettings.addEventListener("click", function (event) {
     const station = event.target.closest("li[data-station-id]");
     if (station && stationSettings.contains(station)) {
-      document.getElementById("edit_station_id").value = station.dataset.stationId;
-      document.getElementById("edit_station_name").value = station.dataset.stationName;
-      document.getElementById("edit_station_url").value = station.dataset.stationUrl;
+      document.getElementById("edit_station_id").value =
+      station.dataset.stationId;
+      document.getElementById("edit_station_name").value =
+      station.dataset.stationName;
+      document.getElementById("edit_station_url").value =
+      station.dataset.stationUrl;
       document.getElementById("edit_station_modal").showModal();
       return;
     }
@@ -52,7 +55,7 @@ async function updateStation(event) {
     if (response.ok) {
       document.getElementById("edit_station_modal").close();
     } else {
-      alert("Failed to update station: " + await response.text());
+      alert("Failed to update station: " + (await response.text()));
     }
   } catch (error) {
     console.error("Error:", error);

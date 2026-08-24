@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from piirakka.model.search_option import (list_search_options,
-                                          update_search_option)
+from piirakka.model.search_option import list_search_options, update_search_option
 
 
 def create_routes(context):

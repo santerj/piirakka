@@ -8,8 +8,7 @@ from starlette.routing import Route
 
 
 def create_routes(context):
-    """
-    Factory function that creates playback control route handlers with dependencies injected.
+    """Factory function that creates playback control route handlers with dependencies injected.
 
     Args:
     -------

@@ -12,8 +12,7 @@ from piirakka.model.event import BroadcastEvent, EventType
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.search_option import list_search_options
-from piirakka.model.sidebar_item import \
-    sidebar_items  # TODO: hardcode these into template
+from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these into template
 from piirakka.model.station import list_stations
 from piirakka.services.renderer import render
 
@@ -23,8 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class Context:
-    """
-    Application context managing player state and database.
+    """Application context managing player state and database.
 
     Requires broadcast_message_fn to be passed for WebSocket broadcasting from player callbacks.
     """
@@ -32,8 +30,7 @@ class Context:
     DATABASE = preflight.DB_PATH
 
     def __init__(self, broadcast_message_fn, track_history_manager, spawn_mpv) -> None:
-        """
-        Initialize Context with player and database.
+        """Initialize Context with player and database.
 
         Args:
         -------

@@ -47,7 +47,9 @@ socket.addEventListener("message", function (event) {
               break;
             }
             stationSettings.innerHTML = content;
-            stationSettings.dispatchEvent(new CustomEvent("station-settings:updated"));
+            stationSettings.dispatchEvent(
+              new CustomEvent("station-settings:updated"
+            ));
             break;
           }
           default:

@@ -7,8 +7,7 @@ env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=select_
 
 
 def render(component: str, **kwargs) -> str:
-    """
-    Render a Jinja component into html.
+    """Render a Jinja component into html.
 
     Args
     ----

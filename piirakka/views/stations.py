@@ -6,10 +6,15 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from piirakka.model.station import (create_station, delete_station,
-                                    list_stations, order_stations,
-                                    update_station, validate_station_name,
-                                    validate_station_url)
+from piirakka.model.station import (
+    create_station,
+    delete_station,
+    list_stations,
+    order_stations,
+    update_station,
+    validate_station_name,
+    validate_station_url,
+)
 
 
 def create_routes(context):
