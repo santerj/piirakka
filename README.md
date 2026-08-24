@@ -86,6 +86,11 @@ enabled. That task will have to be rerun manually by clicking on the task.
     djlint piirakka/templates/ --check
     djlint piirakka/templates/ --reformat
 
+### run isort
+
+    isort piirakka/ --check
+    isort piirakka/
+
 ### build with podman (bundled mpv)
 
     podman build -f containers/bundled.Containerfile -t piirakka:latest .

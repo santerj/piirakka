@@ -8,11 +8,12 @@ import anyio
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from piirakka.model.event import EventType, BroadcastEvent
+from piirakka.model.event import BroadcastEvent, EventType
 from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.search_option import list_search_options
-from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these into template
+from piirakka.model.sidebar_item import \
+    sidebar_items  # TODO: hardcode these into template
 from piirakka.model.station import list_stations
 from piirakka.services.renderer import render
 

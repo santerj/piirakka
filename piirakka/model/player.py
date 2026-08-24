@@ -6,7 +6,7 @@ import time
 from random import choice
 
 from piirakka.model.device import AudioDevice
-from piirakka.model.event import EventType, BroadcastEvent
+from piirakka.model.event import BroadcastEvent, EventType
 from piirakka.model.player_state import PlayerState
 from piirakka.model.station import Station, StationPydantic
 

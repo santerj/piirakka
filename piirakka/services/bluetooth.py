@@ -1,9 +1,9 @@
 import asyncio
-from dbus_fast.aio import MessageBus
+
 from dbus_fast import BusType, Variant
+from dbus_fast.aio import MessageBus
 
 from piirakka.model.device import BluetoothDevice
-
 
 # TODO: merge these classes into one manager
 

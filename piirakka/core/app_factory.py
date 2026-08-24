@@ -10,7 +10,8 @@ from starlette.templating import Jinja2Templates
 
 import piirakka
 from piirakka.services.track_history import TrackHistoryManager
-from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
+from piirakka.services.websocket import (WebSocketSubscriberManager,
+                                         create_websocket_connection)
 from piirakka.views import devices, pages, playback, settings, stations
 
 from . import preflight

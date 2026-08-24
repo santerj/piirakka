@@ -8,7 +8,8 @@ from starlette.routing import Route
 
 from piirakka.core.context import Context
 from piirakka.model.device import AudioDevice
-from piirakka.services.bluetooth import BluetoothDeviceManager, BluetoothDeviceScanner
+from piirakka.services.bluetooth import (BluetoothDeviceManager,
+                                         BluetoothDeviceScanner)
 
 # TODO: use urllib parsing / something from starlette to parse special
 # TODO: characters in path_params
