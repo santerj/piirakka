@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 class Context:
-    """Application context managing player state and database.
+    """
+    Application context managing player state and database.
 
     Requires broadcast_message_fn to be passed for WebSocket broadcasting from player callbacks.
     """
@@ -35,9 +36,11 @@ class Context:
         Initialize Context with player and database.
 
         Args:
-            broadcast_message_fn: Async callable(message: str) for broadcasting WebSocket updates
-            track_history_manager: TrackHistoryManager instance for track history
-            spawn_mpv: Bool to indicate if mpv should be spawned as subprocess
+        -------
+        broadcast_message_fn: Async callable(message: str) for broadcasting WebSocket updates
+        track_history_manager: TrackHistoryManager instance for track history
+        spawn_mpv: Bool to indicate if mpv should be spawned as subprocess
+
         """
         if spawn_mpv:
             self.SOCKET = preflight.generate_socket_path()
@@ -67,7 +70,7 @@ class Context:
         anyio.from_thread.run(self._broadcast_message_fn, payload)
 
     async def push_track(self, track: RecentTrack) -> None:
-        """Render track history + player bar and push to subscribers"""
+        """Render track history + player bar and push to subscribers."""
         self._track_history_manager.add_track(track)
         search_options = await self.get_search_options()  # populate search dropdown based on app settings
 

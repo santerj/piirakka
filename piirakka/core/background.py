@@ -38,6 +38,7 @@ async def background_bluetooth_scan(context, interval: int = 10) -> list[Bluetoo
     """Scan bluetooth devices periodically to have a list of options ready for the users.
 
     Args:
+    -------
     context: The application context for storing state
     interval: the period for running a background scan
 

@@ -7,7 +7,11 @@ from pydantic import BaseModel
 
 
 class EventType(str, Enum):
-    """Match the event name in client side websocket code"""
+    """
+    Definitions of server-originated events that are broadcasted via websocket.
+
+    Match the event value in client side websocket code.
+    """
 
     PLAYER_BAR_UPDATED = "player_bar_updated"
     STATIONS_CHANGED = "stations_changed"

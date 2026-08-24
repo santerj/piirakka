@@ -13,10 +13,12 @@ from piirakka.model.search_option import (list_search_options,
 def create_routes(context):
     """Factory function that creates playback control route handlers with dependencies injected.
 
-    Args:
+    Args
+    -------
     context: The application Context (for player control).
 
-    Returns:
+    Returns
+    -------
     List of Route objects.
 
     """

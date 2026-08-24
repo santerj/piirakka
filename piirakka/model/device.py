@@ -1,11 +1,10 @@
-"""Definitions of audio devices for playback"""
+"""Definitions of audio devices for playback."""
 
 from pydantic import BaseModel
 
 
 class BluetoothDevice(BaseModel):
-    """Bluetooth devices as scanned by dbus-fast"""
-
+    """Available Bluetooth device as scanned by dbus-fast."""
     name: str
     address: str  # MAC address
     path: str  # bluez path
@@ -14,7 +13,6 @@ class BluetoothDevice(BaseModel):
 
 
 class AudioDevice(BaseModel):
-    """Audio devices reported by mpv"""
-
+    """Available audio device as reported by mpv."""
     name: str
     description: str

@@ -26,7 +26,9 @@ def create_app(spawn_mpv: bool = True):
     Create and configure the Starlette application with all dependencies.
 
     Returns:
+    -------
     tuple: (app, context, track_history, subscriber_state)
+
     """
 
     templates_dir = os.path.join(os.path.dirname(piirakka.__file__), "templates")

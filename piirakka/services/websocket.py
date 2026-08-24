@@ -28,6 +28,7 @@ class WebSocketSubscriberManager:
             await subscriber.send_text(message)
 
     def __len__(self) -> int:
+        """The amount of subscribers currently connected."""
         return len(self.subscribers)
 
 
