@@ -18,7 +18,7 @@ COPY --from=build-app /build/dist/*.whl /tmp/
 
 RUN microdnf install -y python pip shadow-utils && \
     python -m pip install /tmp/*.whl && \
-    useradd --create-home --shell /bin/bash --no-log-init piirakka && \
+    useradd --uid 23332 --create-home --shell /bin/bash --no-log-init piirakka && \
     chown piirakka:piirakka /usr/local/bin/piirakka && \
     microdnf remove -y pip shadow-utils && \
     microdnf clean all
