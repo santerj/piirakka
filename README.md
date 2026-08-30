@@ -1,143 +1,28 @@
 # piirakka
 
+**Internet radio playback for social spaces.**
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/846ea04459dc4aaf8a20ee15d9667fca)](https://app.codacy.com/gh/santerj/piirakka/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-## development
+---
 
-### initialize dev environment
+Piirakka aims to bring the shared control of a physical radio receiver into the context of online radio streaming.
 
-    python -m venv venv
-    venv/bin/python -m pip install -r requirements/dev-requirements.txt
-    source venv/bin/activate
-    npm install
+With a physical FM radio, anyone in the room can adjust the tuner or volume. Internet radio offers a much wider selection of what to listen, but streaming is usually tied to a single physical device. This tends to limit the control of radio playback to a single person.
 
-### (in VS Code) start all dev tasks
+Piirakka is designed to allow anyone within the network to control internet radio playback from their own device. Hook it up to an audio system and a HTTP interface becomes the physical controls.
 
-- Open command palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
-- type `'Run Task'` > select `Start All`
+## Features
 
-This will open the stack of dev tools in the Terminal tab. Prerequisite is that the python env and
-node packages have been installed. Websocat and sqlite3 are also required.
+- Real-time, multi-user UI in the browser
+- Import any station (Icecast, SHOUTcast, HLS, MPEG-DASH...)
+- Bluetooth audio streaming support (with bluez, dbus, pipewire and wireplumber)
+- CRUD and playback controls available through REST API – pick your station with `curl` if you wish.
+- Desktop and mobile support
 
-Due to subprocess spawning, uvicorn doesn't have the development server (hot reloading)
-enabled. That task will have to be rerun manually by clicking on the task.
+## TODO: 
 
-### update python dependencies
-
-    pip-compile -o requirements/requirements.txt requirements/requirements.in
-    pip-compile -o requirements/dev-requirements.txt requirements/dev-requirements.in
-    pip-sync requirements/dev-requirements.txt
-
-### run starlette
-
-    python -m piirakka.main
-
-### build tailwind
-
-    npm run build:css
-
-### run tailwind in watch mode
-
-    npm run watch:css
-
-### edit icons
-
-    1. go to https://remixicon.com/
-    2. click on file icon, import collection
-    3. select the .remixicon file in project root
-    4. make changes to icon collection
-    5. download in svg format
-    6. unzip file, move contents to piirakka/static/icons
-    7. export collection, replace .remixicon file
-
-### subscribe to websockets in shell (needs [websocat](https://github.com/vi/websocat))
-
-    websocat ws://localhost:8000/ws/subscribe
-
-### run alembic
-
-    alembic revision -m "New migration"
-    alembic revision --autogenerate -m "Refresh model"
-    alembic upgrade head
-
-### build app
-
-    python -m build
-
-### install app
-
-    pip install dist/piirakka-*-py3-none-any.whl
-
-### look at included files in dist
-
-    unzip -l piirakka-*-py3-none-any.whl
-
-### run bandit
-
-    bandit -c pyproject.toml piirakka/
-
-### run ruff
-
-    ruff check piirakka/
-    ruff format piirakka/
-
-### run djlint
-
-    djlint piirakka/templates/ --check
-    djlint piirakka/templates/ --reformat
-
-### run isort
-
-    isort piirakka/ --check
-    isort piirakka/
-
-### build with podman (bundled mpv)
-
-    podman build -f containers/bundled.Containerfile -t piirakka:latest .
-
-### run with podman (bundled mpv)
-
-Works with Linux and PulseAudio.
-Make sure the host data directory (`~/.local/share/piirakka`, `/etc/piirakka`, etc) has 755 permissions.
-
-    podman run --rm -it \
-        --userns=keep-id \
-        --device /dev/snd \
-        --device /dev/rfkill \
-        -p 8000:8000 \
-        -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro \
-        -v /run/user/$(id -u)/pulse/native:/tmp/pulse-socket \
-        -v ~/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z \
-        -e PULSE_SERVER=unix:/tmp/pulse-socket \
-        -e XDG_RUNTIME_DIR=/tmp \
-        --security-opt label=disable \
-        localhost/piirakka:bundled-latest
-
-### run with podman (standalone)
-
-Create a socket and start mpv
-
-    TMPDIR=$(mktemp -d)
-    chmod 777 $TMPDIR
-
-    mpv \
-      --idle \
-      --volume=50 \
-      --volume-max=130 \
-      --cache=no \
-      --really-quiet \
-      --input-ipc-server=$TMPDIR/piirakka.sock
-
-
-Start standalone container
-
-    podman run --rm -it \
-        --userns=keep-id \
-        --device /dev/rfkill \
-        -p 8000:8000 \
-        -v $TMPDIR:/tmp/piirakka \
-        -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro \
-        -v ~/.local/share/piirakka:/home/piirakka/.local/share/piirakka:Z \
-        -e MPV_SOCKET=/tmp/piirakka/piirakka.sock \
-        --security-opt label=disable \
-        localhost/piirakka:byom-latest
+- Docker example
+- wheel example
+- screenshots
+- where to find stations
