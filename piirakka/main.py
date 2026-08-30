@@ -1,10 +1,10 @@
 """Piirakka application entry point."""
 
 import logging
+from dataclasses import asdict
 from pprint import pformat
 
 import uvicorn
-from dataclasses import asdict
 from setproctitle import setproctitle
 
 from piirakka.core import preflight

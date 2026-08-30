@@ -9,9 +9,9 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 import piirakka
+from piirakka.routes import devices, playback, settings, stations
 from piirakka.services.track_history import TrackHistoryManager
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
-from piirakka.routes import devices, playback, settings, stations
 from piirakka.views import pages
 
 from . import preflight

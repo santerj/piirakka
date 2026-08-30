@@ -4,11 +4,11 @@ import logging
 import logging.config
 import os
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
-from dataclasses import dataclass
 from platformdirs import user_data_dir
 
 import piirakka

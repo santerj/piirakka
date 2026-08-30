@@ -1,9 +1,9 @@
 """Application Context - manages player state and database."""
 
+import asyncio
 import json
 import logging
 import os
-import asyncio
 
 import anyio
 from sqlalchemy import create_engine
