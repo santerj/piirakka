@@ -12,7 +12,8 @@ import piirakka
 from piirakka.services.track_history import TrackHistoryManager
 from piirakka.services.persistence import load_state
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
-from piirakka.views import devices, pages, playback, settings, stations
+from piirakka.routes import devices, playback, settings, stations
+from piirakka.views import pages
 
 from . import preflight
 from .background import background_bluetooth_scan, observe_current_track
