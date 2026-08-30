@@ -16,7 +16,6 @@ from piirakka.model.search_option import list_search_options
 from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these into template
 from piirakka.model.station import list_stations
 from piirakka.services.renderer import render
-from piirakka.services.bluetooth import BluetoothDeviceManager
 
 from . import preflight
 
