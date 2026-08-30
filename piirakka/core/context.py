@@ -47,7 +47,6 @@ class Context:
 
         self._broadcast_message_fn = broadcast_message_fn
         self._track_history_manager = track_history_manager
-        self.state_path = preflight.STATE_PATH
         self._callbacks_ready = False
         self.player = Player(spawn_mpv, self.SOCKET, self.DATABASE, self.player_callback)
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
