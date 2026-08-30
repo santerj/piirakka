@@ -17,7 +17,7 @@ from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these in
 from piirakka.model.station import list_stations
 from piirakka.services.renderer import render
 
-from . import preflight
+from .preflight import APP_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -28,27 +28,22 @@ class Context:
     Requires broadcast_message_fn to be passed for WebSocket broadcasting from player callbacks.
     """
 
-    DATABASE = preflight.DB_PATH
+    DATABASE = APP_CONFIG.DB_PATH
 
-    def __init__(self, broadcast_message_fn, track_history_manager, spawn_mpv, persisted_state=None) -> None:
+    def __init__(self, broadcast_message_fn, track_history_manager) -> None:
         """Initialize Context with player and database.
 
         Args:
         ----
         broadcast_message_fn: Async callable(message: str) for broadcasting WebSocket updates
         track_history_manager: TrackHistoryManager instance for track history
-        spawn_mpv: Bool to indicate if mpv should be spawned as subprocess
 
         """
-        if spawn_mpv:
-            self.SOCKET = preflight.generate_socket_path()
-        else:
-            self.SOCKET = os.getenv("MPV_SOCKET", None)
 
         self._broadcast_message_fn = broadcast_message_fn
         self._track_history_manager = track_history_manager
         self._callbacks_ready = False
-        self.player = Player(spawn_mpv, self.SOCKET, self.DATABASE, self.player_callback)
+        self.player = Player(APP_CONFIG.NO_MPV, APP_CONFIG.MPV_SOCKET, self.DATABASE, self.player_callback)
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
         self.available_bluetooth_devices = []  # periodically refreshed in background
 

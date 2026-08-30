@@ -5,7 +5,7 @@ from http import HTTPMethod
 from starlette.routing import Route
 from starlette.templating import Jinja2Templates
 
-from piirakka.__version__ import __version__
+from piirakka.core.preflight import APP_CONFIG
 from piirakka.model.sidebar_item import sidebar_items
 
 
@@ -59,9 +59,9 @@ def create_routes(templates: Jinja2Templates, context, track_history):
                 "sidebar_items": sidebar_items,
                 "stations": context.player.stations,
                 "player_state": context.player.get_player_state(),
-                "version": __version__,
                 "devices": context.available_bluetooth_devices,
                 "current_audio_device": context.player.get_device(),
+                "APP_CONFIG": APP_CONFIG,
             },
         )
 

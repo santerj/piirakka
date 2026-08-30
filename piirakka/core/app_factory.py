@@ -21,7 +21,7 @@ from .context import Context
 logger = logging.getLogger(__name__)
 
 
-def create_app(spawn_mpv: bool = True):
+def create_app():
     """Create and configure the Starlette application with all dependencies.
 
     Returns:
@@ -43,11 +43,9 @@ def create_app(spawn_mpv: bool = True):
         await subscriber_state.broadcast(message)
 
     track_history = TrackHistoryManager()
-    logger.info("Restored %d tracks from persisted state", len(track_history))
     context = Context(
         broadcast_message_fn=broadcast_message,
         track_history_manager=track_history,
-        spawn_mpv=spawn_mpv,
     )
 
     # create endpoint with the bound state manager
@@ -60,7 +58,6 @@ def create_app(spawn_mpv: bool = True):
         yield
         for subscriber in subscriber_state.subscribers:  # shutdown
             await subscriber.close()
-        context.save_state()
         context.player.close()
 
     app = Starlette(
