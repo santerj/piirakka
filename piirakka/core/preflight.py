@@ -1,7 +1,10 @@
+"""App configs, validation and scripts to be run at startup."""
+
 import logging
 import logging.config
 import os
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 from alembic import command
@@ -9,31 +12,44 @@ from alembic.config import Config
 from platformdirs import user_data_dir
 
 import piirakka
-
-APP_NAME = "piirakka"
-APP_AUTHOR = "santerj"
-
-db_dir = user_data_dir(APP_NAME, APP_AUTHOR)
-os.makedirs(db_dir, exist_ok=True)
-
-DB_PATH = os.path.join(db_dir, "piirakka.db")
-
-STATE_PATH = os.path.join(db_dir, "piirakka.pickle")
-
-if override := os.getenv("PIIRAKKA_DB"):
-    DB_PATH = override
-
-if override := os.getenv("PIIRAKKA_STATE"):
-    STATE_PATH = override
-
-BASE_DIR = Path(__file__).resolve().parent  # dir of main.py
-DB_NAME = "piirakka.db"
-# DB_PATH = BASE_DIR / f"{DB_NAME}"
-DB_URL = f"sqlite:///{DB_PATH}"
+from piirakka.__version__ import __version__
+from piirakka.services.argparser import parser
 
 
-def generate_socket_path():
-    return os.path.join(tempfile.gettempdir(), f"piirakka_{os.getpid()}.sock")
+@dataclass(frozen=True)
+class _APP_CONFIG:
+    # flags from command line
+    _args, _ = parser.parse_known_args()
+    NO_MPV: bool = _args.no_mpv
+    NO_BLUETOOTH: bool = _args.no_bluetooth
+
+    # basic stuff
+    APP_VERSION: str = __version__
+    APP_NAME: str = "piirakka"
+    APP_AUTHOR: str = "santerj"
+    BASE_DIR: Path = Path(__file__).resolve().parent  # dir of main.py
+
+    # database stuff
+    DB_NAME: str = "piirakka.db"  # file without path
+    DB_DIR: str = user_data_dir(APP_NAME, APP_AUTHOR)  # path to base directory for db
+    DB_PATH: Path = os.path.join(DB_DIR, DB_NAME)  # full path including file
+    DB_URL: str = f"sqlite:///{DB_PATH}"
+
+    # unix socket stuff
+    MPV_SOCKET: str = os.getenv("MPV_SOCKET") or os.path.join(tempfile.gettempdir(), f"piirakka_{os.getpid()}.sock")
+
+    def validate(self):
+        """Check against forbidden combinations."""
+        if self.NO_MPV and os.getenv("MPV_SOCKET", None) is None:
+            # ensure that custom socket is used
+            raise ValueError("MPV_SOCKET must be set when using --no-mpv")
+
+    def __post_init__(self):
+        self.validate()
+        os.makedirs(self.DB_DIR, exist_ok=True)
+
+
+APP_CONFIG = _APP_CONFIG()
 
 
 def get_alembic_config():
@@ -45,7 +61,7 @@ def get_alembic_config():
     cfg.set_main_option("script_location", os.path.join(os.path.dirname(piirakka.__file__), "migrations"))
 
     # IMPORTANT: override the DB path
-    cfg.set_main_option("sqlalchemy.url", f"{DB_URL}")
+    cfg.set_main_option("sqlalchemy.url", f"{APP_CONFIG.DB_URL}")
 
     return cfg
 

@@ -8,6 +8,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 from piirakka.core.context import Context
+from piirakka.core.preflight import APP_CONFIG
 from piirakka.model.device import AudioDevice
 from piirakka.services.bluetooth import BluetoothDeviceManager, BluetoothDeviceScanner
 
@@ -145,18 +146,32 @@ def create_routes(context):
 
     # TODO: check whether PUT and DELETE methods work as idempotent
 
-    return [
+    routes = [
         Route(route_prefix + "audio/all", list_devices, methods=[HTTPMethod.GET]),
         Route(route_prefix + "audio/current", get_device, methods=[HTTPMethod.GET]),
         Route(route_prefix + "audio/{device_name:path}", set_device, methods=[HTTPMethod.PUT]),
-        Route(route_prefix + "bluetooth/scan", scan_bluetooth_devices, methods=[HTTPMethod.GET]),
-        Route(route_prefix + "bluetooth/lazy", lazy_list_bluetooth_devices, methods=[HTTPMethod.GET]),
-        Route(route_prefix + "bluetooth/{device_mac}/match", find_bt_audio_match, methods=[HTTPMethod.GET]),
-        Route(route_prefix + "bluetooth/{device_mac}/pair", pair_bluetooth_device, methods=[HTTPMethod.PUT]),
-        Route(route_prefix + "bluetooth/{device_mac}/unpair", unpair_bluetooth_device, methods=[HTTPMethod.PUT]),
-        Route(route_prefix + "bluetooth/{device_mac}/connect", connect_bluetooth_device, methods=[HTTPMethod.PUT]),
-        Route(
-            route_prefix + "bluetooth/{device_mac}/disconnect", disconnect_bluetooth_device, methods=[HTTPMethod.PUT]
-        ),
-        Route(route_prefix + "bluetooth/{device_mac}/setup", setup_bluetooth_device, methods=[HTTPMethod.PUT]),
     ]
+
+    if not APP_CONFIG.NO_BLUETOOTH:
+        routes.extend(
+            [
+                Route(route_prefix + "bluetooth/scan", scan_bluetooth_devices, methods=[HTTPMethod.GET]),
+                Route(route_prefix + "bluetooth/lazy", lazy_list_bluetooth_devices, methods=[HTTPMethod.GET]),
+                Route(route_prefix + "bluetooth/{device_mac}/match", find_bt_audio_match, methods=[HTTPMethod.GET]),
+                Route(route_prefix + "bluetooth/{device_mac}/pair", pair_bluetooth_device, methods=[HTTPMethod.PUT]),
+                Route(
+                    route_prefix + "bluetooth/{device_mac}/unpair", unpair_bluetooth_device, methods=[HTTPMethod.PUT]
+                ),
+                Route(
+                    route_prefix + "bluetooth/{device_mac}/connect", connect_bluetooth_device, methods=[HTTPMethod.PUT]
+                ),
+                Route(
+                    route_prefix + "bluetooth/{device_mac}/disconnect",
+                    disconnect_bluetooth_device,
+                    methods=[HTTPMethod.PUT],
+                ),
+                Route(route_prefix + "bluetooth/{device_mac}/setup", setup_bluetooth_device, methods=[HTTPMethod.PUT]),
+            ]
+        )
+
+    return routes

@@ -9,10 +9,10 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 import piirakka
+from piirakka.routes import devices, playback, settings, stations
 from piirakka.services.track_history import TrackHistoryManager
-from piirakka.services.persistence import load_state
 from piirakka.services.websocket import WebSocketSubscriberManager, create_websocket_connection
-from piirakka.views import devices, pages, playback, settings, stations
+from piirakka.views import pages
 
 from . import preflight
 from .background import background_bluetooth_scan, observe_current_track
@@ -21,7 +21,7 @@ from .context import Context
 logger = logging.getLogger(__name__)
 
 
-def create_app(spawn_mpv: bool = True):
+def create_app():
     """Create and configure the Starlette application with all dependencies.
 
     Returns:
@@ -42,15 +42,10 @@ def create_app(spawn_mpv: bool = True):
         """Broadcast message to all WebSocket subscribers."""
         await subscriber_state.broadcast(message)
 
-    persisted_state = load_state(preflight.STATE_PATH)
     track_history = TrackHistoryManager()
-    track_history.load_history(persisted_state.get("track_history", []))
-    logger.info("Restored %d tracks from persisted state", len(track_history))
     context = Context(
         broadcast_message_fn=broadcast_message,
         track_history_manager=track_history,
-        spawn_mpv=spawn_mpv,
-        persisted_state=persisted_state,
     )
 
     # create endpoint with the bound state manager
@@ -60,11 +55,9 @@ def create_app(spawn_mpv: bool = True):
     async def lifespan(app: Starlette) -> None:
         asyncio.create_task(observe_current_track(context, track_history))  # startup
         asyncio.create_task(background_bluetooth_scan(context))
-        await context.restore_audio_device()
         yield
         for subscriber in subscriber_state.subscribers:  # shutdown
             await subscriber.close()
-        context.save_state()
         context.player.close()
 
     app = Starlette(

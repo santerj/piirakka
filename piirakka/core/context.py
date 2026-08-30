@@ -1,25 +1,23 @@
 """Application Context - manages player state and database."""
 
+import asyncio
 import json
 import logging
 import os
-import asyncio
 
 import anyio
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+from piirakka.core.player import Player
 from piirakka.model.event import BroadcastEvent, EventType
-from piirakka.model.player import Player
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.search_option import list_search_options
 from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these into template
 from piirakka.model.station import list_stations
 from piirakka.services.renderer import render
-from piirakka.services.persistence import save_state
-from piirakka.services.bluetooth import BluetoothDeviceManager
 
-from . import preflight
+from .preflight import APP_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -30,32 +28,22 @@ class Context:
     Requires broadcast_message_fn to be passed for WebSocket broadcasting from player callbacks.
     """
 
-    DATABASE = preflight.DB_PATH
+    DATABASE = APP_CONFIG.DB_PATH
 
-    def __init__(self, broadcast_message_fn, track_history_manager, spawn_mpv, persisted_state=None) -> None:
+    def __init__(self, broadcast_message_fn, track_history_manager) -> None:
         """Initialize Context with player and database.
 
         Args:
         ----
         broadcast_message_fn: Async callable(message: str) for broadcasting WebSocket updates
         track_history_manager: TrackHistoryManager instance for track history
-        spawn_mpv: Bool to indicate if mpv should be spawned as subprocess
 
         """
-        if spawn_mpv:
-            self.SOCKET = preflight.generate_socket_path()
-        else:
-            self.SOCKET = os.getenv("MPV_SOCKET", None)
 
         self._broadcast_message_fn = broadcast_message_fn
         self._track_history_manager = track_history_manager
-        self._persisted_state = persisted_state or {}
-        self.state_path = preflight.STATE_PATH
         self._callbacks_ready = False
-        self.player = Player(spawn_mpv, self.SOCKET, self.DATABASE, self.player_callback)
-        self.player.audio_device_name = self._persisted_state.get("audio_device_name")
-        self.player.bluetooth_device_name = self._persisted_state.get("bluetooth_device_name")
-        self.player.bluetooth_device_address = self._persisted_state.get("bluetooth_device_address")
+        self.player = Player(APP_CONFIG.NO_MPV, APP_CONFIG.MPV_SOCKET, self.DATABASE, self.player_callback)
         self.db_engine = create_engine(f"sqlite:///{self.DATABASE}", echo=False)
         self.available_bluetooth_devices = []  # periodically refreshed in background
 
@@ -68,51 +56,6 @@ class Context:
                 self.player.current_station_id = str(stations[default_index].station_id)
                 self.player.play_station_with_id(self.player.current_station_id)
             self._callbacks_ready = True
-
-    async def restore_audio_device(self) -> None:
-        address = self.player.bluetooth_device_address
-        logger.info("Attempting to restore audio device: %s", address or self.player.audio_device_name or "none")
-        try:
-            if address:
-                logger.info("Reconnecting Bluetooth device %s", self.player.bluetooth_device_name or address)
-                await BluetoothDeviceManager.connect(address)
-                for _ in range(10):
-                    output_device = next(
-                        (device for device in self.player.list_devices() if address.replace(":", "_") in device.name),
-                        None,
-                    )
-                    if output_device:
-                        logger.info("Restoring Bluetooth audio output %s", output_device.name)
-                        await self.player.set_device(
-                            output_device.name,
-                            bluetooth_device_name=self.player.bluetooth_device_name,
-                            bluetooth_device_address=address,
-                        )
-                        return
-                    await anyio.sleep(1)
-            elif self.player.audio_device_name:
-                logger.info("Restoring audio output %s", self.player.audio_device_name)
-                output_device = next(
-                    (device for device in self.player.list_devices() if device.name == self.player.audio_device_name),
-                    None,
-                )
-                if output_device:
-                    await self.player.set_device(output_device.name)
-                    return
-            logger.info("No persisted audio device was available to restore")
-        except Exception:
-            logger.warning("Unable to restore audio device %s", address or self.player.audio_device_name, exc_info=True)
-
-    def save_state(self) -> None:
-        save_state(
-            self.state_path,
-            {
-                "track_history": self._track_history_manager.get_history(),
-                "audio_device_name": self.player.audio_device_name,
-                "bluetooth_device_name": self.player.bluetooth_device_name,
-                "bluetooth_device_address": self.player.bluetooth_device_address,
-            },
-        )
 
     def player_callback(self, event: EventType) -> None:
         # the Player object can call this to broadcast events after state changes

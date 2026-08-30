@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class Player:
-    def __init__(self, mpv, ipc_socket, database, callback) -> None:
-        self.use_mpv = mpv
+    def __init__(self, no_mpv: bool, ipc_socket, database, callback) -> None:
         self.ipc_socket = ipc_socket
         self.database = database
         self.callback = callback
@@ -28,7 +27,7 @@ class Player:
         self._ipc_buffer = b""
         self._ipc_request_id = 0
         self._ipc_lock = threading.Lock()
-        if self.use_mpv:
+        if not no_mpv:
             self.proc = self._init_mpv()  # mpv process
 
         self.volume = self.get_volume()
@@ -127,6 +126,7 @@ class Player:
             "--really-quiet",
         ]
         proc = subprocess.Popen(cmd)
+        # TODO: poll
         time.sleep(4)  # wait for mpv to start
         return proc
 
