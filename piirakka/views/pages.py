@@ -6,7 +6,6 @@ from starlette.routing import Route
 from starlette.templating import Jinja2Templates
 
 from piirakka.core.preflight import APP_CONFIG
-from piirakka.model.sidebar_item import sidebar_items
 
 
 def create_routes(templates: Jinja2Templates, context, track_history):
@@ -30,7 +29,6 @@ def create_routes(templates: Jinja2Templates, context, track_history):
             name="index.html",
             context={
                 "request": request,
-                "sidebar_items": sidebar_items,
                 "stations": context.player.stations,
                 "recent_tracks": track_history.get_history(),
                 "player_state": context.player.get_player_state(),
@@ -44,7 +42,6 @@ def create_routes(templates: Jinja2Templates, context, track_history):
             name="stations.html",
             context={
                 "request": request,
-                "sidebar_items": sidebar_items,
                 "stations": context.player.stations,
                 "player_state": context.player.get_player_state(),
             },
@@ -56,7 +53,6 @@ def create_routes(templates: Jinja2Templates, context, track_history):
             name="settings.html",
             context={
                 "request": request,
-                "sidebar_items": sidebar_items,
                 "stations": context.player.stations,
                 "player_state": context.player.get_player_state(),
                 "devices": context.available_bluetooth_devices,
