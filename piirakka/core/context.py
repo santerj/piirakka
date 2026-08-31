@@ -13,7 +13,6 @@ from piirakka.core.player import Player
 from piirakka.model.event import BroadcastEvent, EventType
 from piirakka.model.recent_track import RecentTrack
 from piirakka.model.search_option import list_search_options
-from piirakka.model.sidebar_item import sidebar_items  # TODO: hardcode these into template
 from piirakka.model.station import list_stations
 from piirakka.services.renderer import render
 
@@ -111,7 +110,6 @@ class Context:
             content=render(
                 component="components/sidebar.html",
                 stations=stations,
-                sidebar_items=sidebar_items,
             ),
         )
         station_settings_update_event = BroadcastEvent(
