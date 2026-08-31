@@ -30,7 +30,6 @@ What is needed for local development:
     # run app
     python -m piirakka.main
 
-
 ### Useful software
 
 - [curl](https://curl.se/) for querying HTTP endpoints
@@ -48,7 +47,7 @@ Note: due to subprocess spawning, uvicorn doesn't have the development server (h
 
 The app is built around the [Starlette](https://starlette.dev/) framework on the [uvicorn](https://uvicorn.dev/) ASGI server. The app has HTTP endpoints for manipulating audio playback, database, and device connections. Audio playback (and streaming) is handled by [mpv](https://mpv.io/).
 
-As the app (viewed through the browser) is real-time and multi-user, the backend broadcasts [state changes as HTML fragments](https://en.wikipedia.org/wiki/HATEOAS) through a WebSocket connection. The WebSocket endpoint only broadcasts pre-rendered HTML, so other clients will have to implement a polling mechanism.
+As the app (viewed through the browser) is real-time and multi-user, the backend broadcasts [state changes as HTML fragments](https://github.com/guettli/frow--fragments-over-the-wire) through a WebSocket connection. The WebSocket endpoint only broadcasts pre-rendered HTML, so other clients will have to implement a polling mechanism.
 
 ### Security considerations
 
@@ -173,7 +172,6 @@ Create a socket and start mpv
       --cache=no \
       --really-quiet \
       --input-ipc-server=$TMPDIR/piirakka.sock
-
 
 Start standalone container
 

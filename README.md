@@ -20,7 +20,7 @@ Piirakka is designed to allow anyone within the network to control internet radi
 - CRUD and playback controls available through REST API – pick your station with `curl` if you wish.
 - Desktop and mobile support
 
-## TODO: 
+## TODO
 
 - Docker example
 - wheel example
