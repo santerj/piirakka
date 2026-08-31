@@ -16,7 +16,7 @@ What is needed for local development:
     python -m venv venv
 
     # install python dependencies
-    venv/bin/python -m pip install -r requirements/dev-requirements.txt
+    venv/bin/python -m pip install -e ".[dev]"
 
     # install node dependencies
     npm install
@@ -69,11 +69,9 @@ Two flavours of Containerfile are maintained: _bundled_ and _standalone_. The fo
     # without bluetooth
     python -m piirakka.main --no-bluetooth
 
-### Update python dependencies with pip-tools
+### Generate constraint lockfile
 
-    pip-compile -o requirements/requirements.txt requirements/requirements.in
-    pip-compile -o requirements/dev-requirements.txt requirements/dev-requirements.in
-    pip-sync requirements/dev-requirements.txt
+    pip-compile pyproject.toml --output-file=requirements.txt
 
 ### Build stylesheets
 
