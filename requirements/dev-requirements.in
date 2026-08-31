@@ -1,8 +1,0 @@
--r requirements.txt
-bandit
-build
-djlint
-isort
-nox
-pip-tools
-ruff
