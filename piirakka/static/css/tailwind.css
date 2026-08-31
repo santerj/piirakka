@@ -1,5 +1,5 @@
 /* Use TailwindCSS with DaisyUI */
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @config '../../../tailwind.config.js';
 @source '../../templates';

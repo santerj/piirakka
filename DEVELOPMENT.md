@@ -55,7 +55,7 @@ Piirakka is not designed to be a security-hardened application. In a nutshell, i
 
 ## Containers
 
-Two flavours of Containerfile are maintained: *bundled* and *standalone*. The former contains a mpv binary, and the latter is meant for users who prefer to deploy their own mpv instance.
+Two flavours of Containerfile are maintained: _bundled_ and _standalone_. The former contains a mpv binary, and the latter is meant for users who prefer to deploy their own mpv instance.
 
 ## Usual commands cheat sheet
 
@@ -130,6 +130,9 @@ Two flavours of Containerfile are maintained: *bundled* and *standalone*. The fo
     # isort
     isort piirakka/ --check
     isort piirakka/
+
+    # prettier
+    npx prettier . --write
 
 ### Build image
 

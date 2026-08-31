@@ -1,62 +1,66 @@
 <div class="overflow-y relative">
-    <div class="px-3 py-2 join join-vertical space-y-2">
-        <label class="label pl-3 py-0.5" data-search-option-key="apple_music_web">
-            <input type="checkbox" checked="checked" class="toggle" />
-            Apple Music (web)
-        </label>
-        <label class="label pl-3 py-0.5"
-               data-search-option-key="apple_music_desktop">
-            <input type="checkbox" checked="checked" class="toggle" />
-            Apple Music (desktop)
-        </label>
-        <label class="label pl-3 py-0.5" data-search-option-key="spotify_web">
-            <input type="checkbox" checked="checked" class="toggle" />
-            Spotify (web)
-        </label>
-        <label class="label pl-3 py-0.5" data-search-option-key="spotify_desktop">
-            <input type="checkbox" checked="checked" class="toggle" />
-            Spotify (desktop)
-        </label>
-        <label class="label pl-3 py-0.5" data-search-option-key="youtube">
-            <input type="checkbox" checked="checked" class="toggle" />
-            YouTube
-        </label>
-        <label class="label pl-3 py-0.5" data-search-option-key="bandcamp">
-            <input type="checkbox" checked="checked" class="toggle" />
-            Bandcamp
-        </label>
-    </div>
+  <div class="px-3 py-2 join join-vertical space-y-2">
+    <label class="label pl-3 py-0.5" data-search-option-key="apple_music_web">
+      <input type="checkbox" checked="checked" class="toggle" />
+      Apple Music (web)
+    </label>
+    <label
+      class="label pl-3 py-0.5"
+      data-search-option-key="apple_music_desktop"
+    >
+      <input type="checkbox" checked="checked" class="toggle" />
+      Apple Music (desktop)
+    </label>
+    <label class="label pl-3 py-0.5" data-search-option-key="spotify_web">
+      <input type="checkbox" checked="checked" class="toggle" />
+      Spotify (web)
+    </label>
+    <label class="label pl-3 py-0.5" data-search-option-key="spotify_desktop">
+      <input type="checkbox" checked="checked" class="toggle" />
+      Spotify (desktop)
+    </label>
+    <label class="label pl-3 py-0.5" data-search-option-key="youtube">
+      <input type="checkbox" checked="checked" class="toggle" />
+      YouTube
+    </label>
+    <label class="label pl-3 py-0.5" data-search-option-key="bandcamp">
+      <input type="checkbox" checked="checked" class="toggle" />
+      Bandcamp
+    </label>
+  </div>
 </div>
 <script>
-    // fetch search options from the server and set checkboxes
-    fetch('/api/settings/search_options')
-        .then(response => response.json())
-        .then(data => {
-            for (const [key, isEnabled] of Object.entries(data)) {
-                const checkbox = document.querySelector(`label[data-search-option-key="${key}"] input[type="checkbox"]`);
-                if (checkbox) {
-                    checkbox.checked = isEnabled;
-                }
-            }
-        });
+  // fetch search options from the server and set checkboxes
+  fetch("/api/settings/search_options")
+    .then((response) => response.json())
+    .then((data) => {
+      for (const [key, isEnabled] of Object.entries(data)) {
+        const checkbox = document.querySelector(
+          `label[data-search-option-key="${key}"] input[type="checkbox"]`,
+        );
+        if (checkbox) {
+          checkbox.checked = isEnabled;
+        }
+      }
+    });
 </script>
 <script>
-    // add event listeners to all toggles
-    document.querySelectorAll('.toggle').forEach(toggle => {
-        toggle.addEventListener('change', function() {
-            const isEnabled = this.checked;
-            const key = this.parentElement.getAttribute('data-search-option-key');
-            fetch(`/api/settings/search_options/${key}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        is_enabled: isEnabled
-                    })
-                })
-                .then(response => response.json())
-                .then(data => console.log(data));
-        });
+  // add event listeners to all toggles
+  document.querySelectorAll(".toggle").forEach((toggle) => {
+    toggle.addEventListener("change", function () {
+      const isEnabled = this.checked;
+      const key = this.parentElement.getAttribute("data-search-option-key");
+      fetch(`/api/settings/search_options/${key}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          is_enabled: isEnabled,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => console.log(data));
     });
+  });
 </script>
