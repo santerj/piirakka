@@ -1,37 +1,29 @@
 <dialog id="edit_station_modal" class="modal">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">Edit station</h3>
-    <form id="editStationForm">
-      <fieldset class="fieldset">
-        <input type="hidden" id="edit_station_id" />
-        <input
-          type="text"
-          class="input mt-3 w-full"
-          name="station_url"
-          id="edit_station_url"
-          placeholder="http://"
-          required
-        />
-        <p class="label pl-0.5">url</p>
-        <input
-          type="text"
-          class="input mt-5 w-full"
-          name="station_name"
-          id="edit_station_name"
-          placeholder="piirakka"
-          required
-        />
-        <p class="label mb-5 pl-0.5">name</p>
-      </fieldset>
-      <div class="flex justify-between mt-4">
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button type="button" id="delete_station_button" class="btn btn-error">
-          Delete
-        </button>
-        <button type="button" class="btn" onclick="edit_station_modal.close()">
-          Close
-        </button>
-      </div>
-    </form>
-  </div>
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Edit station</h3>
+        <form id="editStationForm">
+            <fieldset class="fieldset">
+                <input type="hidden" id="edit_station_id" />
+                <input type="text"
+                       class="input mt-3 w-full"
+                       name="station_url"
+                       id="edit_station_url"
+                       placeholder="http://"
+                       required />
+                <p class="label pl-0.5">url</p>
+                <input type="text"
+                       class="input mt-5 w-full"
+                       name="station_name"
+                       id="edit_station_name"
+                       placeholder="piirakka"
+                       required />
+                <p class="label mb-5 pl-0.5">name</p>
+            </fieldset>
+            <div class="flex justify-between mt-4">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" id="delete_station_button" class="btn btn-error">Delete</button>
+                <button type="button" class="btn" onclick="edit_station_modal.close()">Close</button>
+            </div>
+        </form>
+    </div>
 </dialog>

@@ -1,27 +1,17 @@
 <div class="flex min-w-0 items-center space-x-4 px-2 max-sm:space-x-2">
-  <!-- icon -->
-  <img
-    class="w-6 h-6 dark:invert"
-    src="static/icons/music-2-line.svg"
-    alt="Now playing icon"
-  />
-  <!-- track + station div -->
-  <div class="min-w-0 max-w-full text-xs leading-tight">
-    <!-- track title -->
-    <div
-      id="player_bar_track_name"
-      class="truncate"
-      title="{{ player_state.track_title }}"
-    >
-      {{ player_state.track_title }}
+    <!-- icon -->
+    <img class="w-6 h-6 dark:invert"
+         src="static/icons/music-2-line.svg"
+         alt="Now playing icon" />
+    <!-- track + station div -->
+    <div class="min-w-0 max-w-full text-xs leading-tight">
+        <!-- track title -->
+        <div id="player_bar_track_name"
+             class="truncate"
+             title="{{ player_state.track_title }}">{{ player_state.track_title }}</div>
+        <!-- station -->
+        <div id="player_bar_station_name"
+             class="truncate text-gray-600 dark:text-gray-400"
+             title="{{ player_state.current_station_name }}">{{ player_state.current_station_name }}</div>
     </div>
-    <!-- station -->
-    <div
-      id="player_bar_station_name"
-      class="truncate text-gray-600 dark:text-gray-400"
-      title="{{ player_state.current_station_name }}"
-    >
-      {{ player_state.current_station_name }}
-    </div>
-  </div>
 </div>

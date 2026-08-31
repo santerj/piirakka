@@ -1,23 +1,9 @@
 <tr>
-  <th
-    class="font-nunito font-light whitespace-nowrap max-sm:px-2 max-sm:text-xs"
-    id="timeStamp"
-  >
-    {{ track.timestamp }}
-  </th>
-  <th
-    title="{{ track.title }}"
-    class="min-w-0 max-w-64 overflow-hidden truncate max-sm:max-w-[45vw] max-sm:px-2"
-  >
-    {{ track.title }}
-  </th>
-  <th
-    title="{{ track.station }}"
-    class="font-nunito font-light truncate max-w-24 max-sm:max-w-[25vw] max-sm:px-2"
-  >
-    {{ track.station }}
-  </th>
-  <th class="max-sm:px-2">
-    {% include 'components/track_search_dropdown.html' %}
-  </th>
+    <th class="font-nunito font-light whitespace-nowrap max-sm:px-2 max-sm:text-xs"
+        id="timeStamp">{{ track.timestamp }}</th>
+    <th title="{{ track.title }}"
+        class="min-w-0 max-w-64 overflow-hidden truncate max-sm:max-w-[45vw] max-sm:px-2">{{ track.title }}</th>
+    <th title="{{ track.station }}"
+        class="font-nunito font-light truncate max-w-24 max-sm:max-w-[25vw] max-sm:px-2">{{ track.station }}</th>
+    <th class="max-sm:px-2">{% include 'components/track_search_dropdown.html' %}</th>
 </tr>
