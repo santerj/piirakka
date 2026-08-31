@@ -19,17 +19,22 @@ function initializeBluetoothDevices() {
     const macAddress = encodeURIComponent(device.dataset.macAddress);
     const originalLabel = actionButton.textContent;
     actionButton.disabled = true;
-    actionButton.innerHTML = '<span class="loading loading-spinner loading-xs" aria-label="Loading"></span>';
+    actionButton.innerHTML =
+      '<span class="loading loading-spinner loading-xs" aria-label="Loading"></span>';
     try {
       let response;
       if (action === "select-audio") {
         response = await selectAudioDevice(macAddress);
       } else if (action === "connect") {
-        response = device.dataset.connected === "true"
-          ? await selectAudioDevice(macAddress)
-          : await connectAudioDevice(macAddress);
+        response =
+          device.dataset.connected === "true"
+            ? await selectAudioDevice(macAddress)
+            : await connectAudioDevice(macAddress);
       } else {
-        response = await fetch(`/api/devices/bluetooth/${macAddress}/${action}`, { method: "PUT" });
+        response = await fetch(
+          `/api/devices/bluetooth/${macAddress}/${action}`,
+          { method: "PUT" },
+        );
       }
       if (!response.ok) {
         throw new Error(`Bluetooth ${action} failed: ${response.status}`);
@@ -53,7 +58,9 @@ function initializeBluetoothDevices() {
 }
 
 async function selectAudioDevice(macAddress) {
-  const matchResponse = await fetch(`/api/devices/bluetooth/${macAddress}/match`);
+  const matchResponse = await fetch(
+    `/api/devices/bluetooth/${macAddress}/match`,
+  );
   if (!matchResponse.ok) {
     return matchResponse;
   }
@@ -64,7 +71,10 @@ async function selectAudioDevice(macAddress) {
 }
 
 async function connectAudioDevice(macAddress) {
-  const connectResponse = await fetch(`/api/devices/bluetooth/${macAddress}/connect`, { method: "PUT" });
+  const connectResponse = await fetch(
+    `/api/devices/bluetooth/${macAddress}/connect`,
+    { method: "PUT" },
+  );
   if (!connectResponse.ok) {
     return connectResponse;
   }

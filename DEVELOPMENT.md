@@ -55,7 +55,7 @@ Piirakka is not designed to be a security-hardened application. In a nutshell, i
 
 ## Containers
 
-Two flavours of Containerfile are maintained: *bundled* and *standalone*. The former contains a mpv binary, and the latter is meant for users who prefer to deploy their own mpv instance.
+Two flavours of Containerfile are maintained: _bundled_ and _standalone_. The former contains a mpv binary, and the latter is meant for users who prefer to deploy their own mpv instance.
 
 ## Usual commands cheat sheet
 
@@ -86,7 +86,7 @@ Two flavours of Containerfile are maintained: *bundled* and *standalone*. The fo
 
     1. go to https://remixicon.com/
     2. click on file icon, import collection
-    3. select the .remixicon file in project root
+    3. select the .remixicon file in .icons
     4. make changes to icon collection
     5. download in svg format
     6. unzip file, move contents to piirakka/static/icons
@@ -130,6 +130,9 @@ Two flavours of Containerfile are maintained: *bundled* and *standalone*. The fo
     # isort
     isort piirakka/ --check
     isort piirakka/
+
+    # prettier
+    npx prettier . --write
 
 ### Build image
 

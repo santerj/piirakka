@@ -7,6 +7,7 @@
     "autoprefixer": "^10.4.20",
     "daisyui": "^5.3.10",
     "postcss": "^8.4.49",
+    "prettier": "3.9.6",
     "tailwindcss": "^4.1.16"
   }
 }

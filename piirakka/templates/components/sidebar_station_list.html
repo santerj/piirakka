@@ -1,9 +1,13 @@
 <ul id="stationList">
-    {% for station in stations %}
-        <li class="">
-            <p class="block min-w-0 truncate"
-               title="{{ station.name }}"
-               data-stationId="{{ station.station_id }}">{{ station.name }}</p>
-        </li>
-    {% endfor %}
+  {% for station in stations %}
+  <li class="">
+    <p
+      class="block min-w-0 truncate"
+      title="{{ station.name }}"
+      data-stationId="{{ station.station_id }}"
+    >
+      {{ station.name }}
+    </p>
+  </li>
+  {% endfor %}
 </ul>

@@ -1,53 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <title>{{ player_state.track_title or player_state.current_station_name or 'piirakka' }}
-            {% if player_state.track_title or player_state.current_station_name %}| piirakka{% endif %}
-        </title>
-        <script src="static/js/websocket.js"></script>
-        <script src="static/js/bluetooth_devices.js"></script>
-        {% include 'components/head.html' %}
-    </head>
-    <body class="h-screen overflow-hidden m-0 dark:text-neutral-300">
-        <div class="drawer desktop-drawer h-screen">
-            <input id="sidebar-toggle" type="checkbox" class="drawer-toggle" />
-            <div class="drawer-content">
-                <main id="Settings"
-                      style="height: calc(100vh - 4rem)"
-                      class="w-full overflow-auto bg-white p-4 dark:bg-neutral-900 max-sm:h-[calc(100vh-7rem)]!">
-                    <label for="sidebar-toggle"
-                           class="mobile-menu-button btn btn-sm btn-outline mb-3 inline-flex cursor-pointer">
-                        <img class="h-5 w-5 dark:invert"
-                             src="static/icons/play-list-line.svg"
-                             alt="">
-                        Menu
-                    </label>
-                    <h1 class="sticky -top-4 z-10 bg-white text-3xl pt-3 pb-2 pl-3 font-nunito font-semibold dark:bg-neutral-900">
-                        Settings
-                    </h1>
-                    <div class="pl-3 pb-4 text-xs opacity-50">piirakka v{{ APP_CONFIG.APP_VERSION }}</div>
-                    <div class="sticky -mt-2 top-12 z-10 divider bg-white dark:bg-neutral-900"></div>
-                    {% if not APP_CONFIG.NO_BLUETOOTH %}
-                        <h2 class="text-lg font-semibold py-3 pl-3">Bluetooth</h2>
-                        {% include 'components/bluetooth_devices.html' %}
-                    {% endif %}
-                    <h2 class="text-lg font-semibold py-3 pl-3">Search in streaming services</h2>
-                    {% include 'components/search_settings.html' %}
-                </main>
-                <nav id="ControlBar"
-                     class="desktop-player border-t shadow-lg fixed bottom-0 left-0 w-full h-16 bg-gray-50 border-gray-300 dark:bg-[#2b2b2b] dark:border-neutral-700 max-sm:h-28">
-                    {% include 'components/player.html' %}
-                </nav>
-            </div>
-            <div class="drawer-side z-40">
-                <label for="sidebar-toggle"
-                       aria-label="close sidebar"
-                       class="drawer-overlay"></label>
-                <aside id="sidebar"
-                       class="h-screen w-72 max-w-[85vw] overflow-auto border-r border-gray-300 bg-stone-50 py-3 dark:border-neutral-700 dark:bg-neutral-800 lg:w-1/5">
-                    {% include 'components/sidebar.html' %}
-                </aside>
-            </div>
-        </div>
-    </body>
+  <head>
+    <title>
+      {{ player_state.track_title or player_state.current_station_name or
+      'piirakka' }} {% if player_state.track_title or
+      player_state.current_station_name %}| piirakka{% endif %}
+    </title>
+    <script src="static/js/websocket.js"></script>
+    <script src="static/js/bluetooth_devices.js"></script>
+    {% include 'components/head.html' %}
+  </head>
+  <body class="h-screen overflow-hidden m-0 dark:text-neutral-300">
+    <div class="drawer desktop-drawer h-screen">
+      <input id="sidebar-toggle" type="checkbox" class="drawer-toggle" />
+      <div class="drawer-content">
+        <main
+          id="Settings"
+          style="height: calc(100vh - 4rem)"
+          class="w-full overflow-auto bg-white p-4 dark:bg-neutral-900 max-sm:h-[calc(100vh-7rem)]!"
+        >
+          <label
+            for="sidebar-toggle"
+            class="mobile-menu-button btn btn-sm btn-outline mb-3 inline-flex cursor-pointer"
+          >
+            <img
+              class="h-5 w-5 dark:invert"
+              src="static/icons/play-list-line.svg"
+              alt=""
+            />
+            Menu
+          </label>
+          <h1
+            class="sticky -top-4 z-10 bg-white text-3xl pt-3 pb-2 pl-3 font-nunito font-semibold dark:bg-neutral-900"
+          >
+            Settings
+          </h1>
+          <div class="pl-3 pb-4 text-xs opacity-50">
+            piirakka v{{ APP_CONFIG.APP_VERSION }}
+          </div>
+          <div
+            class="sticky -mt-2 top-12 z-10 divider bg-white dark:bg-neutral-900"
+          ></div>
+          {% if not APP_CONFIG.NO_BLUETOOTH %}
+          <h2 class="text-lg font-semibold py-3 pl-3">Bluetooth</h2>
+          {% include 'components/bluetooth_devices.html' %} {% endif %}
+          <h2 class="text-lg font-semibold py-3 pl-3">
+            Search in streaming services
+          </h2>
+          {% include 'components/search_settings.html' %}
+        </main>
+        <nav
+          id="ControlBar"
+          class="desktop-player border-t shadow-lg fixed bottom-0 left-0 w-full h-16 bg-gray-50 border-gray-300 dark:bg-[#2b2b2b] dark:border-neutral-700 max-sm:h-28"
+        >
+          {% include 'components/player.html' %}
+        </nav>
+      </div>
+      <div class="drawer-side z-40">
+        <label
+          for="sidebar-toggle"
+          aria-label="close sidebar"
+          class="drawer-overlay"
+        ></label>
+        <aside
+          id="sidebar"
+          class="h-screen w-72 max-w-[85vw] overflow-auto border-r border-gray-300 bg-stone-50 py-3 dark:border-neutral-700 dark:bg-neutral-800 lg:w-1/5"
+        >
+          {% include 'components/sidebar.html' %}
+        </aside>
+      </div>
+    </div>
+  </body>
 </html>

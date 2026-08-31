@@ -1,28 +1,20 @@
-{% set nav_items = [
-    {
-        "href": "/",
-        "icon": "home-2-line.svg",
-        "label": "home"
-    },
-    {
-        "href": "/stations",
-        "icon": "rfid-line.svg",
-        "label": "manage stations"
-    },
-    {
-        "href": "/settings",
-        "icon": "settings-4-line.svg",
-        "label": "settings"
-    }
-] %}
+{% set nav_items = [ { "href": "/", "icon": "home-2-line.svg", "label": "home"
+}, { "href": "/stations", "icon": "rfid-line.svg", "label": "manage stations" },
+{ "href": "/settings", "icon": "settings-4-line.svg", "label": "settings" } ] %}
 {% for item in nav_items %}
-    <li class="mb-2">
-        <a href="{{ item.href }}"
-           class="flex items-center space-x-2 overflow-hidden text-ellipsis">
-            <img class="w-6 h-6 dark:invert"
-                 src="static/icons/{{ item.icon }}"
-                 alt="{{ item.label }} icon">
-            <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis">{{ item.label }}</span>
-        </a>
-    </li>
+<li class="mb-2">
+  <a
+    href="{{ item.href }}"
+    class="flex items-center space-x-2 overflow-hidden text-ellipsis"
+  >
+    <img
+      class="w-6 h-6 dark:invert"
+      src="static/icons/{{ item.icon }}"
+      alt="{{ item.label }} icon"
+    />
+    <span class="font-nunito whitespace-nowrap overflow-hidden text-ellipsis"
+      >{{ item.label }}</span
+    >
+  </a>
+</li>
 {% endfor %}

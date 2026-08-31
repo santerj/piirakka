@@ -32,7 +32,7 @@ socket.addEventListener("message", function (event) {
           }
           case "track_history_changed": {
             const trackHistoryContainer =
-            document.getElementById("trackHistory");
+              document.getElementById("trackHistory");
             if (!trackHistoryContainer) {
               break;
             }
@@ -64,12 +64,15 @@ socket.addEventListener("message", function (event) {
             if (!settings) {
               break;
             }
-            const bluetoothDevices = settings.querySelector("#bluetoothDevices");
+            const bluetoothDevices =
+              settings.querySelector("#bluetoothDevices");
             if (!bluetoothDevices) {
               break;
             }
             bluetoothDevices.outerHTML = content;
-            settings.dispatchEvent(new CustomEvent("bluetooth-devices:updated"));
+            settings.dispatchEvent(
+              new CustomEvent("bluetooth-devices:updated"),
+            );
             break;
           }
           default:
@@ -99,13 +102,18 @@ socket.addEventListener("error", function (event) {
  */
 function updateTitle(track, station) {
   const playingMediaTitle = track || station || "piirakka";
-  document.title = playingMediaTitle === "piirakka"
-    ? playingMediaTitle
-    : `${playingMediaTitle} | piirakka`;
+  document.title =
+    playingMediaTitle === "piirakka"
+      ? playingMediaTitle
+      : `${playingMediaTitle} | piirakka`;
 }
 
 function updateTitleFromPlayerBar(playerBar) {
-  const track = playerBar.querySelector("#player_bar_track_name")?.textContent.trim();
-  const station = playerBar.querySelector("#player_bar_station_name")?.textContent.trim();
+  const track = playerBar
+    .querySelector("#player_bar_track_name")
+    ?.textContent.trim();
+  const station = playerBar
+    .querySelector("#player_bar_station_name")
+    ?.textContent.trim();
   updateTitle(track, station);
 }
