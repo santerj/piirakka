@@ -112,6 +112,10 @@ Two flavours of Containerfile are maintained: _bundled_ and _standalone_. The fo
 
     unzip -l piirakka-*-py3-none-any.whl
 
+### Inspect mpv properties with socat
+
+    echo '{"command": ["get_property", "track-list"]}' | socat - /tmp/piirakka_78554.sock 
+
 ### Linters and formatters
 
     # Bandit
