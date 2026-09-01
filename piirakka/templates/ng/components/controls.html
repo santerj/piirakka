@@ -1,0 +1,38 @@
+<nav class="navbar bg-transparent fixed bottom-0 left-0 right-0 z-20">
+  <div class="navbar-start">
+  </div>
+
+  <div class="navbar-center gap-6">
+    <!-- Play/Pause Toggle -->
+    <input type="checkbox" id="playToggle" class="swap swap-rotate hidden" />
+    <label for="playToggle" class="btn btn-circle btn-ghost swap swap-rotate w-12 h-12">
+      <img class="swap-off w-10 h-10" src="static/icons/play-fill.svg" alt="Play" />
+      <img class="swap-on w-10 h-10" src="static/icons/pause-line.svg" alt="Pause" />
+    </label>
+
+    <!-- Shuffle Button -->
+    <button class="btn btn-circle btn-ghost w-12 h-12" id="shuffleBtn">
+      <img class="w-10 h-10" src="static/icons/shuffle-line.svg" alt="Shuffle" />
+    </button>
+
+    <!-- Mute/Unmute Toggle -->
+    <input type="checkbox" id="muteToggle" class="swap swap-rotate hidden" />
+    <label for="muteToggle" class="btn btn-circle btn-ghost swap swap-rotate w-12 h-12">
+      <img class="swap-off w-10 h-10" src="static/icons/volume-up-line.svg" alt="Volume" />
+      <img class="swap-on w-10 h-10" src="static/icons/volume-mute-line.svg" alt="Mute" />
+    </label>
+  </div>
+
+  <div class="navbar-end pr-8">
+    <div class="flex items-center gap-4">
+      <input type="range"
+             value="{{ player_state.volume }}"
+             min="0"
+             max="100"
+             step="1"
+             class="range range-sm w-48"
+             id="volumeControl"
+             onchange="handleVolumeChange(this.value)" />
+    </div>
+  </div>
+</nav>

@@ -104,6 +104,14 @@ class Player:
         return self._ipc_command(list(arguments))
 
     def get_player_state(self) -> PlayerState:
+        track_list = self.get_track_list()
+
+        if bit_rate := track_list.get("demux-bitrate", None):
+            bit_rate = round(bit_rate / 1000, ndigits=1)  # bps to kbps
+
+        if sample_rate := track_list.get("demux-samplerate", None):
+            sample_rate = round(sample_rate / 1000, ndigits=1)  # Hz to kHz
+
         # for creation of callback events - sent into websocket
         return PlayerState(
             playback_status=self.get_status(),
@@ -112,6 +120,10 @@ class Player:
             track_title=self.current_track(),
             bluetooth_device_name=self.bluetooth_device_name,
             audio_device_name=self.audio_device_name,
+            codec=track_list.get("codec", None),
+            sample_rate=sample_rate,
+            bit_rate=bit_rate,
+            genre=self.get_current_genre()
         )
 
     def _init_mpv(self):
@@ -293,19 +305,28 @@ class Player:
         else:
             return self.play()
 
-    def current_track(self) -> str | None:
-        # TODO: don't assume stream is Icecast
-        # TODO: check if equivalent fields exist for shoutcast, hls, dash
-        # other interesting fields
-        # genre: resp["data"]["icy-genre"]
-        # desc: resp["data"]["icy-name"]
+    def get_metadata(self) -> dict:
         resp = self._mpv_command("get_property", "metadata")
         if self._ipc_success(resp):
-            metadata = resp.get("data")
-            if isinstance(metadata, dict):
-                track_title = metadata.get("icy-title")
-                if isinstance(track_title, str) and track_title.strip():
-                    return track_title.strip()
+            return resp.get("data", {})
+        return {}
+
+    def get_track_list(self) -> dict:
+        resp = self._mpv_command("get_property", "track-list")
+        if self._ipc_success(resp):
+            return resp.get("data", {})[0] if resp.get("data", []) else {}
+        return {}
+
+    def current_track(self) -> str | None:
+        metadata = self.get_metadata()
+        if metadata:
+            return metadata.get("icy-title")
+        return None
+
+    def get_current_genre(self) -> str | None:
+        metadata = self.get_metadata()
+        if metadata:
+            return metadata.get("icy-genre")
         return None
 
     def shuffle(self) -> None:

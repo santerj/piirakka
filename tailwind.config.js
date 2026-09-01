@@ -4,9 +4,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        nunito: ['"Nunito Sans"', "sans-serif"],
         ebgaramond: ['"EB Garamond"', "serif"],
         hostgrotesk: ['"Host Grotesk"', "sans-serif"],
+        chivomono: ['"Chivo Mono"', "monospace"],
       },
     },
   },

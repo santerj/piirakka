@@ -10,9 +10,15 @@ class PlayerState(BaseModel):
     playback_status: bool  # True: playing | False: paused
     volume: int
     current_station_name: str | None  # index in stations
-    track_title: str | None  # usually from Icy-Title
+    track_title: str | None  # from icy-title
     bluetooth_device_name: str | None
     audio_device_name: str | None
+
+    codec: str | None
+    sample_rate: float | None  # in kHz
+    bit_rate: float | None  # in kbps
+
+    genre: str | None  # from icy-genre
 
     class Config:
         """Config for pydantic."""

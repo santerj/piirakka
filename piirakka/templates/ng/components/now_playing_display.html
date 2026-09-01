@@ -1,9 +1,12 @@
 <h2 class="font-ebgaramond font-semibold italic text-lg select-none pb-6">Now listening to...</h2>
 
+<h1 class="font-ebgaramond text-8xl">
+    {{ player_state.track_title if player_state.track_title else player_state.current_station_name }}
+</h1>
 {% if player_state.track_title %}
-    <h1 class="font-ebgaramond text-7xl">{{ player_state.track_title }}</h1>
-    <h2 class="font-ebgaramond font-semibold text-xl select-none pt-8">on <span class="hover:underline">{{player_state.current_station_name}}</span></h2>
-{% else %}
-    <h1 class="font-ebgaramond text-7xl">{{ player_state.current_station_name}}</h1>
+<h2 class="font-ebgaramond text-xl select-none pt-8">
+    on <span class="underline decoration-dotted hover:decoration-solid">{{player_state.current_station_name}}</span>
+</h2>
 {% endif %}
 
+{% include 'ng/components/stream_stats.html' %}

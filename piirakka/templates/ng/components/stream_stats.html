@@ -1,0 +1,10 @@
+{% if player_state.codec or player_state.sample_rate or player_state.bit_rate or player_state.genre %}
+<span class="text-rotate duration-15000 text-sm font-chivomono font-extralight select-none">
+  <span>
+    {% if player_state.codec %}<span> codec: {{ player_state.codec }}</span>{% endif %}
+    {% if player_state.sample_rate %}<span> sample rate: {{ player_state.sample_rate }} kHz</span>{% endif %}
+    {% if player_state.bit_rate %}<span> bit rate: {{ player_state.bit_rate }} kbps</span>{% endif %}
+    {% if player_state.genre %}<span class="truncate max-w-sm"> genre: {{ player_state.genre }}</span>{% endif %}
+  </span>
+</span>
+{% endif %}
