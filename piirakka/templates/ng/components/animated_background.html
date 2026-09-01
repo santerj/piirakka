@@ -1,0 +1,94 @@
+<style>
+    @keyframes drift-left {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-2000px);
+        }
+    }
+    
+    .ambient-squiggle {
+        animation: drift-left linear infinite;
+    }
+    
+    .squiggle-slow {
+        animation-duration: 5s;
+    }
+    
+    .squiggle-slower {
+        animation-duration: 10s;
+    }
+    
+    .squiggle-slowest {
+        animation-duration: 25s;
+    }
+</style>
+
+<div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <!-- Wave line 1: Slow, extreme swells -->
+    <svg class="ambient-squiggle absolute" style="top: 8%; width: 4000px; height: 60px; animation-duration: 22s" viewBox="0 0 2000 60" preserveAspectRatio="none">
+        <defs>
+            <pattern id="wave1" x="0" y="0" width="2000" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 0 30 C 100 2, 400 1, 500 30 C 600 59, 900 60, 1000 30 C 1100 1, 1400 0, 1500 30 C 1600 59, 1900 60, 2000 30" 
+                      stroke="#ffba00" stroke-width="1" fill="none" opacity="0.4" stroke-linecap="round"/>
+            </pattern>
+        </defs>
+        <rect width="4000" height="60" fill="url(#wave1)"/>
+    </svg>
+    
+    <!-- Wave line 2: Tight, high-frequency waves -->
+    <svg class="ambient-squiggle absolute" style="top: 22%; width: 4000px; height: 60px; animation-duration: 19s" viewBox="0 0 2000 60" preserveAspectRatio="none">
+        <defs>
+            <pattern id="wave2" x="0" y="0" width="2000" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 0 30 C 80 10, 170 10, 250 30 C 330 50, 420 50, 500 30 C 580 10, 670 10, 750 30 C 830 50, 920 50, 1000 30 C 1090 10, 1180 10, 1250 30 C 1330 50, 1420 50, 1500 30 C 1590 10, 1680 10, 1750 30 C 1830 50, 1920 50, 2000 30" 
+                      stroke="#ffba00" stroke-width="1" fill="none" opacity="0.4" stroke-linecap="round"/>
+            </pattern>
+        </defs>
+        <rect width="4000" height="60" fill="url(#wave2)"/>
+    </svg>
+    
+    <!-- Wave line 3: Steep, rapid oscillation -->
+    <svg class="ambient-squiggle absolute" style="top: 36%; width: 4000px; height: 60px; animation-duration: 18s" viewBox="0 0 2000 60" preserveAspectRatio="none">
+        <defs>
+            <pattern id="wave3" x="0" y="0" width="2000" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 0 30 C 90 5, 160 5, 250 30 C 330 55, 420 55, 500 30 C 580 5, 670 5, 750 30 C 830 55, 920 55, 1000 30 C 1090 5, 1160 5, 1250 30 C 1330 55, 1420 55, 1500 30 C 1590 5, 1660 5, 1750 30 C 1830 55, 1920 55, 2000 30" 
+                      stroke="#ffba00" stro fill="none" opacity="0.4" stroke-linecap="round"/>
+            </pattern>
+        </defs>
+        <rect width="4000" height="60" fill="url(#wave3)"/>
+    </svg>
+    
+    <!-- Wave line 4: Very tight, minimal variation -->
+    <svg class="ambient-squiggle squiggle-slower absolute" style="top: 50%; width: 4000px; height: 60px" viewBox="0 0 2000 60" preserveAspectRatio="none">
+        <defs>
+            <pattern id="wave4" x="0" y="0" width="2000" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 0 30 C 250 8, 250 8, 500 30 C 760 52, 760 52, 1000 30 C 1270 8, 1270 8, 1500 30 C 1760 52, 1760 52, 2000 30" 
+                      stroke="#ffba00" stro fill="none" opacity="0.4" stroke-linecap="round"/>
+            </pattern>
+        </defs>
+        <rect width="4000" height="60" fill="url(#wave4)"/>
+    </svg>
+    
+    <!-- Wave line 5: Smooth, lazy undulation -->
+    <svg class="ambient-squiggle absolute" style="top: 64%; width: 4000px; height: 60px; animation-duration: 27s" viewBox="0 0 2000 60" preserveAspectRatio="none">
+        <defs>
+            <pattern id="wave5" x="0" y="0" width="2000" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 0 30 C 250 5, 250 5, 500 30 C 750 55, 750 55, 1000 30 C 1250 5, 1250 5, 1500 30 C 1750 55, 1750 55, 2000 30" 
+                      stroke="#ffba00" stro fill="none" opacity="0.4" stroke-linecap="round"/>
+            </pattern>
+        </defs>
+        <rect width="4000" height="60" fill="url(#wave5)"/>
+    </svg>
+    
+    <!-- Wave line 6: Medium amplitude, staggered rhythm -->
+    <svg class="ambient-squiggle squiggle-slower absolute" style="top: 78%; width: 4000px; height: 60px" viewBox="0 0 2000 60" preserveAspectRatio="none">
+        <defs>
+            <pattern id="wave6" x="0" y="0" width="2000" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 0 30 C 160 8, 280 12, 500 32 C 720 48, 840 52, 1000 28 C 1190 6, 1310 8, 1500 34 C 1730 50, 1860 53, 2000 30" 
+                      stroke="#ffba00" stro fill="none" opacity="0.4" stroke-linecap="round"/>
+            </pattern>
+        </defs>
+        <rect width="4000" height="60" fill="url(#wave6)"/>
+    </svg>
+</div>

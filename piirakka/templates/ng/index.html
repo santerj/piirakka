@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>
+            {{ player_state.track_title or player_state.current_station_name or
+            'piirakka' }}
+            {% if player_state.track_title or
+                player_state.current_station_name %}
+                | piirakka
+            {% endif %}
+        </title>
+        <script src="static/js/websocket.js"></script>
+        {% include 'ng/components/head.html' %}
+    </head>
+
+    <body class="h-screen overflow-hidden bg-mist-200 dark:bg-mist-800 relative">
+        {% include 'ng/components/animated_background.html' %}
+        
+        <main class="py-48 mx-32 bg-blend-color-burn dark:text-neutral-300 relative z-10">
+            {% include 'ng/components/now_playing_display.html' %}
+        </main>
+
+        <div class="fab">
+            <!-- a focusable div with tabindex is necessary to work on all browsers. role="button" is necessary for accessibility -->
+            <div tabindex="0" role="button" class="btn btn-lg btn-circle btn-success">F</div>
+
+            <!-- buttons that show up when FAB is open -->
+            <div>Label B <button class="btn btn-lg btn-circle">A</button></div>
+            <div>Label C <button class="btn btn-lg btn-circle">B</button></div>
+            <div>Label D <button class="btn btn-lg btn-circle">C</button></div>
+        </div>
+
+    </body>
+
+</html>

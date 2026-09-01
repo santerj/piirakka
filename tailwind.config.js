@@ -5,6 +5,8 @@ module.exports = {
     extend: {
       fontFamily: {
         nunito: ['"Nunito Sans"', "sans-serif"],
+        ebgaramond: ['"EB Garamond"', "serif"],
+        hostgrotesk: ['"Host Grotesk"', "sans-serif"],
       },
     },
   },
